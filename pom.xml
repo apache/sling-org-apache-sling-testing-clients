@@ -36,7 +36,7 @@
         Sling testing http clients and utils
     </description>
     <scm>
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</conncetion>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-testing-clients.git</url>
     </scm>
