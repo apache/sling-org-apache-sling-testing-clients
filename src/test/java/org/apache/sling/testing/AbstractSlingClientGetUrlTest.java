@@ -16,6 +16,8 @@
  */
 package org.apache.sling.testing;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.junit.Test;
@@ -23,8 +25,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -105,6 +109,10 @@ public class AbstractSlingClientGetUrlTest {
         });
     }
 
+
+    private static final List<NameValuePair> TEST_PARAMETERS = Arrays.<NameValuePair>asList(new BasicNameValuePair("key", "value"));
+    private static final String STRING_TEST_PARAMETERS = "key=value";
+
     @Parameterized.Parameter(value = 0)
     public String serverUrl;
 
@@ -118,5 +126,8 @@ public class AbstractSlingClientGetUrlTest {
     public void testGetUrlWithParam() throws ClientException {
         SlingClient c = new SlingClient(URI.create(serverUrl), "USER", "PWD");
         assertEquals("", URI.create(expectedUrl), c.getUrl(inputPath));
+        assertEquals(URI.create(expectedUrl), c.getUrl(inputPath, null));
+        assertEquals(URI.create(expectedUrl + "?"), c.getUrl(inputPath, new ArrayList<NameValuePair>()));
+        assertEquals(URI.create(expectedUrl + "?" + STRING_TEST_PARAMETERS), c.getUrl(inputPath, TEST_PARAMETERS));
     }
 }

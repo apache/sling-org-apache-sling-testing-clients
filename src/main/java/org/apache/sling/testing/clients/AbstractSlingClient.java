@@ -144,7 +144,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * Creates a full URL for a given path with additional parameters. Same as {@link #getUrl(String)}, but adds the parameters in the URI.
      *
      * @param path path relative to server url; can start with / but should not include the server context path
-     * @param parameters url parameters to be added to the url
+     * @param parameters url parameters to be added to the url. If the given argument is {@code null}, nothing will be added to the url.
+     *                   If the given argument is an empty array, it will force a "?" at the end of the url.
      * @return full url as URI
      * @throws IllegalArgumentException if path or parameters cannot be parsed into an URI
      * @throws NullPointerException if path is null
@@ -153,8 +154,9 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         // add server url and path
         URIBuilder uriBuilder = new URIBuilder(getUrl(path));
         // add parameters
-        parameters = (parameters != null) ? parameters : new ArrayList<NameValuePair>(0);
-        uriBuilder.addParameters(parameters);
+        if(parameters != null) {
+            uriBuilder.addParameters(parameters);
+        }
 
         try {
             return uriBuilder.build();
