@@ -589,6 +589,11 @@ public class SlingClient extends AbstractSlingClient {
             return this;
         }
 
+        public InternalBuilder<T> setPreemptiveAuth(boolean isPreemptiveAuth) {
+            this.configBuilder.setPreemptiveAuth(isPreemptiveAuth);
+            return this;
+        }
+
         public InternalBuilder<T> setCookieStore(CookieStore cs) {
             this.configBuilder.setCookieStore(cs);
             return this;

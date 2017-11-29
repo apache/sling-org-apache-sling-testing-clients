@@ -69,10 +69,12 @@ public class SlingClientConfig {
      */
     protected final AuthCache authCache;
 
+
     /**
      * Extra values to be used in interceptors, custom auth mechanisms, etc.
      */
     protected final Map<String, String> values;
+
 
     protected SlingClientConfig(URI url, String user, String password,
                                 CookieStore cookieStore,
@@ -153,6 +155,8 @@ public class SlingClientConfig {
 
         protected AuthCache authCache;
 
+        protected boolean preeemptiveAuth;
+
         protected Builder() {
         }
 
@@ -193,6 +197,11 @@ public class SlingClientConfig {
             return this;
         }
 
+        public Builder setPreemptiveAuth(boolean preemptiveAuth) {
+            this.preeemptiveAuth = preemptiveAuth;
+            return this;
+        }
+
         public Builder setCookieStore(CookieStore cookieStore) {
             this.cookieStore = cookieStore;
             return this;
@@ -209,11 +218,16 @@ public class SlingClientConfig {
                 }
             }
 
-            // Create default AuthCache if not set
+            // Create default AuthCache for basic if not set
             if (authCache == null) {
                 BasicScheme basicScheme = new BasicScheme();
                 authCache = new BasicAuthCache();
                 authCache.put(URIUtils.extractHost(url), basicScheme);
+            }
+
+            // if preemptive auth is disabled, force auth cache to be null
+            if (!this.preeemptiveAuth) {
+                authCache = null;
             }
 
             // Create default CookieStore if not set
