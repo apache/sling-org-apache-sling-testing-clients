@@ -63,9 +63,9 @@ public class Polling implements Callable<Boolean> {
 
     /**
      * <p>Method to be called by {@link #poll(long timeout, long delay)}, potentially multiple times,
-     * until it returns true or timeout is reached.<br/>
+     * until it returns true or timeout is reached.<br>
      * Subclasses can override it to change the check accordingly. The method should return true
-     * only when the call was successful.<br/>
+     * only when the call was successful.<br>
      * It can return false or throw any {@code Exception} to make the poller try again later.</p>
      *
      * <p>The default implementation delegates the call to the {@code Callable c} instance.</p>

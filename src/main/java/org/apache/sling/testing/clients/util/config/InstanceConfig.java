@@ -27,6 +27,7 @@ public interface InstanceConfig {
      *
      * @return this
      * @throws InstanceConfigException if saving the configuration fails
+     * @throws InterruptedException if interrupted
      */
     public InstanceConfig save() throws InstanceConfigException, InterruptedException;
 
@@ -35,6 +36,7 @@ public interface InstanceConfig {
      *
      * @return this
      * @throws InstanceConfigException if restoring the configuration fails
+     * @throws InterruptedException if interrupted
      */
     public InstanceConfig restore() throws InstanceConfigException, InterruptedException;
 }

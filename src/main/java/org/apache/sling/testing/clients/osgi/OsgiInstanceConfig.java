@@ -52,6 +52,7 @@ public class OsgiInstanceConfig implements InstanceConfig {
      * @param <T> The type of the Granite Client
      * @throws ClientException if the client cannot be initialized
      * @throws InstanceConfigException if the config cannot be saved
+     * @throws InterruptedException if interrupted
      */
     public <T extends SlingClient> OsgiInstanceConfig(T client, String configPID)
             throws ClientException, InstanceConfigException, InterruptedException {

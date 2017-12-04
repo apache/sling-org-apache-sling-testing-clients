@@ -88,6 +88,7 @@ public class BundlesInstaller {
      * @param toInstall list ob bundles to install
      * @param startBundles whether to start the bundles
      * @throws ClientException if an error occurs during installation
+     * @throws IOException if reading the file fails
      */
     public void installBundles(List<File> toInstall, boolean startBundles) throws ClientException, IOException {
         for(File f : toInstall) {
@@ -143,6 +144,8 @@ public class BundlesInstaller {
      * @deprecated use {@link #waitBundlesInstalled(List, long)}
      * @param symbolicNames the list of names for the bundles
      * @param timeoutSeconds how many seconds to wait
+     * @throws ClientException if something went wrong
+     * @throws InterruptedException if interrupted
      * @return true if all the bundles were installed
      */
     @Deprecated

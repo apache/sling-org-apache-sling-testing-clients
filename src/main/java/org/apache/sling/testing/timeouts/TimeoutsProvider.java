@@ -45,7 +45,11 @@ public class TimeoutsProvider {
             }
         }
     }
-    
+
+    /**
+     *
+     * @return the instance of the singleton
+     */
     public static TimeoutsProvider getInstance() {
         if(INSTANCE == null) {
             synchronized (TimeoutsProvider.class) {
@@ -54,18 +58,33 @@ public class TimeoutsProvider {
         }
         return INSTANCE;
     }
-    
+
+    /**
+     *
+     * @param nomimalValue base number to be multiplied internally with the factor
+     * @return the new timeout
+     */
     public long getTimeout(long nomimalValue) {
         final long result = (long)(nomimalValue * timeoutFactor);
         return result;
     }
-    
+
+    /**
+     *
+     * @param nomimalValue base number to be multiplied internally with the factor
+     * @return the new timeout
+     */
     public int getTimeout(int nomimalValue) {
         final int result = (int)(nomimalValue * timeoutFactor);
         return result;
     }
     
-    /** Get timeout from a system property, with default value */
+    /**
+     * Get timeout from a system property, with default value
+     * @param systemPropertyName the name of the system prop from which to get the timeout
+     * @param defaultNominalValue default value in case the property does not exist
+     * @return the timeout
+     */
     public int getTimeout(String systemPropertyName, int defaultNominalValue) {
         int result = defaultNominalValue;
         final String str = System.getProperty(systemPropertyName);

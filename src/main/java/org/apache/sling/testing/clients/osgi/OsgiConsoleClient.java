@@ -374,7 +374,7 @@ public class OsgiConsoleClient extends SlingClient {
      * Uninstall a bundle
      * @param symbolicName bundle symbolic name
      * @return the sling response
-     * @throws ClientException
+     * @throws ClientException if something went wrong with the request
      */
     public SlingHttpResponse uninstallBundle(String symbolicName) throws ClientException {
         final long bundleId = getBundleId(symbolicName);
@@ -389,7 +389,7 @@ public class OsgiConsoleClient extends SlingClient {
      * @param f the bundle file
      * @param startBundle whether to start the bundle or not
      * @return the sling response
-     * @throws ClientException
+     * @throws ClientException if the request failed
      */
     public SlingHttpResponse installBundle(File f, boolean startBundle) throws ClientException {
         return installBundle(f, startBundle, 0);
@@ -430,7 +430,7 @@ public class OsgiConsoleClient extends SlingClient {
      * @param waitTime How many milliseconds to wait between retries
      * @param retries the number of retries
      * @return true if the bundle was installed until the retries stop, false otherwise
-     * @throws InterruptedException
+     * @throws InterruptedException if interrupted
      */
     @Deprecated
     public boolean checkBundleInstalled(String symbolicName, int waitTime, int retries) throws InterruptedException {
@@ -447,7 +447,8 @@ public class OsgiConsoleClient extends SlingClient {
      * @param waitTime how long to wait between retries of checking the bundle
      * @param retries how many times to check for the bundle to be installed, until giving up
      * @return true if the bundle was successfully installed, false otherwise
-     * @throws ClientException
+     * @throws ClientException if the request failed
+     * @throws InterruptedException if interrupted
      */
     @Deprecated
     public boolean installBundleWithRetry(File f, boolean startBundle, int startLevel, int waitTime, int retries)
@@ -467,9 +468,9 @@ public class OsgiConsoleClient extends SlingClient {
      * @param startLevel the start level of the bundle. negative values mean default start level
      * @param timeout how much to wait for the bundle to be installed before throwing a {@code TimeoutException}
      * @param delay time to wait between checks of the state
-     * @throws ClientException
+     * @throws ClientException if the request failed
      * @throws TimeoutException if the bundle did not install before timeout was reached
-     * @throws InterruptedException
+     * @throws InterruptedException if interrupted
      */
     public void waitInstallBundle(File f, boolean startBundle, int startLevel, long timeout, long delay)
             throws ClientException, InterruptedException, TimeoutException {
@@ -482,6 +483,14 @@ public class OsgiConsoleClient extends SlingClient {
         }
     }
 
+    /**
+     * Wait until the bundle is installed
+     * @param symbolicName symbolic name of bundle
+     * @param timeout how much to wait for the bundle to be installed before throwing a {@code TimeoutException}
+     * @param delay time to wait between checks of the state
+     * @throws TimeoutException if the bundle did not install before timeout was reached
+     * @throws InterruptedException if interrupted
+     */
     public void waitBundleInstalled(final String symbolicName, final long timeout, final long delay)
             throws TimeoutException, InterruptedException {
 
@@ -522,7 +531,7 @@ public class OsgiConsoleClient extends SlingClient {
      * Get the version of the bundle
      * @param symbolicName bundle symbolic name
      * @return bundle version
-     * @throws ClientException
+     * @throws ClientException if the version is not retrieved
      */
     public String getBundleVersion(String symbolicName) throws ClientException {
         final JsonNode bundle = getBundleData(symbolicName);
@@ -555,7 +564,7 @@ public class OsgiConsoleClient extends SlingClient {
     /**
      * Starts a bundle
      * @param symbolicName the name of the bundle
-     * @throws ClientException
+     * @throws ClientException if the request failed
      */
     public void startBundle(String symbolicName) throws ClientException {
         // To start the bundle we POST action=start to its URL
@@ -567,7 +576,7 @@ public class OsgiConsoleClient extends SlingClient {
     /**
      * Stop a bundle
      * @param symbolicName the name of the bundle
-     * @throws ClientException
+     * @throws ClientException if the request failed
      */
     public void stopBundle(String symbolicName) throws ClientException {
         // To stop the bundle we POST action=stop to its URL
@@ -583,7 +592,8 @@ public class OsgiConsoleClient extends SlingClient {
      * @param symbolicName the name of the bundle
      * @param waitTime How many milliseconds to wait between retries
      * @param retries the number of retries
-     * @throws ClientException, InterruptedException
+     * @throws ClientException if the request failed
+     * @throws InterruptedException if interrupted
      */
     @Deprecated
     public void startBundlewithWait(String symbolicName, int waitTime, int retries)
@@ -599,7 +609,9 @@ public class OsgiConsoleClient extends SlingClient {
      * @param symbolicName the name of the bundle
      * @param timeout max time to wait for the bundle to start, in ms
      * @param delay time to wait between status checks, in ms
-     * @throws ClientException, InterruptedException, TimeoutException
+     * @throws ClientException if the request failed
+     * @throws InterruptedException if interrupted
+     * @throws TimeoutException if starting timed out
      */
     public void waitStartBundle(String symbolicName, long timeout, long delay)
             throws ClientException, InterruptedException, TimeoutException {
@@ -610,7 +622,7 @@ public class OsgiConsoleClient extends SlingClient {
 
     /**
      * Calls PackageAdmin.refreshPackages to force re-wiring of all the bundles.
-     * @throws ClientException
+     * @throws ClientException if the request failed
      */
     public void refreshPackages() throws ClientException {
         LOG.info("Refreshing packages.");
@@ -680,7 +692,7 @@ public class OsgiConsoleClient extends SlingClient {
      * Get the symbolic name from a bundle file by looking at the manifest
      * @param bundleFile bundle file
      * @return the name extracted from the manifest
-     * @throws IOException
+     * @throws IOException if reading the jar failed
      */
     public static String getBundleSymbolicName(File bundleFile) throws IOException {
         String name = null;
@@ -701,7 +713,7 @@ public class OsgiConsoleClient extends SlingClient {
      * Get the version form a bundle file by looking at the manifest
      * @param bundleFile bundle file
      * @return the version
-     * @throws IOException
+     * @throws IOException if reading the bundle jar failed
      */
     public static String getBundleVersionFromFile(File bundleFile) throws IOException {
         String version = null;

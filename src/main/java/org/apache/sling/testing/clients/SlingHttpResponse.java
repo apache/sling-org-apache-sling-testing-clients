@@ -70,7 +70,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that response matches supplied status</p>
      *
      * @param expected the expected http status
-     * @throws AssertionError if the response does not match the expected
+     * @throws ClientException if the response does not match the expected
      */
     public void checkStatus(int expected) throws ClientException {
         if (this.getStatusLine().getStatusCode() != expected) {
@@ -83,7 +83,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that response matches supplied content type (from Content-Type header)</p>
      *
      * @param expected the expected content type
-     * @throws AssertionError if the response content type does not match the expected
+     * @throws ClientException if the response content type does not match the expected
      */
     public void checkContentType(String expected) throws ClientException {
         // Remove whatever follows semicolon in content-type
@@ -103,7 +103,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>The regular expressions are automatically prefixed and suffixed with .* it order to partial-match the lines</p>
      *
      * @param regexp list of regular expressions
-     * @throws AssertionError if the response content does not match one of the regexp
+     * @throws ClientException if the response content does not match one of the regexp
      */
     public void checkContentRegexp(String... regexp) throws ClientException {
         for(String expr : regexp) {
@@ -128,6 +128,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that all the provided {@code Strings} are contained in the response</p>
      *
      * @param expected list of expected strings
+     * @throws ClientException @throws ClientException if the response content does not match one of the strings
      */
     public void checkContentContains(String... expected) throws ClientException {
         for (String s : expected) {
@@ -151,6 +152,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * Get status from Sling Response as integer
      *
      * @return Sling Status
+     * @throws NumberFormatException if sling status can't be parsed as a number
      */
     public int getSlingStatusAsInt() throws NumberFormatException {
         String strStatus = getSlingStatus();
