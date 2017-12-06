@@ -155,7 +155,7 @@ public class SlingClientConfig {
 
         protected AuthCache authCache;
 
-        protected boolean preeemptiveAuth;
+        protected boolean preemptiveAuth = true;
 
         protected Builder() {
         }
@@ -198,7 +198,7 @@ public class SlingClientConfig {
         }
 
         public Builder setPreemptiveAuth(boolean preemptiveAuth) {
-            this.preeemptiveAuth = preemptiveAuth;
+            this.preemptiveAuth = preemptiveAuth;
             return this;
         }
 
@@ -226,7 +226,7 @@ public class SlingClientConfig {
             }
 
             // if preemptive auth is disabled, force auth cache to be null
-            if (!this.preeemptiveAuth) {
+            if (!this.preemptiveAuth) {
                 authCache = null;
             }
 
