@@ -39,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +78,11 @@ public class OsgiConsoleClient extends SlingClient {
      * The URL for components requests
      */
     private final String URL_COMPONENTS = CONSOLE_ROOT_URL + "/components";
+    
+    /**
+     * The URL for service requests
+     */
+    private final String URL_SERVICES = CONSOLE_ROOT_URL + "/services";
 
 
     public static final String JSON_KEY_ID = "id";
@@ -160,6 +166,105 @@ public class OsgiConsoleClient extends SlingClient {
         SlingHttpResponse resp = this.doGet(URL_COMPONENTS + "/" + id + ".json");
         HttpUtils.verifyHttpStatus(resp, HttpUtils.getExpectedStatus(SC_OK, expectedStatus));
         return new ComponentInfo(JsonUtils.getJsonNodeFromString(resp.getContent()));
+    }
+
+    /**
+     * Returns the wrapper for the component info json
+     *
+     * @param id the id of the component
+     * @return the component info or {@code null} if the component with that name is not found
+     */
+    private ComponentInfo getComponentInfo(String name) throws ClientException {
+        SlingHttpResponse resp = this.doGet(URL_COMPONENTS + "/" + name + ".json");
+        if (HttpUtils.getHttpStatus(resp) == SC_OK) {
+            return new ComponentInfo(JsonUtils.getJsonNodeFromString(resp.getContent()));
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the service info wrapper for all services implementing the given type.
+     *
+     * @param name the type of the service
+     * @return the service infos or {@code null} if no service for the given type is registered
+     */
+    private Collection<ServiceInfo> getServiceInfos(String type) throws ClientException {
+        SlingHttpResponse resp = this.doGet(URL_SERVICES + ".json");
+        if (HttpUtils.getHttpStatus(resp) == SC_OK) {
+            return new ServicesInfo(JsonUtils.getJsonNodeFromString(resp.getContent())).forType(type);
+        }
+        return null;
+    }
+
+    /**
+     * Wait until the component with the given name is registered. This means the component must be either in state "Registered" or "Active".
+     * @param componentName the component's name
+     * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
+     * @param delay time to wait between checks of the state in milliseconds
+     * @throws TimeoutException if the component did not become registered before timeout was reached
+     * @throws InterruptedException if interrupted
+     * @see "OSGi Comp. R6, §112.5 Component Life Cycle"
+     */
+    public void waitComponentRegistered(final String componentName, final long timeout, final long delay) throws TimeoutException, InterruptedException {
+        Polling p = new Polling() {
+            @Override
+            public Boolean call() throws Exception {
+                ComponentInfo info = getComponentInfo(componentName);
+                if (info != null) {
+                    return ((info.getStatus() == Component.Status.REGISTERED) || (info.getStatus() == Component.Status.ACTIVE));
+                } else {
+                    LOG.debug("Could not get component info for component name {}", componentName);
+                }
+                return false;
+            }
+
+            @Override
+            protected String message() {
+                return "Component " + componentName + " was not registered in %1$d ms";
+            }
+        };
+        p.poll(timeout, delay);
+    }
+    
+    /**
+     * Wait until the service with the given name is registered. This means the component must be either in state "Registered" or "Active".
+     * @param type the type of the service (usually the name of a Java interface)
+     * @param bundleSymbolicName the symbolic name of the bundle supposed to register that service. 
+     * May be {@code null} in which case this method just waits for any service with the requested type being registered (independent of the registering bundle).
+     * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
+     * @param delay time to wait between checks of the state in milliseconds
+     * @throws TimeoutException if the component did not become registered before timeout was reached
+     * @throws InterruptedException if interrupted
+     */
+    public void waitServiceRegistered(final String type, final String bundleSymbolicName , final long timeout, final long delay) throws TimeoutException, InterruptedException {
+        Polling p = new Polling() {
+            @Override
+            public Boolean call() throws Exception {
+                Collection<ServiceInfo> infos = getServiceInfos(type);
+                if (infos != null) {
+                    if (bundleSymbolicName != null) {
+                        for (ServiceInfo info : infos) {
+                            if (bundleSymbolicName.equals(info.getBundleSymbolicName())) {
+                                return true;
+                            }
+                        }
+                        LOG.debug("Could not find service info for service type {} provided by bundle {}", type, bundleSymbolicName);
+                        return false;
+                    } else {
+                        return !infos.isEmpty();
+                    }
+                } else {
+                    LOG.debug("Could not find any service info for service type {}", type);
+                }
+                return false;
+            }
+
+            @Override
+            protected String message() {
+                return "Service with type " + type + " was not registered in %1$d ms";
+            }
+        };
+        p.poll(timeout, delay);
     }
 
     //
@@ -462,12 +567,12 @@ public class OsgiConsoleClient extends SlingClient {
     }
 
     /**
-     * Install a bundle using the Felix webconsole HTTP interface and wait for it to be installed
+     * Install a bundle using the Felix webconsole HTTP interface and wait for it to be installed.
      * @param f the bundle file
      * @param startBundle whether to start the bundle or not
      * @param startLevel the start level of the bundle. negative values mean default start level
-     * @param timeout how much to wait for the bundle to be installed before throwing a {@code TimeoutException}
-     * @param delay time to wait between checks of the state
+     * @param timeout how long to wait for the bundle to be installed before throwing a {@code TimeoutException} in milliseconds
+     * @param delay time to wait between checks of the state in milliseconds
      * @throws ClientException if the request failed
      * @throws TimeoutException if the bundle did not install before timeout was reached
      * @throws InterruptedException if interrupted
@@ -484,12 +589,13 @@ public class OsgiConsoleClient extends SlingClient {
     }
 
     /**
-     * Wait until the bundle is installed
+     * Wait until the bundle is installed.
      * @param symbolicName symbolic name of bundle
-     * @param timeout how much to wait for the bundle to be installed before throwing a {@code TimeoutException}
-     * @param delay time to wait between checks of the state
+     * @param timeout how long to wait for the bundle to be installed before throwing a {@code TimeoutException} in milliseconds
+     * @param delay time to wait between checks of the state in milliseconds
      * @throws TimeoutException if the bundle did not install before timeout was reached
      * @throws InterruptedException if interrupted
+     * @see "OSGi Core R6, §4.4.2 Bundle State"
      */
     public void waitBundleInstalled(final String symbolicName, final long timeout, final long delay)
             throws TimeoutException, InterruptedException {
@@ -503,7 +609,40 @@ public class OsgiConsoleClient extends SlingClient {
 
             @Override
             protected String message() {
-                return "Bundle " + symbolicName + " did not install in %1$ ms";
+                return "Bundle " + symbolicName + " did not install in %1$d ms";
+            }
+        };
+
+        p.poll(timeout, delay);
+    }
+    
+    /**
+     * Wait until the bundle is started
+     * @param symbolicName symbolic name of bundle
+     * @param timeout how long to wait for the bundle to be installed before throwing a {@code TimeoutException} in milliseconds.
+     * @param delay time to wait between checks of the state in milliseconds.
+     * @throws TimeoutException if the bundle did not install before timeout was reached
+     * @throws InterruptedException if interrupted
+     * @see "OSGi Core R6, §4.4.2 Bundle State"
+     */
+    public void waitBundleStarted(final String symbolicName, final long timeout, final long delay)
+            throws TimeoutException, InterruptedException {
+
+        Polling p = new Polling() {
+            @Override
+            public Boolean call() throws Exception {
+                try {
+                    BundleInfo bundleInfo = getBundleInfo(symbolicName, 200);
+                    return (bundleInfo.getStatus() == Bundle.Status.ACTIVE);
+                } catch (ClientException e) {
+                    LOG.debug("Could not get bundle state for {}: {}", symbolicName, e.getLocalizedMessage(), e);
+                    return false;
+                }
+            }
+
+            @Override
+            protected String message() {
+                return "Bundle " + symbolicName + " did not start in %1$d ms";
             }
         };
 
