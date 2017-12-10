@@ -121,7 +121,7 @@ public class Polling implements Callable<Boolean> {
     /**
      * Returns the string to be used in the {@code TimeoutException}, if needed.
      * The string is passed to {@code String.format(message(), timeout, delay)}, so it can be a format
-     * including {@code %1$} and {@code %2$}. The field {@code lastException} is also available for logging
+     * including {@code %1$d} and {@code %2$d}. The field {@code lastException} is also available for logging
      *
      * @return the format string
      */
