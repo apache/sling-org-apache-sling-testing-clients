@@ -85,7 +85,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
     /** Get login token cookie or null if not found */
     private Cookie getLoginCookie(HttpContext context, String loginTokenName) {
         for (Cookie cookie : HttpClientContext.adapt(context).getCookieStore().getCookies()) {
-            if (cookie.getName().equalsIgnoreCase(loginTokenName)) {
+            if (cookie.getName().equalsIgnoreCase(loginTokenName) && !cookie.getValue().isEmpty()) {
                 return cookie;
             }
         }
