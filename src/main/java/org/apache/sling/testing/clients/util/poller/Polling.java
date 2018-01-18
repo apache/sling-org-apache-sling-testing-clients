@@ -107,12 +107,10 @@ public class Polling implements Callable<Boolean> {
                 if (success) {
                     return;
                 }
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                throw e;
             } catch (Exception e) {
                 lastException = e;
             }
+            Thread.sleep(delay);
         } while (System.currentTimeMillis() < start + effectiveTimeout);
 
         throw new TimeoutException(String.format(message(), effectiveTimeout, delay));
