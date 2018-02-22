@@ -475,6 +475,69 @@ public class SlingClient extends AbstractSlingClient {
     }
 
     /**
+     * <p>Create a tree structure under {@code parentPath} by providing a {@code content} in one
+     * of the supported formats: xml, jcr.xml, json, jar, zip.</p>
+     *
+     * <p>This is the implementation of {@code :operation import}, as documented in
+     * <a href="http://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html#importing-content-structures">importing-content-structures</a></p>
+     *
+     * @param parentPath path where the tree is created
+     * @param contentType format of the content
+     * @param content string expressing the structure to be created, in the specified format
+     * @param expectedStatus list of expected HTTP Status to be returned, if not set, 201 is assumed
+     * @return the response
+     * @throws ClientException if something fails during the request/response cycle
+     */
+    public SlingHttpResponse importContent(String parentPath, String contentType, String content, int... expectedStatus)
+            throws ClientException {
+        HttpEntity entity = FormEntityBuilder.create()
+                .addParameter(":operation", "import")
+                .addParameter(":contentType", contentType)
+                .addParameter(":content", content)
+                .build();
+        // execute request and return the sling response
+        return this.doPost(parentPath, entity, HttpUtils.getExpectedStatus(SC_CREATED, expectedStatus));
+    }
+
+    /**
+     * <p>Create a tree structure under {@code parentPath} by providing a {@code contentFile} in one
+     * of the supported formats: xml, jcr.xml, json, jar, zip.</p>
+     *
+     * <p>This is the implementation of {@code :operation import}, as documented in
+     * <a href="http://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html#importing-content-structures">importing-content-structures</a></p>
+     *
+     * @param parentPath path where the tree is created
+     * @param contentType format of the content
+     * @param contentFile file containing the structure to be created, in the specified format
+     * @param expectedStatus list of expected HTTP Status to be returned, if not set, 200 is assumed
+     * @return the response
+     * @throws ClientException if something fails during the request/response cycle
+     */
+    public SlingHttpResponse importContent(String parentPath, String contentType, File contentFile, int... expectedStatus)
+            throws ClientException {
+        HttpEntity entity = MultipartEntityBuilder.create()
+                .addTextBody(":operation", "import")
+                .addTextBody(":contentType", contentType)
+                .addBinaryBody(":contentFile", contentFile)
+                .build();
+        // execute request and return the sling response
+        return this.doPost(parentPath, entity, HttpUtils.getExpectedStatus(SC_CREATED, expectedStatus));
+    }
+
+    /**
+     * Wrapper method over {@link #importContent(String, String, String, int...)} for directly importing a json node
+     * @param parentPath path where the tree is created
+     * @param json json node with the desired structure
+     * @param expectedStatus list of expected HTTP Status to be returned, if not set, 201 is assumed
+     * @return the response
+     * @throws ClientException if something fails during the request/response cycle
+     */
+    public SlingHttpResponse importJson(String parentPath, JsonNode json, int... expectedStatus)
+            throws ClientException {
+        return importContent(parentPath, "json", json.toString(), expectedStatus);
+    }
+
+    /**
      * Get the UUID of a repository path
      *
      * @param path path in repository
