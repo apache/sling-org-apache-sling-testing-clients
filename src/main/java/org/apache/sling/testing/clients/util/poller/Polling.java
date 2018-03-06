@@ -41,6 +41,11 @@ public class Polling implements Callable<Boolean> {
     protected Exception lastException;
 
     /**
+     * Counter for total waiting time
+     */
+    protected long waited;
+
+    /**
      * Default constructor to be used in subclasses that override the {@link #call()} method.
      * Should not be used directly on {@code Polling} instances, but only on extended classes.
      * If used directly to get a {@code Polling} instance, executing {@link #poll(long timeout, long delay)}
@@ -49,6 +54,7 @@ public class Polling implements Callable<Boolean> {
     public Polling() {
         this.c = null;
         this.lastException = null;
+        this.waited = 0;
     }
 
     /**
@@ -59,6 +65,7 @@ public class Polling implements Callable<Boolean> {
     public Polling(Callable<Boolean> c) {
         this.c = c;
         this.lastException = null;
+        this.waited = 0;
     }
 
     /**
@@ -105,6 +112,7 @@ public class Polling implements Callable<Boolean> {
             try {
                 boolean success = call();
                 if (success) {
+                    waited = System.currentTimeMillis() - start;
                     return;
                 }
             } catch (Exception e) {
@@ -113,7 +121,12 @@ public class Polling implements Callable<Boolean> {
             Thread.sleep(delay);
         } while (System.currentTimeMillis() < start + effectiveTimeout);
 
+        waited = System.currentTimeMillis() - start;
         throw new TimeoutException(String.format(message(), effectiveTimeout, delay));
+    }
+
+    public long getWaited() {
+        return waited;
     }
 
     /**
