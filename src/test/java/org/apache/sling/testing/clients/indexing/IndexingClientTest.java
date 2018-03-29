@@ -149,6 +149,24 @@ public class IndexingClientTest {
                 }
             });
 
+            serverBootstrap.registerHandler("/tmp/testing/waitForAsyncIndexing/oak:index/*", new HttpRequestHandler() {
+                @Override
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                        throws HttpException, IOException {
+                    List<NameValuePair> params = extractParameters(request);
+
+                    for (NameValuePair param : params) {
+                        if (param.getName().equals(":operation") && (param.getValue().equals("delete"))) {
+                            response.setStatusCode(200);
+                            return;
+                        }
+                    }
+
+                    response.setStatusCode(200);
+                    response.setEntity(new StringEntity("Created!"));
+                }
+            });
+
             // unimportant requests
             serverBootstrap.registerHandler("/tmp.json", okHandler);
             serverBootstrap.registerHandler("/tmp/testing.json", okHandler);
@@ -163,7 +181,7 @@ public class IndexingClientTest {
 
     public IndexingClientTest() throws ClientException {
         client = new IndexingClient(httpServer.getURI(), "admin", "admin");
-        client = new IndexingClient(java.net.URI.create("http://localhost:4502"), "admin", "admin");
+        //client = new IndexingClient(java.net.URI.create("http://localhost:4502"), "admin", "admin");
     }
 
     @Test
