@@ -117,6 +117,7 @@ public class QueryClient extends SlingClient {
      * @param type type of the query
      * @return the results in json as exported by {@link QueryServlet}
      * @throws ClientException if the request failed to execute
+     * @throws InterruptedException to mark that this method blocks
      */
     public JsonNode doQuery(final String query, final QueryType type) throws ClientException, InterruptedException {
         return doQuery(query, type, true, false);
@@ -129,6 +130,7 @@ public class QueryClient extends SlingClient {
      * @param type type of the query
      * @return total results returned by the query
      * @throws ClientException if the request failed to execute
+     * @throws InterruptedException to mark that this method blocks
      */
     public long doCount(final String query, final QueryType type) throws ClientException, InterruptedException {
         return doQuery(query, type, false, false).get("total").getLongValue();
@@ -141,6 +143,7 @@ public class QueryClient extends SlingClient {
      * @param type type of the query
      * @return total results returned by the query
      * @throws ClientException if the request failed to execute
+     * @throws InterruptedException to mark that this method blocks
      */
     public String getPlan(final String query, final QueryType type) throws ClientException, InterruptedException {
         return doQuery(query, type, false, true).get("plan").toString();
@@ -179,7 +182,9 @@ public class QueryClient extends SlingClient {
      * <p>By default, methods of this client automatically install the servlet if needed,
      * so there is no need to explicitly call from outside</p>
      *
+     * @return this
      * @throws ClientException if the installation fails
+     * @throws InterruptedException to mark that this method blocks
      */
     public QueryClient installServlet() throws ClientException, InterruptedException {
         InputStream bundleStream = TinyBundles.bundle()
@@ -209,6 +214,7 @@ public class QueryClient extends SlingClient {
     /**
      * Deletes all the resources created by {@link #installServlet()}
      *
+     * @return this
      * @throws ClientException if any of the resources fails to uninstall
      */
     public QueryClient uninstallServlet() throws ClientException {

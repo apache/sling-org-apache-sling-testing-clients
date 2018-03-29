@@ -47,14 +47,13 @@ import static org.apache.http.HttpStatus.SC_OK;
  * <p>Exposes {@link #waitForAsyncIndexing(long, long)} for waiting all the indexing lanes to finish
  * indexing and to guarantee all the indices are up to date</p>
  *
- * <p>For using {@link #waitForAsyncIndexing(long, long)}, the user must have access rights to:
+ * <p>For using {@link #waitForAsyncIndexing(long, long)}, the user must have access rights to:</p>
  *  <ul>
  *      <li>read/write in {@code /tmp}</li>
  *      <li>install bundles via {@link org.apache.sling.testing.clients.osgi.OsgiConsoleClient}
  *      (if the query servlet was not previously installed)</li>
  *  </ul>
- *  In short, it requires administrative rights.
- * </p>
+ *  <p>In short, it requires administrative rights.</p>
  */
 public class IndexingClient extends SlingClient {
     private static final Logger LOG = LoggerFactory.getLogger(IndexingClient.class);

@@ -68,9 +68,12 @@ public class TimeoutsProvider {
         final int result = (int)(nomimalValue * timeoutFactor);
         return result;
     }
-    
+
     /**
      * Get timeout from a system property, with default value
+     * @param systemPropertyName Name of the system property that holds the timeout multiplier
+     * @param defaultNominalValue The default timeout multiplier
+     * @return the total timeout value
      */
     public int getTimeout(String systemPropertyName, int defaultNominalValue) {
         int result = defaultNominalValue;
