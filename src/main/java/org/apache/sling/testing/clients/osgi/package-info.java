@@ -19,7 +19,7 @@
 /**
  * OSGI testing tools.
  */
-@Version("1.4.0")
+@Version("2.0.0")
 package org.apache.sling.testing.clients.osgi;
 
 import org.osgi.annotation.versioning.Version;

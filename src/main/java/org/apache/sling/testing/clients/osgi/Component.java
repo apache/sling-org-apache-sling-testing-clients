@@ -21,11 +21,18 @@ public class Component {
 
     public enum Status {
 
+        // the states being used in the DS Felix WebConsole are listed in https://github.com/apache/felix/blob/6e5cde8471febb36bc72adeba85989edba943188/webconsole-plugins/ds/src/main/java/org/apache/felix/webconsole/plugins/ds/internal/ComponentConfigurationPrinter.java#L374
         ACTIVE("active"),
 
-        REGISTERED("registered"),
+        SATISFIED("satisfied"),
 
-        UNSATISFIED("unsatisfied");
+        UNSATISFIED_CONFIGURATION("unsatisfied (configuration)"),
+
+        UNSATISFIED_REFERENCE("unsatisfied (reference)"),
+
+        FAILED_ACTIVATION("failed activation"),
+
+        UNKNOWN("unknown");
 
         String value;
 
@@ -39,7 +46,7 @@ public class Component {
                     return s;
                 }
             }
-            return null;
+            return UNKNOWN;
         }
 
         public String toString() {

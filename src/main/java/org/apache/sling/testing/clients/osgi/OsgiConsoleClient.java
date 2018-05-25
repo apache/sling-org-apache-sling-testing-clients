@@ -198,6 +198,7 @@ public class OsgiConsoleClient extends SlingClient {
 
     /**
      * Wait until the component with the given name is registered. This means the component must be either in state "Registered" or "Active".
+     * The state registered is called "satisfied" in the Felix DS Web Console
      * @param componentName the component's name
      * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
      * @param delay time to wait between checks of the state in milliseconds
@@ -211,7 +212,7 @@ public class OsgiConsoleClient extends SlingClient {
             public Boolean call() throws Exception {
                 ComponentInfo info = getComponentInfo(componentName);
                 if (info != null) {
-                    return ((info.getStatus() == Component.Status.REGISTERED) || (info.getStatus() == Component.Status.ACTIVE));
+                    return ((info.getStatus() == Component.Status.SATISFIED) || (info.getStatus() == Component.Status.ACTIVE));
                 } else {
                     LOG.debug("Could not get component info for component name {}", componentName);
                 }
