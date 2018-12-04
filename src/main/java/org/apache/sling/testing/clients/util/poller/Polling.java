@@ -115,6 +115,8 @@ public class Polling implements Callable<Boolean> {
                     waited = System.currentTimeMillis() - start;
                     return;
                 }
+            } catch (InterruptedException e) {
+                throw e; // Never inhibit InterruptedException
             } catch (Exception e) {
                 lastException = e;
             }
