@@ -31,8 +31,9 @@ public class ResourceUtil {
      * @param resourcePath path to the resource
      * @return resource as InputStream
      */
-    public static InputStream getResourceAsStream(String resourcePath) {
-        return Thread.currentThread().getContextClassLoader().getClass().getResourceAsStream(resourcePath);
+    public static InputStream getResourceAsStream(final String resourcePath) {
+        final String path = resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath;
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
     }
 
     /**
@@ -45,7 +46,7 @@ public class ResourceUtil {
      *         if the requested resource cannot be resolved for some reason
      * @throws IOException if the Resource Stream cannot be read
      */
-    public static String readResourceAsString(String resource) throws IOException {
+    public static String readResourceAsString(final String resource) throws IOException {
         InputStream resourceAsStream = ResourceUtil.getResourceAsStream(resource);
         if (resourceAsStream != null) {
             StringBuilder sb = new StringBuilder();
