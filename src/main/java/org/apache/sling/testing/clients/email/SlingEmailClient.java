@@ -40,7 +40,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 /**
  * Accesses email stored by a mock SMTP server deployed to Sling 
  *
- * <p>Requires that the <tt>org.apache.sling.testing.email</tt> bundle is deployed.</p>
+ * <p>Requires that the <code>org.apache.sling.testing.email</code> bundle is deployed.</p>
  */
 public final class SlingEmailClient extends SlingClient {
 
