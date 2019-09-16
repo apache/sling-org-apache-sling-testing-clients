@@ -174,12 +174,19 @@ public class IndexingClient extends SlingClient {
         super(url, user, password);
     }
 
+    /**
+     * Set provided {@code laneNames} to config map. This allows for subsequent initializations
+     * using {@code adaptTo} that shard the same config map to not require further configuration
+     * of lane names
+     * @param laneNames lane names to work on
+     */
     public void setLaneNames(String ... laneNames) {
         getValues().put(INDEX_LANES_CSV_CONFIG_NAME, StringUtils.join(laneNames));
     }
 
     /**
-     * Retrieves the list of indexing lanes configured on the instance
+     * Return the list of indexing lanes configured by {@link #setLaneNames}, if any.
+     * Else, retrieves configured lanes on the instance
      *
      * @return list of lane names
      * @throws ClientException if the request fails
