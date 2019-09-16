@@ -62,7 +62,7 @@ public class IndexingClient extends SlingClient {
     /** Configuration name in {@link SlingClientConfig} to be used to initialize pre-defined index lanes
      *  Configured value, if any, is supposed to be an array of lane names
      */
-    public static final String INDEX_LANES_CSV_CONFIG_NAME = "indexLanesCsv";
+    private static final String INDEX_LANES_CSV_CONFIG_NAME = "indexLanesCsv";
 
     /** Root of all the data created by this tool. Its presence marks that it was already installed */
     private static final String WAIT_FOR_ASYNC_INDEXING_ROOT = "/tmp/testing/waitForAsyncIndexing";
@@ -172,6 +172,10 @@ public class IndexingClient extends SlingClient {
      */
     public IndexingClient(URI url, String user, String password) throws ClientException {
         super(url, user, password);
+    }
+
+    public void setLaneNames(String ... laneNames) {
+        getValues().put(INDEX_LANES_CSV_CONFIG_NAME, StringUtils.join(laneNames));
     }
 
     /**

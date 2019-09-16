@@ -46,7 +46,7 @@ public class IndexingClientTest {
     private static final String EXPLAIN_RESPONSE = "{\"plan\": \"random plan with testIndexingLane-async and testIndexingLane-fulltext-async\",\"time\": 1}";
     private static final String QUERY_RESPONSE = "{\"total\": 1234,\"time\": 1}";
 
-    private static final String PRE_DEFINED_INDEXING_LANES_CSV = "async, fulltext-async";
+    private static final String [] PRE_DEFINED_INDEXING_LANES = new String[]{"async, fulltext-async"};
 
     private static final AtomicInteger NUM_INDEXING_LANE_CONSOLE_CALLS = new AtomicInteger();
 
@@ -209,9 +209,11 @@ public class IndexingClientTest {
 
     @Test
     public void testWaitForAsyncIndexing_ConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
-        client.getValues().put(IndexingClient.INDEX_LANES_CSV_CONFIG_NAME, PRE_DEFINED_INDEXING_LANES_CSV);
-
+        client.setLaneNames(PRE_DEFINED_INDEXING_LANES);
         client.waitForAsyncIndexing();
+
+        IndexingClient otherClient = client.adaptTo(IndexingClient.class);
+        otherClient.waitForAsyncIndexing();
 
         Assert.assertEquals("Must not get indexing lanes from /system/console",
                 0, NUM_INDEXING_LANE_CONSOLE_CALLS.get());
