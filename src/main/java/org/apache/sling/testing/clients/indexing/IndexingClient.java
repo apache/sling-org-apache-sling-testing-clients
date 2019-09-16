@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,11 @@ import static org.apache.http.HttpStatus.SC_OK;
  */
 public class IndexingClient extends SlingClient {
     private static final Logger LOG = LoggerFactory.getLogger(IndexingClient.class);
+
+    /** Configuration name in {@link SlingClientConfig} to be used to initialize pre-defined index lanes
+     *  Configured value, if any, is supposed to be an array of lane names
+     */
+    public static final String INDEX_LANES_CSV_CONFIG_NAME = "indexLanesCsv";
 
     /** Root of all the data created by this tool. Its presence marks that it was already installed */
     private static final String WAIT_FOR_ASYNC_INDEXING_ROOT = "/tmp/testing/waitForAsyncIndexing";
@@ -175,6 +181,11 @@ public class IndexingClient extends SlingClient {
      * @throws ClientException if the request fails
      */
     public List<String> getLaneNames() throws ClientException {
+        List<String> configuredLanes = getConfiguredLaneNames();
+        if (configuredLanes != null) {
+            return configuredLanes;
+        }
+
         try {
             Object asyncConfigs = adaptTo(OsgiConsoleClient.class)
                     .getConfiguration("org.apache.jackrabbit.oak.plugins.index.AsyncIndexerService")
@@ -194,6 +205,20 @@ public class IndexingClient extends SlingClient {
         } catch (Exception e) {
             throw new ClientException("Failed to retrieve lanes", e);
         }
+    }
+
+    private List<String> getConfiguredLaneNames() {
+        String configLanesCsv = getValue(INDEX_LANES_CSV_CONFIG_NAME);
+        if (configLanesCsv == null) {
+            return null;
+        }
+
+        String[] configLanesArr = configLanesCsv.split(",");
+        for (int i = 0; i < configLanesArr.length; i++) {
+            configLanesArr[i] = configLanesArr[i].trim();
+        }
+
+        return Collections.unmodifiableList(Arrays.asList(configLanesArr));
     }
 
     /**
