@@ -182,7 +182,7 @@ public class IndexingClient extends SlingClient {
      */
     public List<String> getLaneNames() throws ClientException {
         List<String> configuredLanes = getConfiguredLaneNames();
-        if (configuredLanes != null) {
+        if (!configuredLanes.isEmpty()) {
             return configuredLanes;
         }
 
@@ -210,7 +210,7 @@ public class IndexingClient extends SlingClient {
     private List<String> getConfiguredLaneNames() {
         String configLanesCsv = getValue(INDEX_LANES_CSV_CONFIG_NAME);
         if (configLanesCsv == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         String[] configLanesArr = configLanesCsv.split(",");
