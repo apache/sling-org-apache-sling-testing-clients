@@ -27,6 +27,7 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.query.servlet.QueryServlet;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,12 +38,17 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexingClientTest {
     private static final Logger LOG = LoggerFactory.getLogger(IndexingClientTest.class);
 
     private static final String EXPLAIN_RESPONSE = "{\"plan\": \"random plan with testIndexingLane-async and testIndexingLane-fulltext-async\",\"time\": 1}";
     private static final String QUERY_RESPONSE = "{\"total\": 1234,\"time\": 1}";
+
+    private static final String PRE_DEFINED_INDEXING_LANES_CSV = "async, fulltext-async";
+
+    private static final AtomicInteger NUM_INDEXING_LANE_CONSOLE_CALLS = new AtomicInteger();
 
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
@@ -124,6 +130,7 @@ public class IndexingClientTest {
                         @Override
                         public void handle(HttpRequest request, HttpResponse response, HttpContext context)
                                 throws HttpException, IOException {
+                            NUM_INDEXING_LANE_CONSOLE_CALLS.incrementAndGet();
                             response.setStatusCode(200);
                             response.setEntity(new StringEntity("{\"properties\":{" +
                                     "\"asyncConfigs\":{\"values\":[\"async:5\",\"fulltext-async:5\"]}}}"));
@@ -180,6 +187,7 @@ public class IndexingClientTest {
     private IndexingClient client;
 
     public IndexingClientTest() throws ClientException {
+        NUM_INDEXING_LANE_CONSOLE_CALLS.set(0);
         client = new IndexingClient(httpServer.getURI(), "admin", "admin");
         //client = new IndexingClient(java.net.URI.create("http://localhost:4502"), "admin", "admin");
     }
@@ -197,6 +205,16 @@ public class IndexingClientTest {
     @Test
     public void testWaitForAsyncIndexing() throws ClientException, TimeoutException, InterruptedException {
         client.waitForAsyncIndexing();
+    }
+
+    @Test
+    public void testWaitForAsyncIndexing_ConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
+        client.getValues().put(IndexingClient.INDEX_LANES_CSV_CONFIG_NAME, PRE_DEFINED_INDEXING_LANES_CSV);
+
+        client.waitForAsyncIndexing();
+
+        Assert.assertEquals("Must not get indexing lanes from /system/console",
+                0, NUM_INDEXING_LANE_CONSOLE_CALLS.get());
     }
 
     private static List<NameValuePair> extractParameters(HttpRequest request) {
