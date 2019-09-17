@@ -27,6 +27,7 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.query.servlet.QueryServlet;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class IndexingClientTest {
     private static final String EXPLAIN_RESPONSE = "{\"plan\": \"random plan with testIndexingLane-async and testIndexingLane-fulltext-async\",\"time\": 1}";
     private static final String QUERY_RESPONSE = "{\"total\": 1234,\"time\": 1}";
 
-    private static final String [] PRE_DEFINED_INDEXING_LANES = new String[]{"async, fulltext-async"};
+    private static final String [] PRE_DEFINED_INDEXING_LANES = new String[]{"async", "fulltext-async"};
 
     private static final AtomicInteger NUM_INDEXING_LANE_CONSOLE_CALLS = new AtomicInteger();
 
@@ -210,9 +211,19 @@ public class IndexingClientTest {
     @Test
     public void testWaitForAsyncIndexingConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
         client.setLaneNames(PRE_DEFINED_INDEXING_LANES);
+
+        List<String> retrievedLaneNames = client.getLaneNames();
+        Assert.assertEquals("Mismatched number of lanes", PRE_DEFINED_INDEXING_LANES.length, retrievedLaneNames.size());
+        Assert.assertThat(retrievedLaneNames, CoreMatchers.hasItems(PRE_DEFINED_INDEXING_LANES));
+
         client.waitForAsyncIndexing();
 
         IndexingClient otherClient = client.adaptTo(IndexingClient.class);
+
+        retrievedLaneNames = otherClient.getLaneNames();
+        Assert.assertEquals("Mismatched number of lanes", PRE_DEFINED_INDEXING_LANES.length, retrievedLaneNames.size());
+        Assert.assertThat(retrievedLaneNames, CoreMatchers.hasItems(PRE_DEFINED_INDEXING_LANES));
+
         otherClient.waitForAsyncIndexing();
 
         Assert.assertEquals("Must not get indexing lanes from /system/console",

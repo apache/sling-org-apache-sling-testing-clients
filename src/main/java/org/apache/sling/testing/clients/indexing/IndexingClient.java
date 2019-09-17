@@ -182,7 +182,7 @@ public class IndexingClient extends SlingClient {
      * @param laneNames lane names to work on
      */
     public void setLaneNames(String ... laneNames) {
-        getValues().put(INDEX_LANES_CSV_CONFIG_NAME, StringUtils.join(laneNames));
+        getValues().put(INDEX_LANES_CSV_CONFIG_NAME, StringUtils.join(laneNames, ','));
     }
 
     /**
