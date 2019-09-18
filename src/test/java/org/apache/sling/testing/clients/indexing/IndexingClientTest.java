@@ -208,7 +208,7 @@ public class IndexingClientTest {
     }
 
     @Test
-    public void testWaitForAsyncIndexing_ConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
+    public void testWaitForAsyncIndexingConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
         client.setLaneNames(PRE_DEFINED_INDEXING_LANES);
         client.waitForAsyncIndexing();
 
