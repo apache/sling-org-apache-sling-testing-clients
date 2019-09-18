@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.clients</artifactId>
-    <version>1.2.5-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Apache Sling Testing Clients</name>
