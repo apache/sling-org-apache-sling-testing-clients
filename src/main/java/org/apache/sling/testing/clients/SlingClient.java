@@ -672,7 +672,7 @@ public class SlingClient extends AbstractSlingClient {
             return httpClientBuilder.build();
         }
 
-        protected SlingClientConfig buildSlingClientConfig() {
+        protected SlingClientConfig buildSlingClientConfig() throws ClientException {
             return configBuilder.build();
         }
 

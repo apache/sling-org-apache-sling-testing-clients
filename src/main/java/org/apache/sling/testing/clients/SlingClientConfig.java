@@ -207,12 +207,20 @@ public class SlingClientConfig {
             return this;
         }
 
-        public SlingClientConfig build() {
+        public SlingClientConfig build() throws ClientException {
+            if (!this.url.isAbsolute()) {
+                throw new ClientException("Url must be absolute: " + url);
+            }
+
+            HttpHost targetHost = URIUtils.extractHost(this.url);
+            if (targetHost == null) {
+                throw new ClientException("Failed to extract hostname from url " + url);
+            }
+
             // Create default CredentialsProvider if not set
             if (credsProvider == null) {
                 credsProvider = new BasicCredentialsProvider();
                 if (StringUtils.isNotEmpty(this.user)) {
-                    HttpHost targetHost = URIUtils.extractHost(this.url);
                     credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
                             new UsernamePasswordCredentials(this.user, this.password));
                 }
@@ -222,7 +230,7 @@ public class SlingClientConfig {
             if (authCache == null) {
                 BasicScheme basicScheme = new BasicScheme();
                 authCache = new BasicAuthCache();
-                authCache.put(URIUtils.extractHost(url), basicScheme);
+                authCache.put(targetHost, basicScheme);
             }
 
             // if preemptive auth is disabled, force auth cache to be null
