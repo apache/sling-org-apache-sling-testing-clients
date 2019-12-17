@@ -106,6 +106,9 @@ public class AbstractSlingClientGetUrlTest {
                 // External URLs
                 {"http://HOST:4502/CTX/",    "http://www.google.com", "http://www.google.com"},
                 {"http://HOST:4502/CTX/",    "http://HOST:4502/CTX/my/page.html", "http://HOST:4502/CTX/my/page.html"},
+
+                // URL encoding of the path
+                {"http://HOST:4502/CTX/",    "!@*()'~ #$%^&{}[]|\\<>?\"`", "http://host:4502/CTX/!@*()'~%20%23$%25%5E&%7B%7D%5B%5D%7C%5C%3C%3E%3F%22%60"},
         });
     }
 
