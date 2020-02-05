@@ -28,11 +28,21 @@ public class Constants {
 
     // Custom delay for requests
     private static long delay;
+
+    // Custom number of retries for failing requests
+    private static int retries;
+
+    // Custom delay between retries in millisec
+    private static long retriesDelay;
     static {
         try {
             Constants.delay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.delay", 0);
+            Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retries", 0);
+            Constants.retriesDelay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.retriesDelay", 1000);
         } catch (NumberFormatException e) {
             Constants.delay = 0;
+            Constants.retries = 5;
+            Constants.retriesDelay = 1000;
         }
     }
 
@@ -41,6 +51,18 @@ public class Constants {
      * Used by {@link org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor}
      */
     public static final long HTTP_DELAY = delay;
+
+    /**
+     * Custom number of retries after an HTTP request failed due to 503 or any broken connection issues.
+     * Used by {@link org.apache.sling.testing.clients.AbstractSlingClient}
+     */
+    public static final int HTTP_RETRIES = retries;
+
+    /**
+     * Custom delay in milliseconds between each retries, default to 1000 milliseconds.
+     * Used by {@link org.apache.sling.testing.clients.AbstractSlingClient}
+     */
+    public static final long HTTP_RETRIES_DELAY = retriesDelay;
 
     /**
      * Handle to OSGI console
