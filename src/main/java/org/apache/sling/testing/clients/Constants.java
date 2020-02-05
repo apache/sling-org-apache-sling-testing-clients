@@ -37,7 +37,7 @@ public class Constants {
     static {
         try {
             Constants.delay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.delay", 0);
-            Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retries", 0);
+            Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retries", 5);
             Constants.retriesDelay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.retriesDelay", 1000);
         } catch (NumberFormatException e) {
             Constants.delay = 0;
