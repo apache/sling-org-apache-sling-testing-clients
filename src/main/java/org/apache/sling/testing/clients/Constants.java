@@ -16,6 +16,10 @@
  */
 package org.apache.sling.testing.clients;
 
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
+import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
+import org.apache.sling.testing.clients.util.LoggedServiceUnavailableRetryStrategy;
+
 public class Constants {
 
     /**
@@ -33,16 +37,21 @@ public class Constants {
     private static int retries;
 
     // Custom delay between retries in millisec
-    private static long retriesDelay;
+    private static int retriesDelay;
+
+    // Custom log retries
+    private static boolean logRetries;
     static {
         try {
             Constants.delay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.delay", 0);
             Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retries", 5);
-            Constants.retriesDelay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.retriesDelay", 1000);
+            Constants.retriesDelay = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retriesDelay", 1000);
+            Constants.logRetries = Boolean.getBoolean(Constants.CONFIG_PROP_PREFIX + "http.logRetries");
         } catch (NumberFormatException e) {
             Constants.delay = 0;
             Constants.retries = 5;
             Constants.retriesDelay = 1000;
+            Constants.logRetries = false;
         }
     }
 
@@ -53,16 +62,13 @@ public class Constants {
     public static final long HTTP_DELAY = delay;
 
     /**
-     * Custom number of retries after an HTTP request failed due to 503 or any broken connection issues.
-     * Used by {@link org.apache.sling.testing.clients.AbstractSlingClient}
+     * Custom ServiceUnavailableRetryStrategy.
+     * Used by {@link org.apache.sling.testing.clients.SlingClient}
+     * and {@link org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor}
      */
-    public static final int HTTP_RETRIES = retries;
-
-    /**
-     * Custom delay in milliseconds between each retries, default to 1000 milliseconds.
-     * Used by {@link org.apache.sling.testing.clients.AbstractSlingClient}
-     */
-    public static final long HTTP_RETRIES_DELAY = retriesDelay;
+    public static final ServiceUnavailableRetryStrategy HTTP_RETRY_STRATEGY = logRetries
+            ? new LoggedServiceUnavailableRetryStrategy(retries, retriesDelay)
+            : new DefaultServiceUnavailableRetryStrategy(retries, retriesDelay);
 
     /**
      * Handle to OSGI console

@@ -453,12 +453,6 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         return doStreamRequest(request, headers, expectedStatus);
     }
 
-    private boolean isServiceUnavailable(SlingHttpResponse response) {
-        StatusLine statusLine = response.getStatusLine();
-        return statusLine != null && statusLine.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE;
-    }
-
-
     /**
      * <p>Execute an HTTP request and consumes the entity in the response. The content is cached and can be retrieved using
      * {@code response.getContent()}.
@@ -473,33 +467,10 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @throws ClientException if the request could not be executed
      */
     public  SlingHttpResponse doRequest(HttpUriRequest request, List<Header> headers, int... expectedStatus) throws ClientException {
-        int maxRetries = Constants.HTTP_RETRIES;
-        boolean needRetry = false;
-        SlingHttpResponse response = null;
-        do {
-            try {
-                if (needRetry) {
-                    // add some pacing
-                    Thread.sleep(Constants.HTTP_RETRIES_DELAY);
-                }
-                response = doStreamRequest(request, headers, expectedStatus);
-                needRetry = maxRetries > 0 && isServiceUnavailable(response);
-                // Consume entity and cache the content so the connection is closed
-                response.getContent();
-            } catch (ClientException | RuntimeException ex ) {
-                needRetry = ex.getMessage().contains("Could not read content from response")
-                        || ex.getMessage().contains("Instead 503 was returned!");
+        SlingHttpResponse response = doStreamRequest(request, headers, expectedStatus);
 
-                if (needRetry) {
-                    log.warn("Retry needed due to " + ex.getMessage());
-                }
-                if (maxRetries == 0) {
-                    throw ex;
-                }
-            } catch (InterruptedException ex) {
-                throw new ClientException("Interrupted while pacing request", ex);
-            }
-       } while (needRetry && maxRetries-- > 0);
+        // Consume entity and cache the content so the connection is closed
+        response.getContent();
 
         return response;
     }

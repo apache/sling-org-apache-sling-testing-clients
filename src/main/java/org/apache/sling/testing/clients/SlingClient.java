@@ -626,7 +626,8 @@ public class SlingClient extends AbstractSlingClient {
         private final HttpClientBuilder httpClientBuilder;
 
         protected InternalBuilder(URI url, String user, String password) {
-            this.httpClientBuilder = HttpClientBuilder.create();
+            this.httpClientBuilder = HttpClientBuilder.create()
+                    .setServiceUnavailableRetryStrategy(Constants.HTTP_RETRY_STRATEGY);
             this.configBuilder = SlingClientConfig.Builder.create().setUrl(url).setUser(user).setPassword(password);
 
             setDefaults();

@@ -27,8 +27,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.SlingClient;
+import org.apache.sling.testing.clients.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +75,9 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
 
         HttpPost loginPost = new HttpPost(URI.create(request.getRequestLine().getUri()).resolve(loginPath));
         loginPost.setEntity(httpEntity);
-        final CloseableHttpClient client = HttpClientBuilder.create().disableRedirectHandling().build();
+        final CloseableHttpClient client = HttpClientBuilder.create()
+                .setServiceUnavailableRetryStrategy(Constants.HTTP_RETRY_STRATEGY)
+                .disableRedirectHandling().build();
 
         client.execute(host, loginPost, context);
 
