@@ -39,12 +39,13 @@ public class LoggedServiceUnavailableRetryStrategy extends DefaultServiceUnavail
     @Override
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
         boolean needRetry = super.retryRequest(response, executionCount, context);
-        if (needRetry) {
+        if (needRetry && LOGGER.isWarnEnabled()) {
             LOGGER.warn("Request retry needed due to service unavailable response");
             LOGGER.warn("Response headers contained:");
             Arrays.stream(response.getAllHeaders()).forEach(h -> LOGGER.warn("Header {}:{}", h.getName(), h.getValue()));
             try {
-                LOGGER.warn("Response content: {}", EntityUtils.toString(response.getEntity()));
+                String content = EntityUtils.toString(response.getEntity());
+                LOGGER.warn("Response content: {}", content);
             } catch (IOException exc) {
                 LOGGER.warn("Response as no content");
             }
