@@ -26,10 +26,12 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
 import org.apache.sling.testing.clients.util.FormEntityBuilder;
@@ -42,6 +44,7 @@ import org.codehaus.jackson.JsonNode;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -58,6 +61,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 public class SlingClient extends AbstractSlingClient {
 
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
+    private static String SUDO_COOKIE = "sling.sudo";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
@@ -572,6 +576,39 @@ public class SlingClient extends AbstractSlingClient {
         }
 
         return uuidNode.getValueAsText();
+    }
+
+    /**
+     * Impersonate user with the given <code>userId</code>
+     * <p>
+     * By impersonating a user SlingClient can access content from that user eye view.
+     * </p>
+     *Passing a <code>null</code> will clear impersonation.
+     *
+     * @param userId   the user to impersonate. A <code>null</code> value clears impersonation
+     */
+    public SlingClient impersonate(String userId)  {
+        BasicClientCookie c = new BasicClientCookie(SUDO_COOKIE, "\"" + userId + "\"");
+        c.setPath("/");
+        c.setDomain(getUrl().getHost());
+        if(userId == null || "-".equals(userId)){
+            // setting expiry date in the past will remove the cookie
+            c.setExpiryDate(new Date(0));
+        }
+        getCookieStore().addCookie(c);
+        return this;
+    }
+
+    @Override
+    public String getUser() {
+        String userId = super.getUser(); // default is from client config
+        for(Cookie cookie : getCookieStore().getCookies()){
+            if(cookie.getName().equals(SUDO_COOKIE)){
+                String value = cookie.getValue();
+                userId = value.replace("\"", "");
+            }
+        }
+        return userId;
     }
 
     //
