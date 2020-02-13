@@ -25,16 +25,16 @@ import org.apache.http.annotation.Immutable;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
-import org.apache.sling.testing.clients.util.FormEntityBuilder;
-import org.apache.sling.testing.clients.util.HttpUtils;
-import org.apache.sling.testing.clients.util.JsonUtils;
+import org.apache.sling.testing.clients.util.*;
 import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.codehaus.jackson.JsonNode;
@@ -626,8 +626,7 @@ public class SlingClient extends AbstractSlingClient {
         private final HttpClientBuilder httpClientBuilder;
 
         protected InternalBuilder(URI url, String user, String password) {
-            this.httpClientBuilder = HttpClientBuilder.create()
-                    .setServiceUnavailableRetryStrategy(Constants.HTTP_RETRY_STRATEGY);
+            this.httpClientBuilder = HttpClientBuilder.create();
             this.configBuilder = SlingClientConfig.Builder.create().setUrl(url).setUser(user).setPassword(password);
 
             setDefaults();
@@ -691,6 +690,10 @@ public class SlingClient extends AbstractSlingClient {
             // Interceptors
             httpClientBuilder.addInterceptorLast(new TestDescriptionInterceptor());
             httpClientBuilder.addInterceptorLast(new DelayRequestInterceptor(Constants.HTTP_DELAY));
+
+            // HTTP request strategy
+            httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy(
+                    Constants.HTTP_RETRIES, Constants.HTTP_RETRIES_DELAY, Constants.HTTP_LOG_RETRIES));
 
             return this;
         }

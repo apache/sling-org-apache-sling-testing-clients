@@ -16,10 +16,6 @@
  */
 package org.apache.sling.testing.clients;
 
-import org.apache.http.client.ServiceUnavailableRetryStrategy;
-import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
-import org.apache.sling.testing.clients.util.LoggedServiceUnavailableRetryStrategy;
-
 public class Constants {
 
     /**
@@ -62,13 +58,21 @@ public class Constants {
     public static final long HTTP_DELAY = delay;
 
     /**
-     * Custom ServiceUnavailableRetryStrategy.
-     * Used by {@link org.apache.sling.testing.clients.SlingClient}
-     * and {@link org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor}
+     * Number of http call retries in case of a 5XX response code
      */
-    public static final ServiceUnavailableRetryStrategy HTTP_RETRY_STRATEGY = logRetries
-            ? new LoggedServiceUnavailableRetryStrategy(retries, retriesDelay)
-            : new DefaultServiceUnavailableRetryStrategy(retries, retriesDelay);
+    public static final int HTTP_RETRIES = retries;
+
+    /**
+     * The delay in milliseconds between http retries
+     */
+    public static final int HTTP_RETRIES_DELAY = retriesDelay;
+
+    /**
+     * Whether to log or not http request retries
+     */
+    public static final boolean HTTP_LOG_RETRIES = logRetries;
+
+
 
     /**
      * Handle to OSGI console
