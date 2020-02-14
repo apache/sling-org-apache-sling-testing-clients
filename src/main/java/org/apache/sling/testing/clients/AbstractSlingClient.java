@@ -154,7 +154,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         // add server url and path
         URIBuilder uriBuilder = new URIBuilder(getUrl(path));
         // add parameters
-        if(parameters != null) {
+        if (parameters != null) {
             uriBuilder.addParameters(parameters);
         }
 
