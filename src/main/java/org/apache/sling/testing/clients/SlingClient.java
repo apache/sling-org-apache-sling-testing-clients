@@ -61,7 +61,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 public class SlingClient extends AbstractSlingClient {
 
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
-    private static String SUDO_COOKIE = "sling.sudo";
+    public static final String SUDO_COOKIE = "sling.sudo";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
