@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -133,8 +132,9 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      */
     public URI getUrl(String path) {
         try {
-            URI pathUri = slash.relativize(new URI(path));
-            return getUrl().resolve(pathUri);
+            URI pathUri = new URI(null, null, path, null);
+            URI relative = slash.relativize(pathUri);
+            return getUrl().resolve(relative);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
@@ -154,7 +154,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         // add server url and path
         URIBuilder uriBuilder = new URIBuilder(getUrl(path));
         // add parameters
-        if(parameters != null) {
+        if (parameters != null) {
             uriBuilder.addParameters(parameters);
         }
 

@@ -18,11 +18,9 @@ package org.apache.sling.testing.clients.util.poller;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -106,12 +104,9 @@ public class PollingTest {
     public void testCallableOnce() throws Exception {
         final MutableInt callCount = new MutableInt(0);
         final MutableBoolean called = new MutableBoolean(false);
-        Polling p = new Polling(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                callCount.increment();
-                return true;
-            }
+        Polling p = new Polling(() -> {
+            callCount.increment();
+            return true;
         });
         p.poll(500, 10);
 
@@ -122,14 +117,11 @@ public class PollingTest {
     public void testCallableTwice() throws Exception {
         final MutableInt callCount = new MutableInt(0);
         final MutableBoolean called = new MutableBoolean(false);
-        Polling p = new Polling(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                callCount.increment();
-                boolean b = called.booleanValue();
-                called.setTrue();
-                return b;
-            }
+        Polling p = new Polling(() -> {
+            callCount.increment();
+            boolean b = called.booleanValue();
+            called.setTrue();
+            return b;
         });
         p.poll(500, 10);
 
@@ -139,12 +131,9 @@ public class PollingTest {
     @Test
     public void testCallableTimeout() throws Exception {
         final MutableInt callCount = new MutableInt(0);
-        Polling p = new Polling(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                callCount.increment();
-                return false;
-            }
+        Polling p = new Polling(() -> {
+            callCount.increment();
+            return false;
         });
 
         try {
@@ -161,12 +150,7 @@ public class PollingTest {
 
     @Test
     public void testCallPriority() throws Exception {
-        Polling p = new Polling(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return false;
-            }
-        }) {
+        Polling p = new Polling(() -> false) {
             @Override
             public Boolean call() throws Exception {
                 return true;
@@ -176,4 +160,19 @@ public class PollingTest {
         // Should not reach timeout since overridden call() has priority over Callable param
         p.poll(100, 10);
     }
+
+    @Test
+    public void testCallThrowException() throws Exception {
+        Polling p = new Polling(() -> {
+          throw new RuntimeException("%Failure");
+        });
+        try {
+            p.poll(100, 10);
+        } catch (TimeoutException e) {
+            Assert.assertTrue("Timeout message should contain original message", e.getMessage().contains("%Failure"));
+        }
+
+    }
+
+
 }

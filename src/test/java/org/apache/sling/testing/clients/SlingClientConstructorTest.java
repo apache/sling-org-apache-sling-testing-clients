@@ -35,13 +35,30 @@ public class SlingClientConstructorTest {
 
     @Test
     public void testConstructorUrlHttp() throws Exception {
-        URI url = URI.create("http://example.com/");
+        URI url = URI.create("http://example.com");
+        URI expected = URI.create("http://example.com/");
         SlingClient c = new SlingClient(url, "user", "pass");
-        assertEquals(url, c.getUrl());
+        assertEquals(expected, c.getUrl());
+    }
+
+    @Test
+    public void testConstructorUrlHttpTrailingSlash() throws Exception {
+        URI url = URI.create("http://example.com/");
+        URI expected = URI.create("http://example.com/");
+        SlingClient c = new SlingClient(url, "user", "pass");
+        assertEquals(expected, c.getUrl());
     }
 
     @Test
     public void testConstructorUrlHttps() throws Exception {
+        URI url = URI.create("https://example.com");
+        URI expected = URI.create("https://example.com/");
+        SlingClient c = new SlingClient(url, "user", "pass");
+        assertEquals(expected, c.getUrl());
+    }
+
+    @Test
+    public void testConstructorUrlHttpsTrailingSlash() throws Exception {
         URI url = URI.create("https://example.com/");
         SlingClient c = new SlingClient(url, "user", "pass");
         assertEquals(url, c.getUrl());
@@ -49,6 +66,14 @@ public class SlingClientConstructorTest {
 
     @Test
     public void testConstructorUrlBasePath() throws Exception {
+        URI url = URI.create("https://example.com/mypath");
+        URI expected = URI.create("https://example.com/mypath/");
+        SlingClient c = new SlingClient(url, "user", "pass");
+        assertEquals(expected, c.getUrl());
+    }
+
+    @Test
+    public void testConstructorUrlBasePathTrailingSlash() throws Exception {
         URI url = URI.create("https://example.com/mypath/");
         SlingClient c = new SlingClient(url, "user", "pass");
         assertEquals(url, c.getUrl());

@@ -113,6 +113,7 @@ public class AbstractSlingClientGetPathTest {
                 {"http://HOST:4502/CTX/",    "http://HOST:4502/CTX/my",           "/my"},
                 {"http://HOST:4502/CTX/",    "http://HOST:4502/CTX/",             "/"},
                 {"http://HOST:4502/CTX/",    "http://HOST:4502/CTX",              "/"},
+
                 {"http://HOST:4502/CTX/",    "/CTX",                              "/"},
                 {"http://HOST:4502/CTX/",    "/CTX/",                             "/"},
                 {"http://HOST:4502/CTX/",    "/CTX/page.html",                    "/page.html"},
@@ -129,6 +130,19 @@ public class AbstractSlingClientGetPathTest {
                 {"http://HOST:4502/CTX/",    "my/",                               "/my/"},
                 {"http://HOST:4502/CTX/",    "my",                                "/my"},
                 {"http://HOST:4502/CTX/",    "",                                  "/"},
+
+                {"http://HOST:4502/CTX/",    "/CTX/?param=value",                   "/?param=value"},
+                {"http://HOST:4502/CTX/",    "/CTX/page.html?param=value",          "/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "/page.html?param=value",              "/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "/my/page.html?param=value",           "/my/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "/my/?param=value",                    "/my/?param=value"},
+                {"http://HOST:4502/CTX/",    "/my?param=value",                     "/my?param=value"},
+                {"http://HOST:4502/CTX/",    "CTX/?param=value",                    "/?param=value"},
+                {"http://HOST:4502/CTX/",    "CTX/page.html?param=value",           "/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "page.html?param=value",               "/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "my/page.html?param=value",            "/my/page.html?param=value"},
+                {"http://HOST:4502/CTX/",    "my/?param=value",                     "/my/?param=value"},
+                {"http://HOST:4502/CTX/",    "my?param=value",                      "/my?param=value"},
 
                 {"http://HOST:4502/CTX/",    "http://www.google.com",             "http://www.google.com"},
         });

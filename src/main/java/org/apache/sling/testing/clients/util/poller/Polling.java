@@ -124,7 +124,8 @@ public class Polling implements Callable<Boolean> {
         } while (System.currentTimeMillis() < start + effectiveTimeout);
 
         waited = System.currentTimeMillis() - start;
-        throw new TimeoutException(String.format(message(), effectiveTimeout, delay));
+        throw new TimeoutException(String.format(message(), effectiveTimeout, delay) +
+                " Last exception was: " + lastException);
     }
 
     public long getWaited() {
@@ -139,6 +140,14 @@ public class Polling implements Callable<Boolean> {
      * @return the format string
      */
     protected String message() {
-        return "Call failed to return true in %1$d ms. Last exception was: " + lastException;
+        return "Call failed to return true in %1$d ms.";
+    }
+
+    /**
+     * Return the last exception while polling or {null}
+     * @return
+     */
+    public Exception getLastException() {
+        return lastException;
     }
 }
