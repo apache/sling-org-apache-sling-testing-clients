@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class ResourceUtil {
 
     /**
@@ -52,9 +54,12 @@ public class ResourceUtil {
             StringBuilder sb = new StringBuilder();
             String line;
             try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(resourceAsStream, "UTF-8"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(resourceAsStream, UTF_8.name()));
                 while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
+                    if (sb.length() > 0) {
+                        sb.append("\n");
+                    }
+                    sb.append(line);
                 }
             } finally {
                 resourceAsStream.close();
