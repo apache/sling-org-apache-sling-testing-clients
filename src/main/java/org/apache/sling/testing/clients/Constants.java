@@ -46,32 +46,32 @@ public class Constants {
     private static String retryCodes = "";
 
     /**
-     * System property for {@see HTTP_DELAY}
-     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     * System property for {@link Constants#HTTP_DELAY}
+     * Prefixed by {@link Constants#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_DELAY_PROP = "http.delay";
 
     /**
-     * System property for {@see HTTP_RETRIES}
-     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     * System property for {@link Constants#HTTP_RETRIES}
+     * Prefixed by {@link Constants#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_RETRIES_PROP = "http.retries";
 
     /**
-     * System property for {@see HTTP_RETRIES_DELAY}
-     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     * System property for {@link Constants#HTTP_RETRIES_DELAY}
+     * Prefixed by {@link Constants#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_RETRIES_DELAY_PROP = "http.retriesDelay";
 
     /**
-     * System property for {@see HTTP_LOG_RETRIES}
-     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     * System property for {@link Constants#HTTP_LOG_RETRIES}
+     * Prefixed by {@link Constants#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_LOG_RETRIES_PROP = "http.logRetries";
 
     /**
-     * System property for {@see HTTP_RETRIES_ERROR_CODES}
-     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     * System property for {@link Constants#HTTP_RETRIES_ERROR_CODES}
+     * Prefixed by {@link Constants#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_RETRIES_ERROR_CODES_PROP = "http.retriesErrorCodes";
 
