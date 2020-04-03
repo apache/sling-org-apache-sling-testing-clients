@@ -16,6 +16,10 @@
  */
 package org.apache.sling.testing.clients;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Constants {
 
     /**
@@ -37,12 +41,47 @@ public class Constants {
 
     // Custom log retries
     private static boolean logRetries;
+
+    // CSV list of error codes to retry requests for
+    private static String retryCodes = "";
+
+    /**
+     * System property for {@see HTTP_DELAY}
+     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     */
+    public static final String HTTP_DELAY_PROP = "http.delay";
+
+    /**
+     * System property for {@see HTTP_RETRIES}
+     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     */
+    public static final String HTTP_RETRIES_PROP = "http.retries";
+
+    /**
+     * System property for {@see HTTP_RETRIES_DELAY}
+     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     */
+    public static final String HTTP_RETRIES_DELAY_PROP = "http.retriesDelay";
+
+    /**
+     * System property for {@see HTTP_LOG_RETRIES}
+     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     */
+    public static final String HTTP_LOG_RETRIES_PROP = "http.logRetries";
+
+    /**
+     * System property for {@see HTTP_RETRIES_ERROR_CODES}
+     * Prefixed by {@see CONFIG_PROP_PREFIX}
+     */
+    public static final String HTTP_RETRIES_ERROR_CODES_PROP = "http.retriesErrorCodes";
+
     static {
         try {
-            Constants.delay = Long.getLong(Constants.CONFIG_PROP_PREFIX + "http.delay", 0);
-            Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retries", 5);
-            Constants.retriesDelay = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + "http.retriesDelay", 1000);
-            Constants.logRetries = Boolean.getBoolean(Constants.CONFIG_PROP_PREFIX + "http.logRetries");
+            Constants.delay = Long.getLong(Constants.CONFIG_PROP_PREFIX + HTTP_DELAY_PROP, 0);
+            Constants.retries = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + HTTP_RETRIES_PROP, 10);
+            Constants.retriesDelay = Integer.getInteger(Constants.CONFIG_PROP_PREFIX + HTTP_RETRIES_DELAY_PROP, 1000);
+            Constants.logRetries = Boolean.getBoolean(Constants.CONFIG_PROP_PREFIX + HTTP_LOG_RETRIES_PROP);
+            Constants.retryCodes = System.getProperty(Constants.CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "");
         } catch (NumberFormatException e) {
             Constants.delay = 0;
             Constants.retries = 5;
@@ -71,6 +110,12 @@ public class Constants {
      * Whether to log or not http request retries
      */
     public static final boolean HTTP_LOG_RETRIES = logRetries;
+
+    /**
+     * Comma-separated list of http response codes for which to retry the request
+     * If empty, all 5XX error codes will be retried
+     */
+    public static final String HTTP_RETRIES_ERROR_CODES = retryCodes;
 
 
 

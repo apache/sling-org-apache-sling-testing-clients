@@ -693,7 +693,11 @@ public class SlingClient extends AbstractSlingClient {
 
             // HTTP request strategy
             httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy(
-                    Constants.HTTP_RETRIES, Constants.HTTP_RETRIES_DELAY, Constants.HTTP_LOG_RETRIES));
+                    Constants.HTTP_RETRIES,
+                    Constants.HTTP_RETRIES_DELAY,
+                    Constants.HTTP_LOG_RETRIES,
+                    Constants.HTTP_RETRIES_ERROR_CODES)
+            );
 
             return this;
         }

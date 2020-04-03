@@ -28,18 +28,20 @@ public class SlingClientRetryStrategyTest {
     private static final String GET_UNAVAILABLE_PATH = "/test/unavailable/resource";
     private static final String GET_INEXISTENT_PATH = "/test/inexistent/resource";
     private static final String GET_INTERNAL_ERROR_PATH = "/test/internalerror/resource";
+    private static final String GET_505_PATH = "/test/unsupportedversion/resource";
     private static final String NOK_RESPONSE = "TEST_NOK";
     private static final String OK_RESPONSE = "TEST_OK";
 
-    private static final int MAX_RETRIES = 5;
+    private static final int MAX_RETRIES = 4;
 
     private static int requestCount = 0;
     private static int availableAtRequestCount = Integer.MAX_VALUE;
 
     static {
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_LOG_RETRIES, "true");
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_DELAY, "50");
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_RETRIES, "5");
+        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_LOG_RETRIES_PROP, "true");
+        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_DELAY_PROP, "50");
+        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_RETRIES_PROP, "4");
+        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
     }
 
     @ClassRule
@@ -73,6 +75,17 @@ public class SlingClientRetryStrategyTest {
                 response.setEntity(new StringEntity(NOK_RESPONSE));
                 response.setStatusCode(404);
             });
+
+            serverBootstrap.registerHandler(GET_505_PATH, (request, response, context) -> {
+                requestCount++;
+                if (requestCount == availableAtRequestCount) {
+                    response.setEntity(new StringEntity(OK_RESPONSE));
+                    response.setStatusCode(200);
+                } else {
+                    response.setEntity(new StringEntity(NOK_RESPONSE));
+                    response.setStatusCode(505);
+                }
+            });
         }
     };
 
@@ -93,6 +106,16 @@ public class SlingClientRetryStrategyTest {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         SlingHttpResponse slingHttpResponse = c.doGet(GET_INTERNAL_ERROR_PATH, 500);
         assertEquals(MAX_RETRIES + 1, requestCount);
+        assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
+    }
+
+    @Test
+    public void test505ShouldNotRetry() throws Exception {
+        requestCount = 0;
+        availableAtRequestCount = Integer.MAX_VALUE; // never 200
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+        SlingHttpResponse slingHttpResponse = c.doGet(GET_505_PATH, 505);
+        assertEquals(1, requestCount);
         assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
     }
 

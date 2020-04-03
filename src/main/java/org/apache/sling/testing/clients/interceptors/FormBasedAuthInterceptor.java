@@ -16,9 +16,15 @@
  */
 package org.apache.sling.testing.clients.interceptors;
 
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -27,15 +33,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
-import org.apache.sling.testing.clients.Constants;
 import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.apache.sling.testing.clients.Constants.*;
 
 public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
     static final Logger LOG = LoggerFactory.getLogger(FormBasedAuthInterceptor.class);
@@ -56,7 +65,8 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
 
         Cookie loginCookie = getLoginCookie(context, loginTokenName);
         if (loginCookie != null) {
-            LOG.debug("Request has cookie {}={} so I'm not intercepting the request", loginCookie.getName(), loginCookie.getValue());
+            LOG.debug("Request has cookie {}={} so I'm not intercepting the request",
+                    loginCookie.getName(), loginCookie.getValue());
             return;
         }
 
@@ -76,10 +86,13 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
 
         HttpPost loginPost = new HttpPost(URI.create(request.getRequestLine().getUri()).resolve(loginPath));
         loginPost.setEntity(httpEntity);
-        final CloseableHttpClient client = HttpClientBuilder.create().setServiceUnavailableRetryStrategy(
-                new ServerErrorRetryStrategy(
-                        Constants.HTTP_RETRIES, Constants.HTTP_RETRIES_DELAY, Constants.HTTP_LOG_RETRIES))
-                .disableRedirectHandling().build();
+
+        ServiceUnavailableRetryStrategy retryStrategy = new ServerErrorRetryStrategy(
+                HTTP_RETRIES, HTTP_RETRIES_DELAY, HTTP_LOG_RETRIES, HTTP_RETRIES_ERROR_CODES);
+        final CloseableHttpClient client = HttpClientBuilder.create()
+                .setServiceUnavailableRetryStrategy(retryStrategy)
+                .disableRedirectHandling()
+                .build();
 
         client.execute(host, loginPost, context);
 

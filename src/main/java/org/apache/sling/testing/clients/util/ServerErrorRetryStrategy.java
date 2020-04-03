@@ -27,6 +27,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static org.apache.http.HttpStatus.*;
+import static org.apache.sling.testing.clients.Constants.HTTP_RETRIES_ERROR_CODES;
 
 /**
  * {code ServiceUnavailableRetryStrategy} strategy for retrying request in case of a 5XX response code
@@ -38,14 +45,31 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     private final int maxRetries;
     private final int retryInterval;
     private final boolean logRetries;
+    private Collection<Integer> retryErrorCodes;
 
-    public ServerErrorRetryStrategy(final int maxRetries, final int retryInterval, final boolean logRetries) {
+    public ServerErrorRetryStrategy(final int maxRetries, final int retryInterval, final boolean logRetries,
+                                    String retryErrorCodes) {
         super();
         Args.positive(maxRetries, "Max retries");
         Args.positive(retryInterval, "Retry interval");
         this.maxRetries = maxRetries;
         this.retryInterval = retryInterval;
         this.logRetries = logRetries;
+        if (retryErrorCodes == null) {
+            retryErrorCodes = "";
+        }
+        this.retryErrorCodes = Arrays.asList(retryErrorCodes.split(","))
+                .stream().map(s -> {
+                    try {
+                        return Integer.valueOf(s);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                }).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public ServerErrorRetryStrategy(final int maxRetries, final int retryInterval, final boolean logRetries) {
+       this(maxRetries, retryInterval, logRetries, "");
     }
 
     public ServerErrorRetryStrategy(int maxRetries, int retryInterval) {
@@ -58,9 +82,7 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
 
     @Override
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
-        boolean needsRetry = executionCount <= this.maxRetries &&
-                response.getStatusLine().getStatusCode() >= HttpStatus.SC_INTERNAL_SERVER_ERROR &&
-                response.getStatusLine().getStatusCode() < HttpStatus.SC_INTERNAL_SERVER_ERROR + 100;
+        boolean needsRetry = executionCount <= this.maxRetries && responseRetryCondition(response);
 
         if (this.logRetries && needsRetry && LOG.isWarnEnabled()) {
             LOG.warn("Request retry needed due to service unavailable response");
@@ -81,4 +103,13 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         return retryInterval;
     }
 
+    private boolean responseRetryCondition(final HttpResponse response) {
+        final Integer statusCode = response.getStatusLine().getStatusCode();
+        if (retryErrorCodes != null && !retryErrorCodes.isEmpty()) {
+            return retryErrorCodes.contains(statusCode);
+        } else {
+            return statusCode >= SC_INTERNAL_SERVER_ERROR &&
+                    statusCode < SC_INTERNAL_SERVER_ERROR + 100;
+        }
+    }
 }
