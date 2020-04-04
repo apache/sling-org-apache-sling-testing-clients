@@ -19,7 +19,7 @@
 /**
  * Query tools leveraging javax.jcr.query
  */
-@Version("0.1.0")
+@Version("0.2.0")
 package org.apache.sling.testing.clients.query;
 
 import org.osgi.annotation.versioning.Version;
