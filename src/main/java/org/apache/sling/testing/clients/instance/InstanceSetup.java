@@ -16,7 +16,7 @@
  */
 package org.apache.sling.testing.clients.instance;
 
-import org.apache.sling.testing.clients.Constants;
+import org.apache.sling.testing.clients.SystemPropertiesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +33,11 @@ public final class InstanceSetup {
     private static InstanceSetup SINGLETON;
 
     // TODO: JAVADOC
-    public static final String INSTANCE_CONFIG_INSTANCES = Constants.CONFIG_PROP_PREFIX + "instances";
-    public static final String INSTANCE_CONFIG_URL = Constants.CONFIG_PROP_PREFIX + "instance.url.";
-    public static final String INSTANCE_CONFIG_RUNMODE = Constants.CONFIG_PROP_PREFIX + "instance.runmode.";
-    public static final String INSTANCE_CONFIG_ADMINUSER = Constants.CONFIG_PROP_PREFIX + "instance.adminUser.";
-    public static final String INSTANCE_CONFIG_ADMINPASSWORD = Constants.CONFIG_PROP_PREFIX + "instance.adminPassword.";
+    public static final String INSTANCE_CONFIG_INSTANCES = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instances";
+    public static final String INSTANCE_CONFIG_URL = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.url.";
+    public static final String INSTANCE_CONFIG_RUNMODE = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.runmode.";
+    public static final String INSTANCE_CONFIG_ADMINUSER = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminUser.";
+    public static final String INSTANCE_CONFIG_ADMINPASSWORD = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminPassword.";
 
     /**
      * @return  the current setup object.

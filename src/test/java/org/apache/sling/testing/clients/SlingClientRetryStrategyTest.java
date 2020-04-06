@@ -22,6 +22,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.apache.sling.testing.clients.SystemPropertiesConfig.CONFIG_PROP_PREFIX;
+import static org.apache.sling.testing.clients.SystemPropertiesConfig.HTTP_RETRIES_ERROR_CODES_PROP;
 import static org.junit.Assert.assertEquals;
 
 public class SlingClientRetryStrategyTest {
@@ -38,10 +40,10 @@ public class SlingClientRetryStrategyTest {
     private static int availableAtRequestCount = Integer.MAX_VALUE;
 
     static {
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_LOG_RETRIES_PROP, "true");
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_DELAY_PROP, "50");
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_RETRIES_PROP, "4");
-        System.setProperty(Constants.CONFIG_PROP_PREFIX + Constants.HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_LOG_RETRIES_PROP, "true");
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_DELAY_PROP, "50");
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_RETRIES_PROP, "4");
+        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
     }
 
     @ClassRule
@@ -111,12 +113,24 @@ public class SlingClientRetryStrategyTest {
 
     @Test
     public void test505ShouldNotRetry() throws Exception {
+        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
         requestCount = 0;
         availableAtRequestCount = Integer.MAX_VALUE; // never 200
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         SlingHttpResponse slingHttpResponse = c.doGet(GET_505_PATH, 505);
         assertEquals(1, requestCount);
         assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
+    }
+
+    @Test
+    public void test505ShouldRetry() throws Exception {
+        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,503,505");
+        requestCount = 0;
+        availableAtRequestCount = 3;
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+        SlingHttpResponse slingHttpResponse = c.doGet(GET_505_PATH, 200);
+        assertEquals(availableAtRequestCount, requestCount);
+        assertEquals(OK_RESPONSE, slingHttpResponse.getContent());
     }
 
     @Test

@@ -24,7 +24,6 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -39,12 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.apache.sling.testing.clients.Constants.*;
 
 public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
     static final Logger LOG = LoggerFactory.getLogger(FormBasedAuthInterceptor.class);
@@ -87,10 +82,8 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
         HttpPost loginPost = new HttpPost(URI.create(request.getRequestLine().getUri()).resolve(loginPath));
         loginPost.setEntity(httpEntity);
 
-        ServiceUnavailableRetryStrategy retryStrategy = new ServerErrorRetryStrategy(
-                HTTP_RETRIES, HTTP_RETRIES_DELAY, HTTP_LOG_RETRIES, HTTP_RETRIES_ERROR_CODES);
         final CloseableHttpClient client = HttpClientBuilder.create()
-                .setServiceUnavailableRetryStrategy(retryStrategy)
+                .setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy())
                 .disableRedirectHandling()
                 .build();
 

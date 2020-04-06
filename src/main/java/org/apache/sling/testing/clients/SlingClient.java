@@ -25,12 +25,10 @@ import org.apache.http.annotation.Immutable;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
@@ -689,15 +687,10 @@ public class SlingClient extends AbstractSlingClient {
             httpClientBuilder.setMaxConnTotal(100);
             // Interceptors
             httpClientBuilder.addInterceptorLast(new TestDescriptionInterceptor());
-            httpClientBuilder.addInterceptorLast(new DelayRequestInterceptor(Constants.HTTP_DELAY));
+            httpClientBuilder.addInterceptorLast(new DelayRequestInterceptor(SystemPropertiesConfig.getHttpDelay()));
 
             // HTTP request strategy
-            httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy(
-                    Constants.HTTP_RETRIES,
-                    Constants.HTTP_RETRIES_DELAY,
-                    Constants.HTTP_LOG_RETRIES,
-                    Constants.HTTP_RETRIES_ERROR_CODES)
-            );
+            httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy());
 
             return this;
         }

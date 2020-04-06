@@ -19,12 +19,12 @@
 package org.apache.sling.testing.clients.interceptors;
 
 import org.apache.http.cookie.Cookie;
-import org.apache.sling.testing.clients.Constants;
+import org.apache.sling.testing.clients.SystemPropertiesConfig;
 
 public class StickyCookieHolder {
 
     private static final ThreadLocal<Cookie> testStickySessionCookie = new ThreadLocal<Cookie>();
-    public static final String COOKIE_NAME = System.getProperty(Constants.CONFIG_PROP_PREFIX + "session.cookie.name", "test_session_id");
+    public static final String COOKIE_NAME = System.getProperty(SystemPropertiesConfig.CONFIG_PROP_PREFIX + "session.cookie.name", "test_session_id");
 
     public static Cookie getTestStickySessionCookie() {
         return testStickySessionCookie.get();

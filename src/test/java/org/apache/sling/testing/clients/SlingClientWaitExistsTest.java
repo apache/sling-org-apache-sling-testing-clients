@@ -73,7 +73,7 @@ public class SlingClientWaitExistsTest {
         waitCount = 40;  // to be sure we reach timeout
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         try {
-            c.waitExists(GET_WAIT_PATH, 200, 10);
+            c.waitExists(GET_WAIT_PATH, 1000, 10);
         } catch (TimeoutException e ) {
             assertTrue("call was executed only " + callCount + " times", callCount > 3);
             return;
