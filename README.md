@@ -13,7 +13,7 @@ This library comes with a bunch of other specialized clients (built on top of `S
 
 ## <a name="architecture"></a> Architecture
 
-`SlingClient`  implements the `HttpClient` interface, but [deletegates](https://en.wikipedia.org/wiki/Delegation_pattern)
+`SlingClient`  implements the `HttpClient` interface, but [delegates](https://en.wikipedia.org/wiki/Delegation_pattern)
 this functionality to a `private final CloseableHttpClient http` field.
 The config is stored in a `private final SlingClientConfig config` field which is immutable and may be shared across multiple clients
 (more about it in the [How to configure a SlingClient](#config) section).
