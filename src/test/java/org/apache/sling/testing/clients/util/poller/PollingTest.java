@@ -21,9 +21,8 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.Assert;
 import org.junit.Test;
 import java.util.concurrent.TimeoutException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import static org.junit.Assert.*;
 
 public class PollingTest {
     @Test
@@ -57,6 +56,28 @@ public class PollingTest {
         p.poll(500, 10);
 
         assertEquals(2, callCount.intValue());
+    }
+
+    @Test
+    public void testGetExceptionsFromThreeCalls() throws Exception {
+        final MutableInt callCount = new MutableInt(0);
+        Polling p = new Polling() {
+            @Override
+            public Boolean call() throws Exception {
+                callCount.increment();
+                if (callCount.getValue() < 3) {
+                    throw new Exception(callCount.getValue().toString());
+                }
+                return true;
+            }
+        };
+        p.poll(500, 10);
+        assertEquals(3, callCount.intValue());
+        assertTrue("Exceptions list should not be null", p.getExceptions() != null);
+        assertEquals("Wrong number of exceptions ", 2, p.getExceptions().size());
+        assertEquals("Wrong message for first exception ", "1", p.getExceptions().get(0).getMessage());
+        assertEquals("Wrong message for second exception ", "2", p.getExceptions().get(1).getMessage());
+        assertEquals("Wrong message for the last exception", "2", p.getLastException().getMessage());
     }
 
     @Test

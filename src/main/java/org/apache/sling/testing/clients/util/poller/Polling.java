@@ -15,9 +15,9 @@
  * the License.
  */
 package org.apache.sling.testing.clients.util.poller;
-
 import org.apache.sling.testing.timeouts.TimeoutsProvider;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -41,6 +41,11 @@ public class Polling implements Callable<Boolean> {
     protected Exception lastException;
 
     /**
+     * List of all the exceptions thrown by call(), to be used for logging
+     */
+    protected List<Exception> exceptions;
+
+    /**
      * Counter for total waiting time
      */
     protected long waited;
@@ -52,9 +57,7 @@ public class Polling implements Callable<Boolean> {
      * will be equivalent to {@code Thread.sleep(timeout)}
      */
     public Polling() {
-        this.c = null;
-        this.lastException = null;
-        this.waited = 0;
+        this(null);
     }
 
     /**
@@ -64,7 +67,8 @@ public class Polling implements Callable<Boolean> {
      */
     public Polling(Callable<Boolean> c) {
         this.c = c;
-        this.lastException = null;
+        lastException = null;
+        this.exceptions = new ArrayList<>();
         this.waited = 0;
     }
 
@@ -118,6 +122,7 @@ public class Polling implements Callable<Boolean> {
             } catch (InterruptedException e) {
                 throw e; // Never inhibit InterruptedException
             } catch (Exception e) {
+                exceptions.add(e);
                 lastException = e;
             }
             Thread.sleep(delay);
@@ -125,7 +130,7 @@ public class Polling implements Callable<Boolean> {
 
         waited = System.currentTimeMillis() - start;
         throw new TimeoutException(String.format(message(), effectiveTimeout, delay) +
-                " Last exception was: " + lastException);
+                " Last exception was: " + this.getLastException());
     }
 
     public long getWaited() {
@@ -149,5 +154,13 @@ public class Polling implements Callable<Boolean> {
      */
     public Exception getLastException() {
         return lastException;
+    }
+
+    /**
+     * Return the list of all exceptions while polling
+     * @return
+     */
+    public List<Exception> getExceptions() {
+        return exceptions;
     }
 }
