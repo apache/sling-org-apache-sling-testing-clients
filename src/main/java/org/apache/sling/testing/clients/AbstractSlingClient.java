@@ -314,10 +314,10 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         if (headers != null) {
             request.setHeaders(headers.toArray(new Header[headers.size()]));
         }
-
+        SlingHttpResponse response = null;
         try {
             log.debug("request {} {}", request.getMethod(), request.getURI());
-            SlingHttpResponse response = new SlingHttpResponse(this.execute(request, context));
+            response = new SlingHttpResponse(this.execute(request, context));
             log.debug("response {}", HttpUtils.getHttpStatus(response));
             // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity before
             if (expectedStatus != null && expectedStatus.length > 0) {
@@ -326,13 +326,15 @@ public class AbstractSlingClient implements HttpClient, Closeable {
                 } catch (ClientException e) {
                     // catch the exception to make sure we close the entity before re-throwing it
                     response.close();
+                    e.setRequest(request);
+                    e.setResponse(response);
                     throw e;
                 }
             }
 
             return response;
         } catch (IOException e) {
-            throw new ClientException("Could not execute http request", e);
+            throw new ClientException("Could not execute http request", e, request, response);
         }
     }
 

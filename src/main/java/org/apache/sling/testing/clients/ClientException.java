@@ -16,13 +16,17 @@
  */
 package org.apache.sling.testing.clients;
 
+import org.apache.http.client.methods.HttpUriRequest;
+
 /**
- *
+ * An exception thrown when something went wrong with using the sling testing clients
  */
 public class ClientException extends Exception {
 
     private static final long serialVersionUID = 1L;
     private int httpStatusCode = -1;
+    private HttpUriRequest request;
+    private SlingHttpResponse response;
 
     public ClientException(String message) {
         this(message, null);
@@ -32,27 +36,61 @@ public class ClientException extends Exception {
         this(message, -1, throwable);
     }
 
-    public ClientException(String message, int htmlStatusCode) {
-        this(message, htmlStatusCode, null);
+    public ClientException(String message, int httpStatusCode) {
+        this(message, httpStatusCode, null);
     }
 
-    public ClientException(String message, int htmlStatusCode, Throwable throwable) {
+    public ClientException(String message, int httpStatusCode, Throwable throwable) {
         super(message, throwable);
-        this.httpStatusCode = htmlStatusCode;
+        this.httpStatusCode = httpStatusCode;
+    }
+
+    public ClientException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
+        this(message, throwable);
+        this.request = request;
+        this.response = response;
+        if (this.response != null) {
+            this.httpStatusCode = response.getStatusLine().getStatusCode();
+        }
     }
 
     /**
-     * @return the htmlStatusCode
+     * @return The request associated with this exception or {{null}}
+     */
+    public HttpUriRequest getRequest() {
+        return request;
+    }
+
+    /**
+     * Set the request associated with this exception
+     * @param request
+     */
+    public void setRequest(HttpUriRequest request) {
+        this.request = request;
+    }
+
+    /**
+     * @return The response associated with this exception or {{null}}
+     */
+    public SlingHttpResponse getResponse() {
+        return response;
+    }
+
+    /**
+     * Set the response associated with this exception or {{null}}
+     * @param response
+     */
+    public void setResponse(SlingHttpResponse response) {
+        this.response = response;
+    }
+
+    /**
+     * @return the httpStatusCode
      */
     public int getHttpStatusCode() {
         return httpStatusCode;
     }
 
-    /*
-      * (non-Javadoc)
-      *
-      * @see java.lang.Throwable#getMessage()
-      */
     @Override
     public String getMessage() {
         String message = super.getMessage();
@@ -62,4 +100,20 @@ public class ClientException extends Exception {
         return message;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder messageBuilder = new StringBuilder(super.toString()).append(System.lineSeparator());
+        if (null != request) {
+            messageBuilder.append("Request: ");
+            messageBuilder.append(request.getMethod()).append(" ").append(request.getURI());
+            messageBuilder.append(System.lineSeparator());
+        }
+        if (null != response) {
+            messageBuilder.append("Response: ");
+            messageBuilder.append(response.getStatusLine().getStatusCode()).append(" ")
+                    .append(response.getStatusLine().getReasonPhrase());
+            messageBuilder.append(response.getContent());
+        }
+        return messageBuilder.toString();
+    }
 }
