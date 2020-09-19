@@ -41,7 +41,7 @@ public class ServiceInfo {
      * @return the service identifier
      */
     public int getId() {
-        return service.get("id").getIntValue();
+        return Integer.parseInt(service.get("id").getValueAsText());
     }
 
     /**
