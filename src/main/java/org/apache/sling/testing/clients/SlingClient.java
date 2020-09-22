@@ -16,6 +16,16 @@
  */
 package org.apache.sling.testing.clients;
 
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_OK;
+
+import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequestInterceptor;
@@ -25,6 +35,7 @@ import org.apache.http.annotation.Immutable;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -32,19 +43,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
-import org.apache.sling.testing.clients.util.*;
+import org.apache.sling.testing.clients.util.FormEntityBuilder;
+import org.apache.sling.testing.clients.util.HttpUtils;
+import org.apache.sling.testing.clients.util.JsonUtils;
+import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
+import org.apache.sling.testing.timeouts.TimeoutsProvider;
 import org.codehaus.jackson.JsonNode;
-
-import java.io.File;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * <p>The Base class for all Integration Test Clients. It provides generic methods to send HTTP requests to a server. </p>
@@ -56,6 +62,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 public class SlingClient extends AbstractSlingClient {
 
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
+    public static final String CLIENT_CONNECTION_TIMEOUT_PROP = "sling.client.connection.timeout.seconds";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
@@ -691,6 +698,17 @@ public class SlingClient extends AbstractSlingClient {
 
             // HTTP request strategy
             httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy());
+
+            // connection timeouts
+            int timeoutSeconds = TimeoutsProvider.getInstance().getTimeout(CLIENT_CONNECTION_TIMEOUT_PROP, -1);
+            if (timeoutSeconds > 0) {
+                int timeoutMs = (int)TimeUnit.SECONDS.toMillis(timeoutSeconds);
+				RequestConfig config = RequestConfig.custom()
+                        .setConnectTimeout(timeoutMs)
+                        .setConnectionRequestTimeout(timeoutMs)
+                        .setSocketTimeout(timeoutMs).build();
+                this.httpClientBuilder.setDefaultRequestConfig(config);
+            }
 
             return this;
         }
