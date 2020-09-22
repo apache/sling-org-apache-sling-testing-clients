@@ -703,7 +703,7 @@ public class SlingClient extends AbstractSlingClient {
             int timeoutSeconds = TimeoutsProvider.getInstance().getTimeout(CLIENT_CONNECTION_TIMEOUT_PROP, -1);
             if (timeoutSeconds > 0) {
                 int timeoutMs = (int)TimeUnit.SECONDS.toMillis(timeoutSeconds);
-				RequestConfig config = RequestConfig.custom()
+                RequestConfig config = RequestConfig.custom()
                         .setConnectTimeout(timeoutMs)
                         .setConnectionRequestTimeout(timeoutMs)
                         .setSocketTimeout(timeoutMs).build();
