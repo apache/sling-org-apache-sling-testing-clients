@@ -16,20 +16,21 @@
  */
 package org.apache.sling.testing.clients;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.*;
 
 public class SlingClientWaitExistsTest {
     private static final String GET_WAIT_PATH = "/test/wait/resource";
@@ -70,7 +71,7 @@ public class SlingClientWaitExistsTest {
     @Test
     public void testWaitExistsTimeout() throws Exception {
         callCount = 0;  // reset counter
-        waitCount = 40;  // to be sure we reach timeout
+        waitCount = 200;  // to be sure we reach timeout
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         try {
             c.waitExists(GET_WAIT_PATH, 1000, 10);
