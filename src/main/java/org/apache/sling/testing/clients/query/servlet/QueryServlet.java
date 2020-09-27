@@ -46,7 +46,7 @@ public class QueryServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     public static final String SERVLET_PATH = "/system/testing/query";
-    public static final String SERVLET_NAME = "Sling Testing Clients Query Servlet";
+    public static final String SERVLET_NAME = "sling.testing.clients.query.servlet";
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
