@@ -1,0 +1,39 @@
+{
+  "status": "7450 services in total",
+  "serviceCount": 7450,
+  "data": [
+    {
+      "id": "10",
+      "types": "[org.example.MyService]",
+      "pid": "org.example.MyService",
+      "ranking": "",
+      "bundleId": 6,
+      "bundleName": "My Bundle",
+      "bundleVersion": "1.0.0",
+      "bundleSymbolicName": "org.example",
+      "props": [
+        {
+          "key": "service.bundleid",
+          "value": 6
+        },
+        {
+          "key": "Service Description",
+          "value": "My Implementation"
+        },
+        {
+          "key": "Service PID",
+          "value": "org.example.MyService"
+        },
+        {
+          "key": "service.scope",
+          "value": "bundle"
+        },
+        {
+          "key": "Service Vendor",
+          "value": "The Apache Software Foundation"
+        }
+      ],
+      "usingBundles": []
+    }
+  ]
+}
