@@ -16,14 +16,21 @@
  */
 package org.apache.sling.testing.clients;
 
-import org.apache.http.*;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 
 public class SlingHttpResponse implements CloseableHttpResponse {
 
@@ -108,18 +115,19 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     public void checkContentRegexp(String... regexp) throws ClientException {
         for(String expr : regexp) {
             final Pattern p = Pattern.compile(".*" + expr + ".*");
-            final Scanner scanner = new Scanner(this.getContent());
             boolean matched = false;
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (p.matcher(line).matches()) {
-                    matched = true;
-                    break;
+            try (final Scanner scanner = new Scanner(this.getContent())) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (p.matcher(line).matches()) {
+                        matched = true;
+                        break;
+                    }
                 }
             }
 
             if (!matched) {
-                throw new ClientException("Pattern " + p + " didn't match any line in content");
+                throw new ClientException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
             }
         }
     }
@@ -381,13 +389,13 @@ public class SlingHttpResponse implements CloseableHttpResponse {
 
     @SuppressWarnings("deprecation")
     @Override
-    public HttpParams getParams() {
+    public org.apache.http.params.HttpParams getParams() {
         return httpResponse.getParams();
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void setParams(HttpParams params) {
+    public void setParams(org.apache.http.params.HttpParams params) {
         httpResponse.setParams(params);
     }
 
