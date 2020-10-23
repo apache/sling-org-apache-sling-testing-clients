@@ -16,12 +16,7 @@
  */
 package org.apache.sling.testing.clients.interceptors;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -30,6 +25,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
@@ -41,7 +37,7 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
-public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
+public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpResponseInterceptor {
     static final Logger LOG = LoggerFactory.getLogger(FormBasedAuthInterceptor.class);
 
     private final String loginPath = "j_security_check";
@@ -60,11 +56,44 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
 
         Cookie loginCookie = getLoginCookie(context, loginTokenName);
         if (loginCookie != null) {
-            LOG.debug("Request has cookie {}={} so I'm not intercepting the request",
-                    loginCookie.getName(), loginCookie.getValue());
+            LOG.debug("Request has cookie {} so I'm not intercepting the request", loginCookie.getName());
             return;
         }
 
+        doLogin(request, context);
+    }
+
+    @Override
+    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_UNAUTHORIZED) {
+            return;
+        }
+
+        Cookie loginCookie = getLoginCookie(context, loginTokenName);
+        if (loginCookie == null) {
+            return;
+        }
+
+        if (URI.create(HttpClientContext.adapt(context).getRequest().getRequestLine().getUri()).getPath().endsWith(loginPath)) {
+            LOG.debug("Request ends with {} so I'm not intercepting the request", loginPath);
+            return;
+        }
+
+        LOG.debug("Response code was 401 even though {} is set. Redoing the login.", loginCookie.getName());
+        doLogin(HttpClientContext.adapt(context).getRequest(), context);
+    }
+
+    /** Get login token cookie or null if not found */
+    private Cookie getLoginCookie(HttpContext context, String loginTokenName) {
+        for (Cookie cookie : HttpClientContext.adapt(context).getCookieStore().getCookies()) {
+            if (cookie.getName().equalsIgnoreCase(loginTokenName) && !cookie.getValue().isEmpty()) {
+                return cookie;
+            }
+        }
+        return null;
+    }
+
+    private void doLogin(HttpRequest request, HttpContext context) throws IOException {
         // get host
         final HttpHost host = HttpClientContext.adapt(context).getTargetHost();
 
@@ -88,16 +117,5 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor {
                 .build();
 
         client.execute(host, loginPost, context);
-
-    }
-
-    /** Get login token cookie or null if not found */
-    private Cookie getLoginCookie(HttpContext context, String loginTokenName) {
-        for (Cookie cookie : HttpClientContext.adapt(context).getCookieStore().getCookies()) {
-            if (cookie.getName().equalsIgnoreCase(loginTokenName) && !cookie.getValue().isEmpty()) {
-                return cookie;
-            }
-        }
-        return null;
     }
 }
