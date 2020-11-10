@@ -42,6 +42,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
+import org.apache.sling.testing.clients.interceptors.HttpRequestResponseInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
 import org.apache.sling.testing.clients.util.FormEntityBuilder;
 import org.apache.sling.testing.clients.util.HttpUtils;
@@ -764,6 +765,38 @@ public class SlingClient extends AbstractSlingClient {
          */
         public final InternalBuilder<T> addInterceptorLast(final HttpRequestInterceptor itcp) {
             httpClientBuilder.addInterceptorLast(itcp);
+            return this;
+        }
+
+        /**
+         * Adds this protocol interceptor to the head of the protocol processing list  for both requests and responses
+         * <p>
+         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
+         * org.apache.http.protocol.HttpProcessor)} method.
+         * </p>
+         *
+         * @param itcp the request and response interceptor
+         * @return this
+         */
+        public final InternalBuilder<T> addInterceptorFirst(final HttpRequestResponseInterceptor itcp) {
+            httpClientBuilder.addInterceptorFirst((HttpRequestInterceptor) itcp);
+            httpClientBuilder.addInterceptorFirst((HttpResponseInterceptor) itcp);
+            return this;
+        }
+
+        /**
+         * Adds this protocol interceptor to the tail of the protocol processing list for both requests and responses
+         * <p>
+         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
+         * org.apache.http.protocol.HttpProcessor)} method.
+         * </p>
+         *
+         * @param itcp the request and response interceptor
+         * @return this
+         */
+        public final InternalBuilder<T> addInterceptorLast(final HttpRequestResponseInterceptor itcp) {
+            httpClientBuilder.addInterceptorLast((HttpRequestInterceptor) itcp);
+            httpClientBuilder.addInterceptorLast((HttpResponseInterceptor) itcp);
             return this;
         }
 
