@@ -17,6 +17,23 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
+import static org.apache.http.HttpStatus.SC_OK;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+
 import org.apache.http.Header;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,23 +50,6 @@ import org.codehaus.jackson.JsonNode;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
-
-import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
-import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * A client that wraps the Felix OSGi Web Console REST API calls.
@@ -78,7 +78,7 @@ public class OsgiConsoleClient extends SlingClient {
      * The URL for components requests
      */
     private final String URL_COMPONENTS = CONSOLE_ROOT_URL + "/components";
-    
+
     /**
      * The URL for service requests
      */
@@ -181,7 +181,7 @@ public class OsgiConsoleClient extends SlingClient {
         }
         return null;
     }
-    
+
     /**
      * Returns the service info wrapper for all services implementing the given type.
      *
@@ -226,11 +226,11 @@ public class OsgiConsoleClient extends SlingClient {
         };
         p.poll(timeout, delay);
     }
-    
+
     /**
      * Wait until the service with the given name is registered. This means the component must be either in state "Registered" or "Active".
      * @param type the type of the service (usually the name of a Java interface)
-     * @param bundleSymbolicName the symbolic name of the bundle supposed to register that service. 
+     * @param bundleSymbolicName the symbolic name of the bundle supposed to register that service.
      * May be {@code null} in which case this method just waits for any service with the requested type being registered (independent of the registering bundle).
      * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
      * @param delay time to wait between checks of the state in milliseconds
@@ -274,7 +274,8 @@ public class OsgiConsoleClient extends SlingClient {
 
     /**
      * Returns a map of all properties set for the config referenced by the PID, where the map keys
-     * are the property names.
+     * are the property names. If properties are not set in the corresponding OSGi configuration but
+     * metatype information is available, the defaults from the metatype will be included.
      *
      * @param pid the pid of the configuration
      * @param expectedStatus list of accepted statuses of the response
@@ -312,6 +313,65 @@ public class OsgiConsoleClient extends SlingClient {
         }
         return props;
     }
+
+    /**
+     * Returns a map of all properties set for the config referenced by the PID, where the map keys
+     * are the property names.
+     *
+     * @param pid the pid of the configuration
+     * @param expectedStatus list of accepted statuses of the response
+     * @return the properties as a map or {@code null} if the configuration does not exist
+     * @throws ClientException if the response status does not match any of the expectedStatus
+     * @since 2.1.0
+     */
+    public Map<String, Object> getOSGiConfiguration(String pid, int... expectedStatus) throws ClientException {
+        // make the request
+        SlingHttpResponse resp = this.doPost(URL_CONFIGURATION + "/" + pid, null);
+        // check the returned status
+        HttpUtils.verifyHttpStatus(resp, HttpUtils.getExpectedStatus(SC_OK, expectedStatus));
+        // get the JSON node
+        final JsonNode rootNode = JsonUtils.getJsonNodeFromString(resp.getContent());
+
+        return extractOSGiConfiguration(rootNode);
+    }
+
+    static Map<String, Object> extractOSGiConfiguration(final JsonNode rootNode) {
+        // bundle_location is not set, the configuration does not exist
+        if ( rootNode.get("bundle_location") == null ) {
+            return null;
+        }
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        // go through the properties
+        final JsonNode propertiesNode = rootNode.get("properties");
+        if ( propertiesNode != null ) {
+            for(Iterator<String> it = propertiesNode.getFieldNames(); it.hasNext();) {
+                final String propName = it.next();
+                final JsonNode propNode = propertiesNode.get(propName);
+
+                final boolean isSet = propNode.get("is_set").getBooleanValue();
+                if ( isSet ) {
+                    JsonNode value = propNode.get("value");
+                    if (value != null) {
+                        result.put(propName, value.getValueAsText());
+                    } else {
+                        value = propNode.get("values");
+                        if (value != null) {
+                            final Iterator<JsonNode> iter = value.getElements();
+                            List<String> list = new ArrayList<String>();
+                            while(iter.hasNext()) {
+                                list.add(iter.next().getValueAsText());
+                            }
+                            result.put(propName, list.toArray(new String[list.size()]));
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Returns a map of all properties set for the config referenced by the PID, where the map keys
      * are the property names. The method waits until the configuration has been set.
@@ -616,7 +676,7 @@ public class OsgiConsoleClient extends SlingClient {
 
         p.poll(timeout, delay);
     }
-    
+
     /**
      * Wait until the bundle is started
      * @param symbolicName symbolic name of bundle
@@ -712,7 +772,7 @@ public class OsgiConsoleClient extends SlingClient {
         LOG.info("Starting bundle {} via {}", symbolicName, path);
         this.doPost(path, FormEntityBuilder.create().addParameter("action", "start").build(), SC_OK);
     }
-    
+
     /**
      * Stop a bundle
      * @param symbolicName the name of the bundle
