@@ -214,3 +214,7 @@ We have tried to make these methods as robust as possible. Their job is very cle
 
 Any input that does not respect the contract might not work. Check `AbstractSlingClientGetPathTest` and `AbstractSlingClientGetUrlTest`
 for an extensive list of cases that we have considered when writing these methods.
+
+##### How can I impersonate a user?
+* `client.impersonate(userId)` to impersonate
+* `client.impersonate(null)` to clear impersonation
