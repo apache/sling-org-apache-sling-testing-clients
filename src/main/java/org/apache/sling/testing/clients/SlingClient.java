@@ -22,7 +22,9 @@ import static org.apache.http.HttpStatus.SC_OK;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -41,6 +43,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.HttpRequestResponseInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
@@ -64,6 +67,7 @@ public class SlingClient extends AbstractSlingClient {
 
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
     public static final String CLIENT_CONNECTION_TIMEOUT_PROP = "sling.client.connection.timeout.seconds";
+    public static final String SUDO_COOKIE_NAME = "sling.sudo.cookie.name";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
@@ -543,6 +547,10 @@ public class SlingClient extends AbstractSlingClient {
         return importContent(parentPath, "json", json.toString(), expectedStatus);
     }
 
+    private String getSudoCookieName() {
+        return Optional.ofNullable(this.getValue(SUDO_COOKIE_NAME)).orElse("sling.sudo");
+    }
+
     /**
      * Get the UUID of a repository path
      *
@@ -578,6 +586,34 @@ public class SlingClient extends AbstractSlingClient {
         }
 
         return uuidNode.getValueAsText();
+    }
+
+    @Override
+    public String getUser() {
+        // get the username from the sudo cookie or default from client config
+        return getCookieStore().getCookies().stream().filter(c -> c.getName().equals(getSudoCookieName())).findFirst()
+                .map(c -> c.getValue().replace("\"", "")).orElse(super.getUser());
+    }
+
+    /**
+     * Impersonate user with the given <code>userId</code>
+     * <p>
+     * By impersonating a user SlingClient can access content from that user eye view.
+     * </p>
+     *Passing a <code>null</code> will clear impersonation.
+     *
+     * @param userId   the user to impersonate. A <code>null</code> value clears impersonation
+     */
+    public SlingClient impersonate(String userId)  {
+        BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "\"" + userId + "\"");
+        c.setPath("/");
+        c.setDomain(getUrl().getHost());
+        if(userId == null || "-".equals(userId)){
+            // setting expiry date in the past will remove the cookie
+            c.setExpiryDate(new Date(0));
+        }
+        getCookieStore().addCookie(c);
+        return this;
     }
 
     //
