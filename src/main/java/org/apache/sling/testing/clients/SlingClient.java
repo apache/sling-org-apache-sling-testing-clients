@@ -604,7 +604,7 @@ public class SlingClient extends AbstractSlingClient {
      *
      * @param userId   the user to impersonate. A <code>null</code> value clears impersonation
      */
-    public SlingClient impersonate(String userId)  {
+    public SlingClient impersonate(String userId) {
         BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "\"" + userId + "\"");
         c.setPath("/");
         c.setDomain(getUrl().getHost());
