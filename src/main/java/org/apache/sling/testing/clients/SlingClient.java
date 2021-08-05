@@ -181,6 +181,19 @@ public class SlingClient extends AbstractSlingClient {
     }
 
     /**
+     * End the impersonation of the current user.
+     */
+    public SlingClient endImpersonation() {
+        BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "");
+        c.setPath("/");
+        c.setDomain(getUrl().getHost());
+        // setting expiry date in the past will remove the cookie
+        c.setExpiryDate(new Date(0));
+        getCookieStore().addCookie(c);
+        return this;
+    }
+
+    /**
      * <p>Checks whether a path exists or not by making a GET request to that path with the {@code json} extension</p>
      * @param path path to be checked
      * @return true if GET response returns 200
@@ -605,13 +618,13 @@ public class SlingClient extends AbstractSlingClient {
      * @param userId   the user to impersonate. A <code>null</code> value clears impersonation
      */
     public SlingClient impersonate(String userId) {
-        BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "\"" + userId + "\"");
+        if(userId == null){
+            endImpersonation();
+            return this;
+        }
+        BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), userId);
         c.setPath("/");
         c.setDomain(getUrl().getHost());
-        if (userId == null || "-".equals(userId)) {
-            // setting expiry date in the past will remove the cookie
-            c.setExpiryDate(new Date(0));
-        }
         getCookieStore().addCookie(c);
         return this;
     }

@@ -52,7 +52,7 @@ public class SlingClientImpersonationTest {
         Cookie sudoCookie = getSudoCookie("sling.sudo");
 
         assertNotNull(sudoCookie);
-        assertEquals("\"user\"", sudoCookie.getValue());
+        assertEquals("user", sudoCookie.getValue());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class SlingClientImpersonationTest {
 
         assertEquals("user", slingClient.getUser());
 
-        slingClient.impersonate("-");
+        slingClient.endImpersonation();
         assertEquals("admin", slingClient.getUser());
 
         Cookie sudoCookie = getSudoCookie("sling.sudo");
@@ -100,7 +100,7 @@ public class SlingClientImpersonationTest {
 
         Cookie customSudoCookie = getSudoCookie(sudoCookieName);
         assertNotNull(customSudoCookie);
-        assertEquals("\"user\"", customSudoCookie.getValue());
+        assertEquals("user", customSudoCookie.getValue());
     }
 
 }
