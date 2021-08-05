@@ -598,7 +598,7 @@ public class SlingClient extends AbstractSlingClient {
     /**
      * Impersonate user with the given <code>userId</code>
      * <p>
-     * By impersonating a user SlingClient can access content from that user eye view.
+     * By impersonating a user SlingClient can access content from the perspective of that user.
      * </p>
      *Passing a <code>null</code> will clear impersonation.
      *
