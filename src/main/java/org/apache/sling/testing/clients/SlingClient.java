@@ -608,7 +608,7 @@ public class SlingClient extends AbstractSlingClient {
         BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "\"" + userId + "\"");
         c.setPath("/");
         c.setDomain(getUrl().getHost());
-        if(userId == null || "-".equals(userId)){
+        if (userId == null || "-".equals(userId)) {
             // setting expiry date in the past will remove the cookie
             c.setExpiryDate(new Date(0));
         }
