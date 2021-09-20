@@ -141,11 +141,11 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                 StatusLine sl = response.getStatusLine();
                 
                 if (sl.getStatusCode()>=400) {
-                    LOG.error("doLogin : got error login response code {} from '{}'", sl.getStatusCode(), loginURI.toString());
+                    LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI.toString());
                     
-                    LOG.error("doLogin : dumping headers: ");
+                    LOG.error("Dumping headers: ");
                     for(Header header : response.getAllHeaders()) { 
-                        LOG.error("doLogin : \t '{}' = '{}'", header.getName(), header.getValue());
+                        LOG.error("\t '{}' = '{}'", header.getName(), header.getValue());
                     }
                     
                     try (InputStream inputStream = response.getEntity().getContent()){
@@ -154,12 +154,12 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                               .lines()
                               .collect(Collectors.joining("\n"));
                         
-                        LOG.error("doLogin : error response body was : '{}'", responseText);
+                        LOG.error("Error response body was : '{}'", responseText);
                     }
                 } else if (getLoginCookie(context, loginTokenName) == null) {
-                    LOG.error("doLogin : login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI.toString(), loginTokenName);
+                    LOG.error("Login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI.toString(), loginTokenName);
                 } else {
-                    LOG.debug("doLogin : login response {} from '{}'", sl.getStatusCode(), loginURI.toString());
+                    LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI.toString());
                 }
             }
         }
