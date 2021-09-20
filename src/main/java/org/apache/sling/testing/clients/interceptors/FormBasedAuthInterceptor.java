@@ -155,11 +155,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                               .collect(Collectors.joining("\n"));
                         
                         LOG.error("doLogin : error response body was : '{}'", responseText);
-                        
-                        
-                        
                     }
-  
                 } else if (getLoginCookie(context, loginTokenName) == null) {
                     LOG.error("doLogin : login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI.toString(), loginTokenName);
                 } else {
