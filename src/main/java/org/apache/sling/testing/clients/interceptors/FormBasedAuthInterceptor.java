@@ -16,6 +16,7 @@
  */
 package org.apache.sling.testing.clients.interceptors;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -24,9 +25,11 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.Cookie;
@@ -39,11 +42,16 @@ import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpRequestResponseInterceptor {
     static final Logger LOG = LoggerFactory.getLogger(FormBasedAuthInterceptor.class);
@@ -59,13 +67,13 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         final URI uri = URI.create(request.getRequestLine().getUri());
         if (uri.getPath().endsWith(loginPath)) {
-            LOG.debug("Request ends with {} so I'm not intercepting the request", loginPath);
+            LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
             return;
         }
 
         Cookie loginCookie = getLoginCookie(context, loginTokenName);
         if (loginCookie != null) {
-            LOG.debug("Request has cookie {} so I'm not intercepting the request", loginCookie.getName());
+            LOG.trace("Request has cookie {} so I'm not intercepting the request", loginCookie.getName());
             return;
         }
 
@@ -79,7 +87,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         }
 
         if (URI.create(HttpClientContext.adapt(context).getRequest().getRequestLine().getUri()).getPath().endsWith(loginPath)) {
-            LOG.debug("Request ends with {} so I'm not intercepting the request", loginPath);
+            LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
             return;
         }
 
@@ -120,14 +128,40 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         parameters.add(new BasicNameValuePair("j_password", password));
         HttpEntity httpEntity = new UrlEncodedFormEntity(parameters, "utf-8");
 
-        HttpPost loginPost = new HttpPost(URI.create(request.getRequestLine().getUri()).resolve(loginPath));
+        URI loginURI = URI.create(request.getRequestLine().getUri()).resolve(loginPath);
+        HttpPost loginPost = new HttpPost(loginURI);
         loginPost.setEntity(httpEntity);
 
-        final CloseableHttpClient client = HttpClientBuilder.create()
+        try (CloseableHttpClient client = HttpClientBuilder.create()
                 .setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy())
                 .disableRedirectHandling()
-                .build();
-
-        client.execute(host, loginPost, context);
+                .build()) {
+            
+            try (CloseableHttpResponse response = client.execute(host, loginPost, context)){
+                StatusLine sl = response.getStatusLine();
+                
+                if (sl.getStatusCode()>=400) {
+                    LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI.toString());
+                    
+                    LOG.error("Dumping headers: ");
+                    for(Header header : response.getAllHeaders()) { 
+                        LOG.error("\t '{}' = '{}'", header.getName(), header.getValue());
+                    }
+                    
+                    try (InputStream inputStream = response.getEntity().getContent()){
+                        String responseText = new BufferedReader(
+                            new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                              .lines()
+                              .collect(Collectors.joining("\n"));
+                        
+                        LOG.error("Error response body was : '{}'", responseText);
+                    }
+                } else if (getLoginCookie(context, loginTokenName) == null) {
+                    LOG.error("Login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI.toString(), loginTokenName);
+                } else {
+                    LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI.toString());
+                }
+            }
+        }
     }
 }
