@@ -46,6 +46,7 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
         int[] expectedStatus = (int[]) context.getAttribute(EXPECTED_STATUS);
         boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries() && responseRetryCondition(response, expectedStatus);
+
         if (SystemPropertiesConfig.isHttpLogRetries() && needsRetry && LOG.isWarnEnabled()) {
             LOG.warn("Request retry needed due to service unavailable response");
             LOG.warn("Response headers contained:");
