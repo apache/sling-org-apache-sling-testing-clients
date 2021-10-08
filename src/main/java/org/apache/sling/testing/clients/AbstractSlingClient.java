@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
+
 /**
  * The abstract base client for all implementing integration test clients.
  */
@@ -309,6 +311,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             throws ClientException {
         // create context from config
         HttpClientContext context = createHttpClientContextFromConfig();
+        context.setAttribute(EXPECTED_STATUS, expectedStatus);
 
         // add headers
         if (headers != null) {
@@ -360,6 +363,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             throws ClientException {
         // create context from config
         HttpClientContext context = createHttpClientContextFromConfig();
+        context.setAttribute(EXPECTED_STATUS, expectedStatus);
 
         HttpHost host = new HttpHost(getUrl().getHost(), getUrl().getPort(), getUrl().getScheme());
         HttpRequest request = new BasicHttpRequest(method, uri);
