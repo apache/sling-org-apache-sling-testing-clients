@@ -71,7 +71,7 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         final Collection<Integer> errorCodes = SystemPropertiesConfig.getHttpRetriesErrorCodes();
         if ((expectedStatus != null) && (expectedStatus.length > 0) &&
                 Arrays.stream(expectedStatus).anyMatch(expected -> statusCode == expected)) {
-            return true;
+            return false;
         }
         if (errorCodes != null && !errorCodes.isEmpty()) {
             return errorCodes.contains(statusCode);
