@@ -461,7 +461,10 @@ public class OsgiConsoleClient extends SlingClient {
 
         Header[] locationHeader = resp.getHeaders("Location");
         if (locationHeader!=null && locationHeader.length==1) {
-        	return locationHeader[0].getValue().substring(URL_CONFIGURATION.length()+1);
+            // The location header can contain a relative or an absolute URL
+            // Gathering where the URL_CONFIGURATION substring starts will allow adapting to both cases
+            int urlPathStart = locationHeader[0].getValue().indexOf(URL_CONFIGURATION);
+            return locationHeader[0].getValue().substring(urlPathStart + URL_CONFIGURATION.length() + 1);
         } else {
         	return null;
         }
