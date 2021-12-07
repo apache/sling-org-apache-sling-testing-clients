@@ -17,8 +17,22 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
-import static org.apache.http.HttpStatus.SC_OK;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.http.Header;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.SlingClient;
+import org.apache.sling.testing.clients.SlingClientConfig;
+import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.util.FormEntityBuilder;
+import org.apache.sling.testing.clients.util.HttpUtils;
+import org.apache.sling.testing.clients.util.JsonUtils;
+import org.apache.sling.testing.clients.util.poller.PathPoller;
+import org.apache.sling.testing.clients.util.poller.Polling;
+import org.osgi.framework.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,22 +48,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import org.apache.http.Header;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.SlingClientConfig;
-import org.apache.sling.testing.clients.SlingHttpResponse;
-import org.apache.sling.testing.clients.util.FormEntityBuilder;
-import org.apache.sling.testing.clients.util.HttpUtils;
-import org.apache.sling.testing.clients.util.JsonUtils;
-import org.apache.sling.testing.clients.util.poller.PathPoller;
-import org.apache.sling.testing.clients.util.poller.Polling;
-import org.codehaus.jackson.JsonNode;
-import org.osgi.framework.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
+import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * A client that wraps the Felix OSGi Web Console REST API calls.
@@ -294,19 +294,19 @@ public class OsgiConsoleClient extends SlingClient {
         if(rootNode.get("properties") == null)
             return props;
         JsonNode properties = rootNode.get("properties");
-        for(Iterator<String> it = properties.getFieldNames(); it.hasNext();) {
+        for(Iterator<String> it = properties.fieldNames(); it.hasNext();) {
             String propName = it.next();
             JsonNode value = properties.get(propName).get("value");
             if(value != null) {
-                props.put(propName, value.getValueAsText());
+                props.put(propName, value.asText());
                 continue;
             }
             value = properties.get(propName).get("values");
             if(value != null) {
-                Iterator<JsonNode> iter = value.getElements();
+                Iterator<JsonNode> iter = value.elements();
                 List<String> list = new ArrayList<String>();
                 while(iter.hasNext()) {
-                    list.add(iter.next().getValueAsText());
+                    list.add(iter.next().asText());
                 }
                 props.put(propName, list.toArray(new String[list.size()]));
             }
@@ -345,22 +345,22 @@ public class OsgiConsoleClient extends SlingClient {
         // go through the properties
         final JsonNode propertiesNode = rootNode.get("properties");
         if ( propertiesNode != null ) {
-            for(Iterator<String> it = propertiesNode.getFieldNames(); it.hasNext();) {
+            for(Iterator<String> it = propertiesNode.fieldNames(); it.hasNext();) {
                 final String propName = it.next();
                 final JsonNode propNode = propertiesNode.get(propName);
 
-                final boolean isSet = propNode.get("is_set").getBooleanValue();
+                final boolean isSet = propNode.get("is_set").booleanValue();
                 if ( isSet ) {
                     JsonNode value = propNode.get("value");
                     if (value != null) {
-                        result.put(propName, value.getValueAsText());
+                        result.put(propName, value.asText());
                     } else {
                         value = propNode.get("values");
                         if (value != null) {
-                            final Iterator<JsonNode> iter = value.getElements();
+                            final Iterator<JsonNode> iter = value.elements();
                             List<String> list = new ArrayList<String>();
                             while(iter.hasNext()) {
-                                list.add(iter.next().getValueAsText());
+                                list.add(iter.next().asText());
                             }
                             result.put(propName, list.toArray(new String[list.size()]));
                         }
@@ -727,7 +727,7 @@ public class OsgiConsoleClient extends SlingClient {
             throw new ClientException("Cannot get id from bundle json");
         }
 
-        return idNode.getLongValue();
+        return idNode.longValue();
     }
 
     /**
@@ -744,7 +744,7 @@ public class OsgiConsoleClient extends SlingClient {
             throw new ClientException("Cannot get version from bundle json");
         }
 
-        return versionNode.getTextValue();
+        return versionNode.textValue();
     }
 
     /**
@@ -761,7 +761,7 @@ public class OsgiConsoleClient extends SlingClient {
             throw new ClientException("Cannot get state from bundle json");
         }
 
-        return stateNode.getTextValue();
+        return stateNode.textValue();
     }
 
     /**
@@ -874,7 +874,7 @@ public class OsgiConsoleClient extends SlingClient {
             throw new ClientException(path + " does not provide '" + JSON_KEY_DATA + "' element, JSON content=" + content);
         }
 
-        Iterator<JsonNode> data = root.get(JSON_KEY_DATA).getElements();
+        Iterator<JsonNode> data = root.get(JSON_KEY_DATA).elements();
         if (!data.hasNext()) {
             throw new ClientException(path + "." + JSON_KEY_DATA + " is empty, JSON content=" + content);
         }

@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequestInterceptor;
@@ -54,7 +55,7 @@ import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.apache.sling.testing.timeouts.TimeoutsProvider;
-import org.codehaus.jackson.JsonNode;
+
 
 /**
  * <p>The Base class for all Integration Test Clients. It provides generic methods to send HTTP requests to a server. </p>
@@ -356,13 +357,13 @@ public class SlingClient extends AbstractSlingClient {
     }
 
     /**
-     * Returns the JSON content of a node already mapped to a {@link org.codehaus.jackson.JsonNode}.<br>
+     * Returns the JSON content of a node already mapped to a {@link com.fasterxml.jackson.databind.JsonNode}.<br>
      * Waits max 10 seconds for the node to be created.
      *
      * @deprecated use {@link #waitExists(String, long, long)} and {@link #doGetJson(String, int, int...)} instead
      * @param path  the path to the content node
      * @param depth the number of levels to go down the tree, -1 for infinity
-     * @return a {@link org.codehaus.jackson.JsonNode} mapping to the requested content node.
+     * @return a {@link com.fasterxml.jackson.databind.JsonNode} mapping to the requested content node.
      * @throws ClientException if something fails during request/response processing
      * @throws InterruptedException to mark this operation as "waiting"
      */
@@ -372,7 +373,7 @@ public class SlingClient extends AbstractSlingClient {
     }
 
     /**
-     * Returns JSON format of a content node already mapped to a {@link org.codehaus.jackson.JsonNode}.
+     * Returns JSON format of a content node already mapped to a {@link com.fasterxml.jackson.databind.JsonNode}.
      *
      * @deprecated use {@link #waitExists(String, long, long)} and {@link #doGetJson(String, int, int...)} instead
      * @param path                 the path to the content node
@@ -381,7 +382,7 @@ public class SlingClient extends AbstractSlingClient {
      * @param retryNumber          number of retries before throwing an exception
      * @param expectedStatus       list of allowed HTTP Status to be returned. If not set,
      *                             http status 200 (OK) is assumed.
-     * @return a {@link org.codehaus.jackson.JsonNode} mapping to the requested content node.
+     * @return a {@link com.fasterxml.jackson.databind.JsonNode} mapping to the requested content node.
      * @throws ClientException if something fails during request/response cycle
      * @throws InterruptedException to mark this operation as "waiting"
      */
@@ -407,13 +408,13 @@ public class SlingClient extends AbstractSlingClient {
     }
 
     /**
-     * Returns the {@link org.codehaus.jackson.JsonNode} object corresponding to a content node.
+     * Returns the {@link com.fasterxml.jackson.databind.JsonNode} object corresponding to a content node.
      *
      * @param path the path to the content node
      * @param depth the number of levels to go down the tree, -1 for infinity
      * @param expectedStatus list of allowed HTTP Status to be returned. If not set, 200 (OK) is assumed.
      *
-     * @return a {@link org.codehaus.jackson.JsonNode} mapping to the requested content node.
+     * @return a {@link com.fasterxml.jackson.databind.JsonNode} mapping to the requested content node.
      * @throws ClientException if the path does not exist or something fails during request/response cycle
      * @since 1.1.0
      */
@@ -598,7 +599,9 @@ public class SlingClient extends AbstractSlingClient {
             return null;
         }
 
-        return uuidNode.getValueAsText();
+        //TODO write test to ensure uuidNode.asText() == uuidNode.getValueAsText(), to avoid regression
+        //return uuidNode.getValueAsText();
+        return uuidNode.asText();
     }
 
     @Override

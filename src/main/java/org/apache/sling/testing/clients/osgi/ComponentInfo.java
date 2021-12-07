@@ -17,21 +17,21 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
 
 public class ComponentInfo {
 
     private JsonNode component;
 
     public ComponentInfo(JsonNode root) throws ClientException {
-        if(root.get("id") != null) {
-            if(root.get("id") == null) {
+        if (root.get("id") != null) {
+            if (root.get("id") == null) {
                 throw new ClientException("No Component Info returned");
             }
             component = root;
         } else {
-            if(root.get("data") == null && root.get("data").size() < 1) {
+            if (root.get("data") == null && root.get("data").size() < 1) {
                 throw new ClientException("No Component Info returned");
             }
             component = root.get("data").get(0);
@@ -42,28 +42,28 @@ public class ComponentInfo {
      * @return the component identifier
      */
     public int getId() {
-        return component.get("id").getIntValue();
+        return component.get("id").intValue();
     }
 
     /**
      * @return the component name
      */
     public String getName() {
-        return component.get("name").getTextValue();
+        return component.get("name").textValue();
     }
 
     /**
      * @return the component status
      */
     public Component.Status getStatus() {
-        return Component.Status.value(component.get("state").getTextValue());
+        return Component.Status.value(component.get("state").textValue());
     }
 
     /**
      * @return the component persistent identifier
      */
     public String getPid() {
-        return component.get("pid").getTextValue();
+        return component.get("pid").textValue();
     }
 
 }

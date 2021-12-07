@@ -16,25 +16,26 @@
  */
 package org.apache.sling.testing.clients.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.util.JsonUtils;
+import org.junit.Test;
 
 import java.util.Map;
 
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.util.JsonUtils;
-import org.codehaus.jackson.JsonNode;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class OsgiConsoleClientTest {
 
-    @Test public void testExtractOSGiConfigurationNoConfig() throws ClientException {
+    @Test
+    public void testExtractOSGiConfigurationNoConfig() throws ClientException {
         final String jsonResult = "{\"pid\":\"org.apache.sling.Factory\","
                 + "\"title\":\"Factory\","
                 + "\"description\":\"A factory\","
                 + "\"properties\":{"
-                  + "\"prop\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":false,\"type\":1,\"values\":[\"a\",\"b\"],"
-                  + "\"description\":\"A property\"}}}";
+                + "\"prop\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":false,\"type\":1,\"values\":[\"a\",\"b\"],"
+                + "\"description\":\"A property\"}}}";
 
         final JsonNode rootNode = JsonUtils.getJsonNodeFromString(jsonResult);
 
@@ -42,15 +43,16 @@ public class OsgiConsoleClientTest {
         assertNull(OsgiConsoleClient.extractOSGiConfiguration(rootNode));
     }
 
-    @Test public void testExtractOSGiConfiguration() throws ClientException {
+    @Test
+    public void testExtractOSGiConfiguration() throws ClientException {
         final String jsonResult = "{\"pid\":\"org.apache.sling.Factory\","
                 + "\"title\":\"Factory\","
                 + "\"description\":\"A factory\","
                 + "\"properties\":{"
-                  + "\"propset\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":true,\"type\":1,\"value\":\"a\","
-                  + "\"description\":\"A property\"},"
-                  + "\"prop\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":false,\"type\":1,\"values\":[\"a\",\"b\"],"
-                  + "\"description\":\"A property\"}"
+                + "\"propset\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":true,\"type\":1,\"value\":\"a\","
+                + "\"description\":\"A property\"},"
+                + "\"prop\":{\"name\":\"Prop\",\"optional\":false,\"is_set\":false,\"type\":1,\"values\":[\"a\",\"b\"],"
+                + "\"description\":\"A property\"}"
                 + "},\"bundleLocation\":\"\",\"bundle_location\":null,\"service_location\":\"\"}";
 
         final JsonNode rootNode = JsonUtils.getJsonNodeFromString(jsonResult);

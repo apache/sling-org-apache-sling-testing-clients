@@ -16,19 +16,19 @@
  */
 package org.apache.sling.testing.clients;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
-import org.codehaus.jackson.JsonNode;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class SlingClientDoGetJsonTest {
     private static final String GET_JSON_PATH = "/test/json/resource";
@@ -59,13 +59,13 @@ public class SlingClientDoGetJsonTest {
     public void testDoGetJson() throws Exception {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         JsonNode res = c.doGetJson(GET_JSON_PATH, 1, 200);
-        assertEquals("admin-json", res.get("jcr:createdBy").getTextValue());
+        assertEquals("admin-json", res.get("jcr:createdBy").textValue());
     }
 
     @Test
     public void testDoGetJsonInfinity() throws Exception {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         JsonNode res = c.doGetJson(GET_JSON_PATH, -1, 200);
-        assertEquals("admin-infinity", res.get("jcr:createdBy").getTextValue());
+        assertEquals("admin-infinity", res.get("jcr:createdBy").textValue());
     }
 }

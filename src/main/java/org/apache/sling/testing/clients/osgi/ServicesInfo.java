@@ -17,8 +17,8 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,16 +36,16 @@ public class ServicesInfo {
 
     /**
      * The only constructor.
-     * 
+     *
      * @param root the root JSON node of the bundles info.
      * @throws ClientException if the json does not contain the proper info
      */
     public ServicesInfo(JsonNode root) throws ClientException {
         this.root = root;
         // some simple sanity checks
-        if(root.get("status") == null)
+        if (root.get("status") == null)
             throw new ClientException("No Status returned!");
-        if(root.get("serviceCount") == null)
+        if (root.get("serviceCount") == null)
             throw new ClientException("No serviceCount returned!");
     }
 
@@ -53,7 +53,7 @@ public class ServicesInfo {
      * @return total number of bundles.
      */
     public int getTotalNumOfServices() {
-        return root.get("serviceCount").getIntValue();
+        return root.get("serviceCount").intValue();
     }
 
     /**
@@ -96,14 +96,14 @@ public class ServicesInfo {
     private List<JsonNode> findAllContainingValueInArray(String key, String value) {
         return findBy(key, value, false, true);
     }
-    
+
     private List<JsonNode> findBy(String key, String value, boolean onlyReturnFirstMatch, boolean arrayContainingMatch) {
-        Iterator<JsonNode> nodes = root.get("data").getElements();
+        Iterator<JsonNode> nodes = root.get("data").elements();
         List<JsonNode> results = new LinkedList<>();
-        while(nodes.hasNext()) {
+        while (nodes.hasNext()) {
             JsonNode node = nodes.next();
             if ((null != node.get(key)) && (node.get(key).isValueNode())) {
-                final String valueNode = node.get(key).getTextValue();
+                final String valueNode = node.get(key).textValue();
                 if (arrayContainingMatch) {
                     if (splitPseudoJsonValueArray(valueNode).contains(value)) {
                         results.add(node);
@@ -121,10 +121,11 @@ public class ServicesInfo {
     /**
      * Array values are not returned as proper JSON array for Apache Felix.
      * Therefore we need this dedicated split method, which extracts the individual values from this "pseudo" JSON array.
-     * Example value: 
+     * Example value:
      * <pre>
      * [java.lang.Runnable, org.apache.sling.event.impl.jobs.queues.QueueManager, org.osgi.service.event.EventHandler]
      * </pre>
+     *
      * @param value the value to split
      * @return the list of the individual values in the given array.
      * @see <a href="https://issues.apache.org/jira/browse/FELIX-5762">FELIX-5762</a>
@@ -133,9 +134,9 @@ public class ServicesInfo {
         // is this an array?
         if (value.startsWith("[") && value.length() >= 2) {
             // strip of first and last character
-           String pureArrayValues = value.substring(1, value.length() - 1);
-           String[] resultArray = pureArrayValues.split(", |,");
-           return Arrays.asList(resultArray);
+            String pureArrayValues = value.substring(1, value.length() - 1);
+            String[] resultArray = pureArrayValues.split(", |,");
+            return Arrays.asList(resultArray);
         }
         return Collections.singletonList(value);
     }

@@ -17,10 +17,11 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
 
 import java.util.Iterator;
+
 
 /**
  * Thin wrapper around the list of components
@@ -31,7 +32,7 @@ public class ComponentsInfo {
 
     /**
      * The only constructor.
-     * 
+     *
      * @param rootNode the root JSON node of the components info.
      * @throws ClientException if the info cannot be retrieved
      */
@@ -44,9 +45,9 @@ public class ComponentsInfo {
      * @throws ClientException if the info cannot be retrieved
      */
     public int getNumberOfInstalledComponents() throws ClientException {
-        if(root.get("status") == null)
+        if (root.get("status") == null)
             throw new ClientException("Number of installed Components not defined!");
-        return Integer.parseInt(root.get("status").getValueAsText());
+        return Integer.parseInt(root.get("status").asText());
     }
 
     /**
@@ -80,11 +81,11 @@ public class ComponentsInfo {
     }
 
     private JsonNode findBy(String key, String value) {
-        Iterator<JsonNode> nodes = root.get("data").getElements();
-        while(nodes.hasNext()) {
+        Iterator<JsonNode> nodes = root.get("data").elements();
+        while (nodes.hasNext()) {
             JsonNode node = nodes.next();
             if ((null != node.get(key)) && (node.get(key).isValueNode())) {
-                final String valueNode = node.get(key).getTextValue();
+                final String valueNode = node.get(key).textValue();
                 if (valueNode.equals(value)) {
                     return node;
                 }

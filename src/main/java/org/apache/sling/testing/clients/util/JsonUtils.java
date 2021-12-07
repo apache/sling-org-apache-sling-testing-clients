@@ -16,10 +16,9 @@
  */
 package org.apache.sling.testing.clients.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 
@@ -35,8 +34,6 @@ public class JsonUtils {
         try {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readTree(jsonString);
-        } catch (JsonProcessingException e) {
-            throw new ClientException("Could not read json file.", e);
         } catch (IOException e) {
             throw new ClientException("Could not read json node.", e);
         }

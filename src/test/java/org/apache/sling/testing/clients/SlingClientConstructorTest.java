@@ -16,17 +16,8 @@
  */
 package org.apache.sling.testing.clients;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
-import org.codehaus.jackson.JsonNode;
-import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.URI;
 
 import static org.junit.Assert.assertEquals;

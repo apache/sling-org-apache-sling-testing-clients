@@ -16,6 +16,7 @@
  */
 package org.apache.sling.testing.clients.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.NameValuePair;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.sling.testing.clients.ClientException;
@@ -26,7 +27,6 @@ import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.clients.query.servlet.QueryServlet;
 import org.apache.sling.testing.clients.util.JsonUtils;
 import org.apache.sling.testing.clients.util.URLParameterBuilder;
-import org.codehaus.jackson.JsonNode;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +133,7 @@ public class QueryClient extends SlingClient {
      * @throws InterruptedException to mark that this method blocks
      */
     public long doCount(final String query, final QueryType type) throws ClientException, InterruptedException {
-        return doQuery(query, type, false, false).get("total").getLongValue();
+        return doQuery(query, type, false, false).get("total").longValue();
     }
 
     /**

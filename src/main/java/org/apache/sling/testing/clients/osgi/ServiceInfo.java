@@ -17,10 +17,10 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import java.util.List;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
+
+import java.util.List;
 
 public class ServiceInfo {
 
@@ -41,7 +41,7 @@ public class ServiceInfo {
      * @return the service identifier
      */
     public int getId() {
-        return Integer.parseInt(service.get("id").getValueAsText());
+        return Integer.parseInt(service.get("id").asText());
     }
 
     /**
@@ -49,25 +49,25 @@ public class ServiceInfo {
      */
     public List<String> getTypes() {
         // this is not a proper JSON array (https://issues.apache.org/jira/browse/FELIX-5762)
-        return ServicesInfo.splitPseudoJsonValueArray(service.get("types").getTextValue());
+        return ServicesInfo.splitPseudoJsonValueArray(service.get("types").textValue());
     }
 
     public String getPid() {
-        return service.get("pid").getTextValue();
+        return service.get("pid").textValue();
     }
 
     /**
      * @return the bundle id of the bundle exposing the service
      */
     public int getBundleId() {
-        return service.get("bundleId").getIntValue();
+        return service.get("bundleId").intValue();
     }
 
     /**
      * @return the bundle symbolic name of bundle implementing the service
      */
     public String getBundleSymbolicName() {
-        return service.get("bundleSymbolicName").getTextValue();
+        return service.get("bundleSymbolicName").textValue();
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sling.testing.clients.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -27,7 +28,6 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
-import org.codehaus.jackson.JsonNode;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -77,15 +77,15 @@ public class QueryClientTest {
             serverBootstrap.registerHandler(QUERY_PATH, new HttpRequestHandler() {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
-                        List<NameValuePair> parameters = URLEncodedUtils.parse(
-                                request.getRequestLine().getUri(), Charset.defaultCharset());
+                    List<NameValuePair> parameters = URLEncodedUtils.parse(
+                            request.getRequestLine().getUri(), Charset.defaultCharset());
 
-                        for (NameValuePair parameter : parameters) {
-                            if (parameter.getName().equals("explain") && !parameter.getValue().equals("false")) {
-                                response.setEntity(new StringEntity(EXPLAIN_RESPONSE));
-                                return;
-                            }
+                    for (NameValuePair parameter : parameters) {
+                        if (parameter.getName().equals("explain") && !parameter.getValue().equals("false")) {
+                            response.setEntity(new StringEntity(EXPLAIN_RESPONSE));
+                            return;
                         }
+                    }
 
                     response.setEntity(new StringEntity(QUERY_RESPONSE));
                 }
@@ -116,7 +116,7 @@ public class QueryClientTest {
             serverBootstrap.registerHandler(BUNDLE_PATH, new HttpRequestHandler() {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
-                        response.setStatusCode(200);
+                    response.setStatusCode(200);
                 }
             });
         }
@@ -141,7 +141,7 @@ public class QueryClientTest {
 //        JsonNode response = client.doQuery("SELECT * FROM [cq:Tag] WHERE ISDESCENDANTNODE([/etc/])",
                 QueryClient.QueryType.SQL2);
         LOG.info(response.toString());
-        Assert.assertNotEquals(0, response.get("total").getLongValue());
+        Assert.assertNotEquals(0, response.get("total").longValue());
     }
 
     @Test

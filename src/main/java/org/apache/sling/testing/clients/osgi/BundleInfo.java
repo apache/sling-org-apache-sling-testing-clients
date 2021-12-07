@@ -17,8 +17,8 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,13 +29,13 @@ public class BundleInfo {
     private JsonNode bundle;
 
     public BundleInfo(JsonNode root) throws ClientException {
-        if(root.get("id") != null) {
-            if(root.get("id") == null) {
+        if (root.get("id") != null) {
+            if (root.get("id") == null) {
                 throw new ClientException("No Bundle Info returned");
             }
             bundle = root;
         } else {
-            if(root.get("data") == null && root.get("data").size() < 1) {
+            if (root.get("data") == null && root.get("data").size() < 1) {
                 throw new ClientException("No Bundle Info returned");
             }
             bundle = root.get("data").get(0);
@@ -46,51 +46,51 @@ public class BundleInfo {
      * @return the bundle identifier
      */
     public int getId() {
-        return bundle.get("id").getIntValue();
+        return bundle.get("id").intValue();
     }
 
     /**
      * @return the bundle name
      */
     public String getName() {
-        return bundle.get("name").getTextValue();
+        return bundle.get("name").textValue();
     }
 
     /**
      * @return the bundle version
      */
     public String getVersion() {
-        return bundle.get("version").getTextValue();
+        return bundle.get("version").textValue();
     }
 
     /**
      * Returns the indicator if the bundle is a fragment
-     * 
+     *
      * @return {@code true} if bundle is a fragment, {@code false} otherwise.
      */
     public boolean isFragment() {
-        return bundle.get("fragment").getBooleanValue();
+        return bundle.get("fragment").booleanValue();
     }
 
     /**
      * @return the bundle current state
      */
     public Bundle.Status getStatus() {
-        return Bundle.Status.value(bundle.get("state").getTextValue());
+        return Bundle.Status.value(bundle.get("state").textValue());
     }
 
     /**
      * @return the bundle symbolic name
      */
     public String getSymbolicName() {
-        return bundle.get("symbolicName").getTextValue();
+        return bundle.get("symbolicName").textValue();
     }
 
     /**
      * @return the category of the bundle
      */
     public String getCategory() {
-        return bundle.get("category").getTextValue();
+        return bundle.get("category").textValue();
     }
 
     /**
@@ -111,11 +111,11 @@ public class BundleInfo {
         JsonNode props = bundle.get("props");
         Map<String, String> entries = new HashMap<String, String>();
 
-        if(props != null) {
-            Iterator<JsonNode> it = props.getElements();
-            while(it.hasNext()) {
+        if (props != null) {
+            Iterator<JsonNode> it = props.elements();
+            while (it.hasNext()) {
                 JsonNode n = it.next();
-                entries.put(n.get("key").getTextValue(), n.get("value").getTextValue());
+                entries.put(n.get("key").textValue(), n.get("value").textValue());
             }
         }
         return entries;

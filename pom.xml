@@ -17,18 +17,19 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
         <version>41</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <artifactId>org.apache.sling.testing.clients</artifactId>
-    <version>2.0.13-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <name>Apache Sling Testing Clients</name>
     <description>
@@ -36,11 +37,12 @@
     </description>
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</developerConnection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git
+        </developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-testing-clients.git</url>
         <tag>HEAD</tag>
     </scm>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -71,7 +73,7 @@
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
                     <excludes combine.children="append">
-                            <exclude>src/test/resources/**/*.txt</exclude>
+                        <exclude>src/test/resources/**/*.txt</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -92,15 +94,26 @@
             <artifactId>commons-exec</artifactId>
             <version>1.1</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.codehaus.jackson</groupId>-->
+        <!--            <artifactId>jackson-core-asl</artifactId>-->
+        <!--            <version>1.5.5</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.codehaus.jackson</groupId>-->
+        <!--            <artifactId>jackson-mapper-asl</artifactId>-->
+        <!--            <version>1.5.5</version>-->
+        <!--        </dependency>-->
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.5.5</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.13.0</version>
         </dependency>
+
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.5.5</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -176,16 +189,16 @@
         cause a major change of the API. The new packages are currently needed for
         the query servlet, but everything should be updated at some point.
         -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.9.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.9.10.1</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--            <artifactId>jackson-core</artifactId>-->
+<!--            <version>2.9.4</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--            <artifactId>jackson-databind</artifactId>-->
+<!--            <version>2.9.10.1</version>-->
+<!--        </dependency>-->
 
         <!-- For tests -->
         <dependency>

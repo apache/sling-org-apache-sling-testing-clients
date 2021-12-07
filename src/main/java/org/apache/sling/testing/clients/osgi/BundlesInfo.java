@@ -17,8 +17,8 @@
 
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
-import org.codehaus.jackson.JsonNode;
 
 import java.util.Iterator;
 
@@ -33,16 +33,16 @@ public class BundlesInfo {
 
     /**
      * The only constructor.
-     * 
+     *
      * @param root the root JSON node of the bundles info.
      * @throws ClientException if the json does not contain the proper info
      */
     public BundlesInfo(JsonNode root) throws ClientException {
         this.root = root;
         // some simple sanity checks
-        if(root.get("s") == null)
+        if (root.get("s") == null)
             throw new ClientException("No Status Info returned!");
-        if(root.get("s").size() != 5)
+        if (root.get("s").size() != 5)
             throw new ClientException("Wrong number of status numbers listed!");
         status = root.get("s");
     }
@@ -52,16 +52,16 @@ public class BundlesInfo {
      * @throws ClientException if the request cannot be completed
      */
     public String getStatusMessage() throws ClientException {
-        if(root.get("status") == null)
+        if (root.get("status") == null)
             throw new ClientException("No Status message returned!");
-        return root.get("status").getValueAsText();
+        return root.get("status").asText();
     }
 
     /**
      * @return total number of bundles.
      */
     public int getTotalNumOfBundles() {
-        return Integer.parseInt(status.get(0).getValueAsText());
+        return Integer.parseInt(status.get(0).asText());
     }
 
     /**
@@ -72,21 +72,21 @@ public class BundlesInfo {
      */
     public int getNumBundlesByStatus(Bundle.Status status) {
         int index = -1;
-        switch(status) {
-        case ACTIVE:
-            index = 1;
-            break;
-        case FRAGMENT:
-            index = 2;
-            break;
-        case RESOLVED:
-            index = 3;
-            break;
-        case INSTALLED:
-            index = 4;
-            break;
+        switch (status) {
+            case ACTIVE:
+                index = 1;
+                break;
+            case FRAGMENT:
+                index = 2;
+                break;
+            case RESOLVED:
+                index = 3;
+                break;
+            case INSTALLED:
+                index = 4;
+                break;
         }
-        return Integer.parseInt(this.status.get(index).getValueAsText());
+        return Integer.parseInt(this.status.get(index).asText());
     }
 
     /**
@@ -126,11 +126,11 @@ public class BundlesInfo {
     }
 
     private JsonNode findBy(String key, String value) {
-        Iterator<JsonNode> nodes = root.get("data").getElements();
-        while(nodes.hasNext()) {
+        Iterator<JsonNode> nodes = root.get("data").elements();
+        while (nodes.hasNext()) {
             JsonNode node = nodes.next();
             if ((null != node.get(key)) && (node.get(key).isValueNode())) {
-                final String valueNode = node.get(key).getTextValue();
+                final String valueNode = node.get(key).textValue();
                 if (valueNode.equals(value)) {
                     return node;
                 }
