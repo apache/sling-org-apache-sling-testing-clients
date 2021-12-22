@@ -17,6 +17,7 @@
 package org.apache.sling.testing.clients;
 
 import org.apache.http.entity.StringEntity;
+import org.hamcrest.CoreMatchers;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -25,6 +26,7 @@ import java.io.IOException;
 import static org.apache.sling.testing.clients.SystemPropertiesConfig.CONFIG_PROP_PREFIX;
 import static org.apache.sling.testing.clients.SystemPropertiesConfig.HTTP_RETRIES_ERROR_CODES_PROP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class SlingClientRetryStrategyTest {
     private static final String GET_UNAVAILABLE_PATH = "/test/unavailable/resource";
@@ -91,29 +93,45 @@ public class SlingClientRetryStrategyTest {
         }
     };
 
-    @Test
+    @Test()
     public void testRetryReallyUnavailable() throws Exception {
         requestCount = 0;
         availableAtRequestCount = Integer.MAX_VALUE; // never available
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
-        SlingHttpResponse slingHttpResponse = c.doGet(GET_UNAVAILABLE_PATH, 503);
+        try {
+            c.doGet(GET_UNAVAILABLE_PATH, 200);
+        } catch(ClientException err) {
+            assertThat(err.getMessage(),CoreMatchers.containsString("Expected HTTP Status: 200 . Instead 503 was returned!"));
+        }
         assertEquals(MAX_RETRIES + 1, requestCount);
-        assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
     }
 
-    @Test
+    @Test()
     public void testRetryReallyInternalError() throws Exception {
         requestCount = 0;
         availableAtRequestCount = Integer.MAX_VALUE; // never available
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
-        SlingHttpResponse slingHttpResponse = c.doGet(GET_INTERNAL_ERROR_PATH, 500);
+        try {
+            c.doGet(GET_INTERNAL_ERROR_PATH, 200);
+        } catch (ClientException err) {
+            assertThat(err.getMessage(),CoreMatchers.containsString("Expected HTTP Status: 200 . Instead 500 was returned!"));
+        }
         assertEquals(MAX_RETRIES + 1, requestCount);
-        assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
     }
 
     @Test
     public void test505ShouldNotRetry() throws Exception {
         System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
+        requestCount = 0;
+        availableAtRequestCount = Integer.MAX_VALUE; // never 200
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+        SlingHttpResponse slingHttpResponse = c.doGet(GET_505_PATH, 505);
+        assertEquals(1, requestCount);
+        assertEquals(NOK_RESPONSE, slingHttpResponse.getContent());
+    }
+
+    @Test
+    public void testExpectedStatusShouldNotRetry() throws Exception {
         requestCount = 0;
         availableAtRequestCount = Integer.MAX_VALUE; // never 200
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");

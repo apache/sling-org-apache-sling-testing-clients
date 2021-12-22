@@ -32,4 +32,9 @@ public class Constants {
      */
     public static final String PARAMETER_CHARSET = "_charset_";
     public static final String CHARSET_UTF8 = "utf-8";
+
+    /**
+     * Http Context Attributes
+     */
+    public static final String EXPECTED_STATUS = "expected_status";
 }

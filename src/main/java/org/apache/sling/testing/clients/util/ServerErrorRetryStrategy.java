@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.apache.http.HttpStatus.*;
+import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
 
 /**
  * {code ServiceUnavailableRetryStrategy} strategy for retrying request in case of a 5XX response code
@@ -43,7 +44,8 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
 
     @Override
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
-        boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries() && responseRetryCondition(response);
+        int[] expectedStatus = (int[]) context.getAttribute(EXPECTED_STATUS);
+        boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries() && responseRetryCondition(response, expectedStatus);
 
         if (SystemPropertiesConfig.isHttpLogRetries() && needsRetry && LOG.isWarnEnabled()) {
             LOG.warn("Request retry needed due to service unavailable response");
@@ -64,9 +66,13 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         return SystemPropertiesConfig.getHttpRetriesDelay();
     }
 
-    private boolean responseRetryCondition(final HttpResponse response) {
+    private boolean responseRetryCondition(final HttpResponse response, int... expectedStatus) {
         final Integer statusCode = response.getStatusLine().getStatusCode();
         final Collection<Integer> errorCodes = SystemPropertiesConfig.getHttpRetriesErrorCodes();
+        if ((expectedStatus != null) && (expectedStatus.length > 0) &&
+                Arrays.stream(expectedStatus).anyMatch(expected -> statusCode == expected)) {
+            return false;
+        }
         if (errorCodes != null && !errorCodes.isEmpty()) {
             return errorCodes.contains(statusCode);
         } else {
