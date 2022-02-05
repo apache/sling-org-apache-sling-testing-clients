@@ -37,4 +37,10 @@ public class Constants {
      * Http Context Attributes
      */
     public static final String EXPECTED_STATUS = "expected_status";
+
+    /**
+     * ClientException expected status prefix
+     */
+    public static final String EXPECTED_STATUS_ERROR_PREFIX = "Expected HTTP Status: ";
+
 }

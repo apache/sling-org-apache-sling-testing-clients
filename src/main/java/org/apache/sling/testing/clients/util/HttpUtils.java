@@ -16,6 +16,8 @@
  */
 package org.apache.sling.testing.clients.util;
 
+import static org.apache.sling.testing.Constants.EXPECTED_STATUS_ERROR_PREFIX;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.sling.testing.clients.ClientException;
@@ -85,7 +87,7 @@ public class HttpUtils {
     private static boolean throwError(HttpResponse response, String errorMessage, int... expectedStatus)
             throws ClientException {
         // build error message
-        String errorMsg = "Expected HTTP Status: ";
+        String errorMsg = EXPECTED_STATUS_ERROR_PREFIX;
         for (int expected : expectedStatus) {
             errorMsg += expected + " ";
         }

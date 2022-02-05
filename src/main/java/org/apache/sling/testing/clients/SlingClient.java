@@ -17,7 +17,9 @@
 package org.apache.sling.testing.clients;
 
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.sling.testing.Constants.EXPECTED_STATUS_ERROR_PREFIX;
 
 import java.io.File;
 import java.net.URI;
@@ -201,9 +203,19 @@ public class SlingClient extends AbstractSlingClient {
      * @throws ClientException if the request could not be performed
      */
     public boolean exists(String path) throws ClientException {
-        SlingHttpResponse response = this.doGet(path + ".json");
-        final int status = response.getStatusLine().getStatusCode();
-        return status == SC_OK;
+        try {
+            SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_NOT_FOUND);
+            final int status = response.getStatusLine().getStatusCode();
+            return status == SC_OK;
+        } catch (ClientException exc) {
+            if (exc.getMessage().startsWith(EXPECTED_STATUS_ERROR_PREFIX)) {
+                // none of the expected status, so false
+                return false;
+            } else {
+                // not an expected status issue re-throw
+                throw exc;
+            }
+        }
     }
 
     /**
