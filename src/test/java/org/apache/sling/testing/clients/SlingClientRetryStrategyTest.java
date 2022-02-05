@@ -17,12 +17,15 @@
 package org.apache.sling.testing.clients;
 
 import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HttpRequestHandler;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.apache.sling.testing.clients.SystemPropertiesConfig.CONFIG_PROP_PREFIX;
 import static org.apache.sling.testing.clients.SystemPropertiesConfig.HTTP_RETRIES_ERROR_CODES_PROP;
 import static org.junit.Assert.assertEquals;
@@ -35,24 +38,26 @@ public class SlingClientRetryStrategyTest {
     private static final String GET_505_PATH = "/test/unsupportedversion/resource";
     private static final String NOK_RESPONSE = "TEST_NOK";
     private static final String OK_RESPONSE = "TEST_OK";
+    private static final String JSON_EXT = ".json";
 
     private static final int MAX_RETRIES = 4;
 
     private static int requestCount = 0;
     private static int availableAtRequestCount = Integer.MAX_VALUE;
 
-    static {
+    @Before
+    public void defaultSetup() {
+        System.clearProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP);
         System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_LOG_RETRIES_PROP, "true");
         System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_DELAY_PROP, "50");
         System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_RETRIES_PROP, "4");
-        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,503");
     }
 
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
-        protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(GET_UNAVAILABLE_PATH, (request, response, context) -> {
+        protected void registerHandlers() {
+            final HttpRequestHandler unavailableHandler = (request, response, context) -> {
                 requestCount++;
                 if (requestCount == availableAtRequestCount) {
                     response.setEntity(new StringEntity(OK_RESPONSE));
@@ -61,9 +66,11 @@ public class SlingClientRetryStrategyTest {
                     response.setEntity(new StringEntity(NOK_RESPONSE));
                     response.setStatusCode(503);
                 }
-            });
+            };
+            serverBootstrap.registerHandler(GET_UNAVAILABLE_PATH, unavailableHandler);
+            serverBootstrap.registerHandler(GET_UNAVAILABLE_PATH + JSON_EXT, unavailableHandler);
 
-            serverBootstrap.registerHandler(GET_INTERNAL_ERROR_PATH, (request, response, context) -> {
+            final HttpRequestHandler internalErrorHandler = (request, response, context) -> {
                 requestCount++;
                 if (requestCount == availableAtRequestCount) {
                     response.setEntity(new StringEntity(OK_RESPONSE));
@@ -72,13 +79,17 @@ public class SlingClientRetryStrategyTest {
                     response.setEntity(new StringEntity(NOK_RESPONSE));
                     response.setStatusCode(500);
                 }
-            });
+            };
+            serverBootstrap.registerHandler(GET_INTERNAL_ERROR_PATH, internalErrorHandler);
+            serverBootstrap.registerHandler(GET_INTERNAL_ERROR_PATH + JSON_EXT, internalErrorHandler);
 
-            serverBootstrap.registerHandler(GET_INEXISTENT_PATH, (request, response, context) -> {
+            final HttpRequestHandler notFoundHandler = (request, response, context) -> {
                 requestCount++;
                 response.setEntity(new StringEntity(NOK_RESPONSE));
                 response.setStatusCode(404);
-            });
+            };
+            serverBootstrap.registerHandler(GET_INEXISTENT_PATH, notFoundHandler);
+            serverBootstrap.registerHandler(GET_INEXISTENT_PATH + JSON_EXT, notFoundHandler);
 
             serverBootstrap.registerHandler(GET_505_PATH, (request, response, context) -> {
                 requestCount++;
@@ -149,6 +160,25 @@ public class SlingClientRetryStrategyTest {
         SlingHttpResponse slingHttpResponse = c.doGet(GET_505_PATH, 200);
         assertEquals(availableAtRequestCount, requestCount);
         assertEquals(OK_RESPONSE, slingHttpResponse.getContent());
+    }
+
+    @Test
+    public void testNotExist404ShouldNotRetry() throws Exception {
+        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "404");
+        requestCount = 0;
+        availableAtRequestCount = Integer.MAX_VALUE; // never available
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+        assertFalse(c.exists(GET_INEXISTENT_PATH));
+        assertEquals(1, requestCount);
+    }
+
+    @Test
+    public void testNotExist500ShouldRetry() throws Exception {
+        requestCount = 0;
+        availableAtRequestCount = Integer.MAX_VALUE; // never available
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+        assertFalse(c.exists(GET_INTERNAL_ERROR_PATH));
+        assertEquals(MAX_RETRIES + 1, requestCount);
     }
 
     @Test
