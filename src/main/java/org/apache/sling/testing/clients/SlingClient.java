@@ -71,7 +71,8 @@ public class SlingClient extends AbstractSlingClient {
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
     public static final String CLIENT_CONNECTION_TIMEOUT_PROP = "sling.client.connection.timeout.seconds";
     public static final String SUDO_COOKIE_NAME = "sling.sudo.cookie.name";
-    public static final String JSON_EXT = ".json";
+
+    private static final String JSON_EXT = ".json";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
