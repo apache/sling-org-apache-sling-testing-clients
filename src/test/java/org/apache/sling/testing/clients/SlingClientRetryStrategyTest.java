@@ -16,6 +16,7 @@
  */
 package org.apache.sling.testing.clients;
 
+import java.net.URI;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.hamcrest.CoreMatchers;
@@ -170,6 +171,12 @@ public class SlingClientRetryStrategyTest {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         assertFalse(c.exists(GET_INEXISTENT_PATH));
         assertEquals(1, requestCount);
+    }
+
+    @Test(expected = ClientException.class)
+    public void testExistOtherClientException() throws Exception {
+        SlingClient c = new SlingClient(new URI("http://dummy:1234"), "user", "pass");
+        c.exists("/any/resource");
     }
 
     @Test

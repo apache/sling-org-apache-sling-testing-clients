@@ -71,6 +71,7 @@ public class SlingClient extends AbstractSlingClient {
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";
     public static final String CLIENT_CONNECTION_TIMEOUT_PROP = "sling.client.connection.timeout.seconds";
     public static final String SUDO_COOKIE_NAME = "sling.sudo.cookie.name";
+    public static final String JSON_EXT = ".json";
 
     /**
      * Constructor used by Builders and adaptTo(). <b>Should never be called directly from the code.</b>
@@ -204,7 +205,7 @@ public class SlingClient extends AbstractSlingClient {
      */
     public boolean exists(String path) throws ClientException {
         try {
-            SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_NOT_FOUND);
+            SlingHttpResponse response = this.doGet(path + JSON_EXT, SC_OK, SC_NOT_FOUND);
             final int status = response.getStatusLine().getStatusCode();
             return status == SC_OK;
         } catch (ClientException exc) {
@@ -409,7 +410,7 @@ public class SlingClient extends AbstractSlingClient {
         if (depth == -1) {
             path += ".infinity.json";
         } else {
-            path += "." + depth + ".json";
+            path += "." + depth + JSON_EXT;
         }
 
         // request the JSON for the page node
@@ -436,7 +437,7 @@ public class SlingClient extends AbstractSlingClient {
         if (depth == -1) {
             path += ".infinity.json";
         } else {
-            path += "." + depth + ".json";
+            path += "." + depth + JSON_EXT;
         }
 
         // request the JSON for the node
