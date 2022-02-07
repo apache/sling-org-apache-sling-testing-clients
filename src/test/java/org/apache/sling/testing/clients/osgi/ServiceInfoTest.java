@@ -16,13 +16,14 @@
  */
 package org.apache.sling.testing.clients.osgi;
 
-import com.google.common.io.Resources;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.util.JsonUtils;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -30,18 +31,24 @@ import static org.junit.Assert.assertEquals;
 public class ServiceInfoTest {
 
     @Test
-    public void testSpecifyServiceIdentifierAsString() throws IOException, ClientException {
+    public void testSpecifyServiceIdentifierAsString() throws IOException, ClientException, URISyntaxException {
         assertServiceInfo("service-id-as-string");
     }
 
     @Test
-    public void testSpecifyServiceIdentifierAsInteger() throws IOException, ClientException {
+    public void testSpecifyServiceIdentifierAsInteger() throws IOException, ClientException, URISyntaxException {
         assertServiceInfo("service-id-as-int");
     }
 
-    private void assertServiceInfo(final String file) throws IOException, ClientException {
-        final ServiceInfo serviceInfo = new ServiceInfo(JsonUtils.getJsonNodeFromString(
-                Resources.toString(Resources.getResource("service-info/" + file + ".json"), StandardCharsets.UTF_8)));
+    private void assertServiceInfo(final String file) throws IOException, ClientException, URISyntaxException {
+        String fileContents = new String(
+                Files.readAllBytes(
+                        Paths.get(
+                                ServiceInfoTest.class.getClassLoader().getResource("service-info/" + file + ".json").toURI()
+                        )
+                )
+        );
+        final ServiceInfo serviceInfo = new ServiceInfo(JsonUtils.getJsonNodeFromString(fileContents));
         assertEquals(10, serviceInfo.getId());
         assertEquals("org.example.MyService", serviceInfo.getPid());
         assertEquals(6, serviceInfo.getBundleId());

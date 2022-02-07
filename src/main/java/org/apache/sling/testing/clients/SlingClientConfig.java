@@ -16,7 +16,6 @@
  */
 package org.apache.sling.testing.clients;
 
-import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.annotation.ThreadSafe;
@@ -171,8 +170,8 @@ public class SlingClientConfig {
         public Builder setUrl(URI url) {
             this.url = url;
             // Add / as path if none is present
-            if (Strings.isNullOrEmpty(this.url.getPath()) || !this.url.getPath().endsWith("/")) {
-                this.url = this.url.resolve(Strings.nullToEmpty(this.url.getPath()) + "/");
+            if (StringUtils.isEmpty(this.url.getPath()) || !this.url.getPath().endsWith("/")) {
+                this.url = this.url.resolve((this.url.getPath() == null ? "" : this.url.getPath()) + "/");
             }
             return this;
         }
