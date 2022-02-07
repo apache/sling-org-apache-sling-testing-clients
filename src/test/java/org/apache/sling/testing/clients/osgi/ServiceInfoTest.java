@@ -16,13 +16,12 @@
  */
 package org.apache.sling.testing.clients.osgi;
 
-import com.google.common.io.Resources;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.util.JsonUtils;
+import org.apache.sling.testing.clients.util.ResourceUtil;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -40,8 +39,11 @@ public class ServiceInfoTest {
     }
 
     private void assertServiceInfo(final String file) throws IOException, ClientException {
-        final ServiceInfo serviceInfo = new ServiceInfo(JsonUtils.getJsonNodeFromString(
-                Resources.toString(Resources.getResource("service-info/" + file + ".json"), StandardCharsets.UTF_8)));
+        final ServiceInfo serviceInfo = new ServiceInfo(
+                JsonUtils.getJsonNodeFromString(
+                        ResourceUtil.readResourceAsString("service-info/" + file + ".json")
+                )
+        );
         assertEquals(10, serviceInfo.getId());
         assertEquals("org.example.MyService", serviceInfo.getPid());
         assertEquals(6, serviceInfo.getBundleId());
