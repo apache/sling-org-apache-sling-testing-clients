@@ -33,6 +33,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ThreadSafe
@@ -171,7 +172,7 @@ public class SlingClientConfig {
             this.url = url;
             // Add / as path if none is present
             if (StringUtils.isEmpty(this.url.getPath()) || !this.url.getPath().endsWith("/")) {
-                this.url = this.url.resolve((this.url.getPath() == null ? "" : this.url.getPath()) + "/");
+                this.url = this.url.resolve(Optional.ofNullable(this.url.getPath()).orElse("") + "/");
             }
             return this;
         }
