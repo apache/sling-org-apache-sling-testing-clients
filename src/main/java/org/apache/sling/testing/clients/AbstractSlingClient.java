@@ -17,7 +17,8 @@
 package org.apache.sling.testing.clients;
 
 import org.apache.http.*;
-import org.apache.http.annotation.Immutable;
+import org.apache.http.annotation.Contract;
+import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -42,7 +43,7 @@ import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
 /**
  * The abstract base client for all implementing integration test clients.
  */
-@Immutable
+@Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class AbstractSlingClient implements HttpClient, Closeable {
 
     private final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
