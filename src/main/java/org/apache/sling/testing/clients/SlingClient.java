@@ -34,7 +34,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.NameValuePair;
-import org.apache.http.annotation.Immutable;
+import org.apache.http.annotation.Contract;
+import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
@@ -63,7 +64,7 @@ import org.apache.sling.testing.timeouts.TimeoutsProvider;
  * <p>It has methods to perform simple node operations on the server like creating and deleting nodes, etc.
  * on the server using requests. </p>
  */
-@Immutable
+@Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class SlingClient extends AbstractSlingClient {
 
     public static final String DEFAULT_NODE_TYPE = "sling:OrderedFolder";

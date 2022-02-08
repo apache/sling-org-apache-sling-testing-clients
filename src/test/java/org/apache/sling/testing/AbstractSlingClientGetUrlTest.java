@@ -130,7 +130,7 @@ public class AbstractSlingClientGetUrlTest {
         SlingClient c = new SlingClient(URI.create(serverUrl), "USER", "PWD");
         assertEquals("", URI.create(expectedUrl), c.getUrl(inputPath));
         assertEquals(URI.create(expectedUrl), c.getUrl(inputPath, null));
-        assertEquals(URI.create(expectedUrl + "?"), c.getUrl(inputPath, new ArrayList<NameValuePair>()));
+        assertEquals(URI.create(expectedUrl), c.getUrl(inputPath, new ArrayList<NameValuePair>()));
         assertEquals(URI.create(expectedUrl + "?" + STRING_TEST_PARAMETERS), c.getUrl(inputPath, TEST_PARAMETERS));
     }
 }
