@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.clients</artifactId>
-    <version>3.0.11-SNAPSHOT</version>
+    <version>3.0.12</version>
 
     <name>Apache Sling Testing Clients</name>
     <description>
@@ -39,12 +39,12 @@
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git
         </developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-testing-clients.git</url>
-        <tag>HEAD</tag>
+        <tag>org.apache.sling.testing.clients-3.0.12</tag>
     </scm>
     
     <properties>
         <sling.java.version>8</sling.java.version>
-        <project.build.outputTimestamp>1644251860</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1644413146</project.build.outputTimestamp>
     </properties>
 
     <build>
