@@ -152,7 +152,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Status
      */
     public String getSlingStatus() {
-        String searchPattern = "id=\"" + STATUS + "\">";
+        String searchPattern = "id=\"" + STATUS + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -173,7 +173,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Message
      */
     public String getSlingMessage() {
-        String searchPattern = "id=\"" + MESSAGE + "\">";
+        String searchPattern = "id=\"" + MESSAGE + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -198,7 +198,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Location
      */
     public String getSlingLocation() {
-        String searchPattern = "id=\"" + LOCATION + "\">";
+        String searchPattern = "id=\"" + LOCATION + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -208,7 +208,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Parent Location
      */
     public String getSlingParentLocation() {
-        String searchPattern = "id=\"" + PARENT_LOCATION + "\">";
+        String searchPattern = "id=\"" + PARENT_LOCATION + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -218,7 +218,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Path
      */
     public String getSlingPath() {
-        String searchPattern = "id=\"" + PATH + "\">";
+        String searchPattern = "id=\"" + PATH + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -228,7 +228,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Referer
      */
     public String getSlingReferer() {
-        String searchPattern = "id=\"" + REFERER + "\">";
+        String searchPattern = "id=\"" + REFERER + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
@@ -238,7 +238,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @return Sling Change Log
      */
     public String getSlingChangeLog() {
-        String searchPattern = "id=\"" + CHANGE_LOG + "\">";
+        String searchPattern = "id=\"" + CHANGE_LOG + "\"";
         return extractFromHTMLResponse(searchPattern);
     }
 
