@@ -202,7 +202,7 @@ public class SlingClient extends AbstractSlingClient {
      * @throws ClientException if the request could not be performed
      */
     public boolean exists(String path) throws ClientException {
-        SlingHttpResponse response = this.doGet(path + ".json");
+        SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_CREATED, SC_NOT_FOUND,SC_NOT_IMPLEMENTED);
         final int status = response.getStatusLine().getStatusCode();
         return status == SC_OK;
     }
