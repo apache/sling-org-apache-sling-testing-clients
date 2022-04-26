@@ -254,6 +254,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
         if (start > 0) {
             start += searchPattern.length();
             tmpResponse = getContent().substring(start);
+            tmpResponse = tmpResponse.substring(tmpResponse.indexOf(">") + 1);
             int end = tmpResponse.indexOf("<");
             tmpResponse = tmpResponse.substring(0, end);
         }
