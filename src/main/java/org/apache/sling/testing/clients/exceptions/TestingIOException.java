@@ -22,6 +22,10 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 
+/**
+ * Use this exception to indicate any problems with networking (typically manifested as 
+ * IOException).
+ */
 public class TestingIOException extends ClientException {
 
 	public TestingIOException(String message) {
