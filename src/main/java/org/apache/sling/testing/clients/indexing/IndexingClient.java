@@ -23,6 +23,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.clients.query.QueryClient;
 import org.apache.sling.testing.clients.util.poller.Polling;
@@ -202,7 +203,7 @@ public class IndexingClient extends SlingClient {
         if (configs instanceof String[]) {
             return Stream.of((String[]) configs).map(e -> e.split(":")[0]).collect(Collectors.toList());
         } else {
-            throw new ClientException("Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
+            throw new TestValidationException("Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
         }
     }
 

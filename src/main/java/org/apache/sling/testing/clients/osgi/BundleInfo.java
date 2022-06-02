@@ -17,7 +17,7 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.codehaus.jackson.JsonNode;
 
 import java.util.HashMap;
@@ -28,15 +28,15 @@ public class BundleInfo {
 
     private JsonNode bundle;
 
-    public BundleInfo(JsonNode root) throws ClientException {
+    public BundleInfo(JsonNode root) throws TestValidationException {
         if(root.get("id") != null) {
             if(root.get("id") == null) {
-                throw new ClientException("No Bundle Info returned");
+                throw new TestValidationException("No Bundle Info returned");
             }
             bundle = root;
         } else {
             if(root.get("data") == null && root.get("data").size() < 1) {
-                throw new ClientException("No Bundle Info returned");
+                throw new TestValidationException("No Bundle Info returned");
             }
             bundle = root.get("data").get(0);
         }

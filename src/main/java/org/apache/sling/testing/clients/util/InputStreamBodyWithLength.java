@@ -18,7 +18,7 @@ package org.apache.sling.testing.clients.util;
 
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,7 @@ import java.io.InputStream;
 public class InputStreamBodyWithLength extends InputStreamBody {
     private long streamLength;
 
-    public InputStreamBodyWithLength(String resourcePath, String contentType, String fileName) throws ClientException {
+    public InputStreamBodyWithLength(String resourcePath, String contentType, String fileName) throws TestingIOException {
         super(ResourceUtil.getResourceAsStream(resourcePath), ContentType.create(contentType), fileName);
         this.streamLength = getResourceStreamLength(resourcePath);
     }
@@ -47,7 +47,7 @@ public class InputStreamBodyWithLength extends InputStreamBody {
      * @param resourcePath path to the file
      * @return the size of the resource
      */
-    private static long getResourceStreamLength(String resourcePath) throws ClientException {
+    private static long getResourceStreamLength(String resourcePath) throws TestingIOException {
         int streamLength = 0;
         InputStream stream = ResourceUtil.getResourceAsStream(resourcePath);
         try {
@@ -56,12 +56,12 @@ public class InputStreamBodyWithLength extends InputStreamBody {
                 stream.skip(avail);
             }
         } catch (IOException e) {
-            throw new ClientException("Could not read " + resourcePath + "!", e);
+            throw new TestingIOException("Could not read " + resourcePath + "!", e);
         } finally {
             try {
                 stream.close();
             } catch (IOException e) {
-                throw new ClientException("Could not close Inputstream for " + resourcePath + "!", e);
+                throw new TestingIOException("Could not close Inputstream for " + resourcePath + "!", e);
             }
         }
         return streamLength;

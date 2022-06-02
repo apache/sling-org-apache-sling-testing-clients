@@ -30,6 +30,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -209,12 +210,12 @@ public class SlingClientConfig {
 
         public SlingClientConfig build() throws ClientException {
             if (!this.url.isAbsolute()) {
-                throw new ClientException("Url must be absolute: " + url);
+                throw new TestingIOException("Url must be absolute: " + url);
             }
 
             HttpHost targetHost = URIUtils.extractHost(this.url);
             if (targetHost == null) {
-                throw new ClientException("Failed to extract hostname from url " + url);
+                throw new TestingIOException("Failed to extract hostname from url " + url);
             }
 
             // Create default CredentialsProvider if not set

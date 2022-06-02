@@ -22,6 +22,8 @@ import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
 import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.clients.query.servlet.QueryServlet;
 import org.apache.sling.testing.clients.util.JsonUtils;
@@ -203,9 +205,9 @@ public class QueryClient extends SlingClient {
 
             LOG.info("query servlet installed at {}", getUrl(QueryServlet.SERVLET_PATH));
         } catch (IOException e) {
-            throw new ClientException("Failed to create the query servlet bundle", e);
+            throw new TestingIOException("Failed to create the query servlet bundle", e);
         } catch (TimeoutException e) {
-            throw new ClientException("The query servlet bundle did not successfully start", e);
+            throw new TestValidationException("The query servlet bundle did not successfully start", e);
         }
 
         return this;

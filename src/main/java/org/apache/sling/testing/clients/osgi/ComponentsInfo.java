@@ -17,7 +17,7 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.codehaus.jackson.JsonNode;
 
 import java.util.Iterator;
@@ -35,7 +35,7 @@ public class ComponentsInfo {
      * @param rootNode the root JSON node of the components info.
      * @throws ClientException if the info cannot be retrieved
      */
-    public ComponentsInfo(JsonNode rootNode) throws ClientException {
+    public ComponentsInfo(JsonNode rootNode) {
         this.root = rootNode;
     }
 
@@ -43,9 +43,9 @@ public class ComponentsInfo {
      * @return the number of installed components
      * @throws ClientException if the info cannot be retrieved
      */
-    public int getNumberOfInstalledComponents() throws ClientException {
+    public int getNumberOfInstalledComponents() throws TestValidationException {
         if(root.get("status") == null)
-            throw new ClientException("Number of installed Components not defined!");
+            throw new TestValidationException("Number of installed Components not defined!");
         return Integer.parseInt(root.get("status").getValueAsText());
     }
 
@@ -54,7 +54,7 @@ public class ComponentsInfo {
      * @return the ComponentInfo for a component with the identifier {@code id}
      * @throws ClientException if the info cannot be retrieved
      */
-    public ComponentInfo forId(String id) throws ClientException {
+    public ComponentInfo forId(String id) throws TestValidationException {
         JsonNode component = findBy("id", id);
         return (component != null) ? new ComponentInfo(component) : null;
     }
@@ -64,7 +64,7 @@ public class ComponentsInfo {
      * @return the ComponentInfo for a component with the name {@code name}
      * @throws ClientException if the info cannot be retrieved
      */
-    public ComponentInfo forName(String name) throws ClientException {
+    public ComponentInfo forName(String name) throws TestValidationException {
         JsonNode component = findBy("name", name);
         return (component != null) ? new ComponentInfo(component) : null;
     }
@@ -74,7 +74,7 @@ public class ComponentsInfo {
      * @return the ComponentInfo for a component with the pid {@code pid}
      * @throws ClientException if the info cannot be retrieved
      */
-    public ComponentInfo forPid(String pid) throws ClientException {
+    public ComponentInfo forPid(String pid) throws TestValidationException {
         JsonNode component = findBy("pid", pid);
         return (component != null) ? new ComponentInfo(component) : null;
     }

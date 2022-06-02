@@ -31,6 +31,7 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 
 public class SlingHttpResponse implements CloseableHttpResponse {
 
@@ -81,7 +82,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      */
     public void checkStatus(int expected) throws ClientException {
         if (this.getStatusLine().getStatusCode() != expected) {
-            throw new ClientException(this + " has wrong response status ("
+            throw new TestValidationException(this + " has wrong response status ("
                     + this.getStatusLine().getStatusCode() + "). Expected " + expected);
         }
     }
@@ -101,7 +102,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
 
         // check for match
         if (!contentType.equals(expected)) {
-            throw new ClientException(this + " has wrong content type (" + contentType + "). Expected " + expected);
+            throw new TestValidationException(this + " has wrong content type (" + contentType + "). Expected " + expected);
         }
     }
 
@@ -127,7 +128,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
             }
 
             if (!matched) {
-                throw new ClientException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
+                throw new TestValidationException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
             }
         }
     }
@@ -141,7 +142,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     public void checkContentContains(String... expected) throws ClientException {
         for (String s : expected) {
             if (!this.getContent().contains(s)) {
-                throw new ClientException("Content does not contain string " + s + ". Content is: \n\n" + getContent());
+                throw new TestValidationException("Content does not contain string " + s + ". Content is: \n\n" + getContent());
             }
         }
     }

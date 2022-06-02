@@ -17,6 +17,8 @@
 package org.apache.sling.testing.clients.util;
 
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,9 +38,9 @@ public class JsonUtils {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            throw new ClientException("Could not read json file.", e);
+            throw new TestValidationException("Could not read json file.", e);
         } catch (IOException e) {
-            throw new ClientException("Could not read json node.", e);
+            throw new TestingIOException("Could not read json node.", e);
         }
     }
 }

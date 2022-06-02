@@ -17,6 +17,7 @@
 package org.apache.sling.testing.clients.osgi;
 
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class BundlesInstaller {
             return false;
         } catch (IOException e) {
             log.debug("Failed to retrieve bundle symbolic name from file. ", e);
-            throw new ClientException("Failed to retrieve bundle symbolic name from file. ", e);
+            throw new TestValidationException("Failed to retrieve bundle symbolic name from file. ", e);
         }
     }
 

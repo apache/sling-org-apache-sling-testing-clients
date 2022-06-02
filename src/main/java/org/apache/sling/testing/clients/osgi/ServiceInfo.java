@@ -19,19 +19,19 @@ package org.apache.sling.testing.clients.osgi;
 
 import java.util.List;
 
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.codehaus.jackson.JsonNode;
 
 public class ServiceInfo {
 
     private JsonNode service;
 
-    public ServiceInfo(JsonNode root) throws ClientException {
+    public ServiceInfo(JsonNode root) throws TestValidationException {
         if(root.get("id") != null) {
             service = root;
         } else {
             if(root.get("data") == null && root.get("data").size() < 1) {
-                throw new ClientException("No service info returned");
+                throw new TestValidationException("No service info returned");
             }
             service = root.get("data").get(0);
         }

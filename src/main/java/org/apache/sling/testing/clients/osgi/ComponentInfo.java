@@ -17,22 +17,22 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.codehaus.jackson.JsonNode;
 
 public class ComponentInfo {
 
     private JsonNode component;
 
-    public ComponentInfo(JsonNode root) throws ClientException {
+    public ComponentInfo(JsonNode root) throws TestValidationException {
         if(root.get("id") != null) {
             if(root.get("id") == null) {
-                throw new ClientException("No Component Info returned");
+                throw new TestValidationException("No Component Info returned");
             }
             component = root;
         } else {
             if(root.get("data") == null && root.get("data").size() < 1) {
-                throw new ClientException("No Component Info returned");
+                throw new TestValidationException("No Component Info returned");
             }
             component = root.get("data").get(0);
         }

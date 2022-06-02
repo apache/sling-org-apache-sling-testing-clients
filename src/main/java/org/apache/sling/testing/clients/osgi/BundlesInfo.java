@@ -17,7 +17,7 @@
 
 package org.apache.sling.testing.clients.osgi;
 
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
 import org.codehaus.jackson.JsonNode;
 
 import java.util.Iterator;
@@ -37,13 +37,13 @@ public class BundlesInfo {
      * @param root the root JSON node of the bundles info.
      * @throws ClientException if the json does not contain the proper info
      */
-    public BundlesInfo(JsonNode root) throws ClientException {
+    public BundlesInfo(JsonNode root) throws TestValidationException {
         this.root = root;
         // some simple sanity checks
         if(root.get("s") == null)
-            throw new ClientException("No Status Info returned!");
+            throw new TestValidationException("No Status Info returned!");
         if(root.get("s").size() != 5)
-            throw new ClientException("Wrong number of status numbers listed!");
+            throw new TestValidationException("Wrong number of status numbers listed!");
         status = root.get("s");
     }
 
@@ -51,9 +51,9 @@ public class BundlesInfo {
      * @return the status message of the bundle context
      * @throws ClientException if the request cannot be completed
      */
-    public String getStatusMessage() throws ClientException {
+    public String getStatusMessage() throws TestValidationException {
         if(root.get("status") == null)
-            throw new ClientException("No Status message returned!");
+            throw new TestValidationException("No Status message returned!");
         return root.get("status").getValueAsText();
     }
 
@@ -96,7 +96,7 @@ public class BundlesInfo {
      * @return the BundleInfo
      * @throws ClientException if the info could not be retrieved
      */
-    public BundleInfo forId(String id) throws ClientException {
+    public BundleInfo forId(String id) throws TestValidationException {
         JsonNode bundle = findBy("id", id);
         return (bundle != null) ? new BundleInfo(bundle) : null;
     }
@@ -108,7 +108,7 @@ public class BundlesInfo {
      * @return the info, or {@code null} if the bundle is not found
      * @throws ClientException if the info cannot be retrieved
      */
-    public BundleInfo forName(String name) throws ClientException {
+    public BundleInfo forName(String name) throws TestValidationException {
         JsonNode bundle = findBy("name", name);
         return (bundle != null) ? new BundleInfo(bundle) : null;
     }
@@ -120,7 +120,7 @@ public class BundlesInfo {
      * @return the info, or {@code null} if the bundle is not found
      * @throws ClientException if the info cannot be retrieved
      */
-    public BundleInfo forSymbolicName(String name) throws ClientException {
+    public BundleInfo forSymbolicName(String name) throws TestValidationException {
         JsonNode bundle = findBy("symbolicName", name);
         return (bundle != null) ? new BundleInfo(bundle) : null;
     }

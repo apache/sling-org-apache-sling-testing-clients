@@ -41,6 +41,8 @@ import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
 import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.exceptions.TestValidationException;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 import org.apache.sling.testing.clients.util.FormEntityBuilder;
 import org.apache.sling.testing.clients.util.HttpUtils;
 import org.apache.sling.testing.clients.util.JsonUtils;
@@ -393,7 +395,7 @@ public class OsgiConsoleClient extends SlingClient {
         try {
             poller.poll(500L * waitCount, 500);
         } catch (TimeoutException e) {
-            throw new ClientException("Cannot retrieve configuration.", e);
+            throw new TestValidationException("Cannot retrieve configuration.", e);
         }
         return poller.getConfig();
     }
@@ -623,7 +625,7 @@ public class OsgiConsoleClient extends SlingClient {
         try {
             return this.checkBundleInstalled(OsgiConsoleClient.getBundleSymbolicName(f), waitTime, retries);
         } catch (IOException e) {
-            throw new ClientException("Cannot get bundle symbolic name", e);
+            throw new TestingIOException("Cannot get bundle symbolic name", e);
         }
     }
 
@@ -645,7 +647,7 @@ public class OsgiConsoleClient extends SlingClient {
         try {
             waitBundleInstalled(getBundleSymbolicName(f), timeout, delay);
         } catch (IOException e) {
-            throw new ClientException("Cannot get bundle symbolic name", e);
+            throw new TestingIOException("Cannot get bundle symbolic name", e);
         }
     }
 
@@ -721,7 +723,7 @@ public class OsgiConsoleClient extends SlingClient {
         final JsonNode idNode = bundle.get(JSON_KEY_ID);
 
         if (idNode == null) {
-            throw new ClientException("Cannot get id from bundle json");
+            throw new TestValidationException("Cannot get id from bundle json");
         }
 
         return idNode.getLongValue();
@@ -738,7 +740,7 @@ public class OsgiConsoleClient extends SlingClient {
         final JsonNode versionNode = bundle.get(JSON_KEY_VERSION);
 
         if (versionNode == null) {
-            throw new ClientException("Cannot get version from bundle json");
+            throw new TestValidationException("Cannot get version from bundle json");
         }
 
         return versionNode.getTextValue();
@@ -755,7 +757,7 @@ public class OsgiConsoleClient extends SlingClient {
         final JsonNode stateNode = bundle.get(JSON_KEY_STATE);
 
         if (stateNode == null) {
-            throw new ClientException("Cannot get state from bundle json");
+            throw new TestValidationException("Cannot get state from bundle json");
         }
 
         return stateNode.getTextValue();
@@ -868,17 +870,17 @@ public class OsgiConsoleClient extends SlingClient {
         final JsonNode root = JsonUtils.getJsonNodeFromString(content);
 
         if (root.get(JSON_KEY_DATA) == null) {
-            throw new ClientException(path + " does not provide '" + JSON_KEY_DATA + "' element, JSON content=" + content);
+            throw new TestValidationException(path + " does not provide '" + JSON_KEY_DATA + "' element, JSON content=" + content);
         }
 
         Iterator<JsonNode> data = root.get(JSON_KEY_DATA).getElements();
         if (!data.hasNext()) {
-            throw new ClientException(path + "." + JSON_KEY_DATA + " is empty, JSON content=" + content);
+            throw new TestValidationException(path + "." + JSON_KEY_DATA + " is empty, JSON content=" + content);
         }
 
         final JsonNode bundle = data.next();
         if (bundle.get(JSON_KEY_STATE) == null) {
-            throw new ClientException(path + ".data[0].state missing, JSON content=" + content);
+            throw new TestValidationException(path + ".data[0].state missing, JSON content=" + content);
         }
 
         return bundle;
