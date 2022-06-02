@@ -31,6 +31,7 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 public class SlingHttpResponse implements CloseableHttpResponse {
 
@@ -79,9 +80,9 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @param expected the expected http status
      * @throws ClientException if the response does not match the expected
      */
-    public void checkStatus(int expected) throws ClientException {
+    public void checkStatus(int expected) throws TestingValidationException {
         if (this.getStatusLine().getStatusCode() != expected) {
-            throw new ClientException(this + " has wrong response status ("
+            throw new TestingValidationException(this + " has wrong response status ("
                     + this.getStatusLine().getStatusCode() + "). Expected " + expected);
         }
     }
@@ -92,7 +93,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @param expected the expected content type
      * @throws ClientException if the response content type does not match the expected
      */
-    public void checkContentType(String expected) throws ClientException {
+    public void checkContentType(String expected) throws TestingValidationException {
         // Remove whatever follows semicolon in content-type
         String contentType = this.getEntity().getContentType().getValue();
         if (contentType != null) {
@@ -101,7 +102,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
 
         // check for match
         if (!contentType.equals(expected)) {
-            throw new ClientException(this + " has wrong content type (" + contentType + "). Expected " + expected);
+            throw new TestingValidationException(this + " has wrong content type (" + contentType + "). Expected " + expected);
         }
     }
 
@@ -112,7 +113,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @param regexp list of regular expressions
      * @throws ClientException if the response content does not match one of the regexp
      */
-    public void checkContentRegexp(String... regexp) throws ClientException {
+    public void checkContentRegexp(String... regexp) throws TestingValidationException {
         for(String expr : regexp) {
             final Pattern p = Pattern.compile(".*" + expr + ".*");
             boolean matched = false;
@@ -127,7 +128,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
             }
 
             if (!matched) {
-                throw new ClientException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
+                throw new TestingValidationException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
             }
         }
     }
@@ -138,10 +139,10 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @param expected list of expected strings
      * @throws ClientException @throws ClientException if the response content does not match one of the strings
      */
-    public void checkContentContains(String... expected) throws ClientException {
+    public void checkContentContains(String... expected) throws TestingValidationException {
         for (String s : expected) {
             if (!this.getContent().contains(s)) {
-                throw new ClientException("Content does not contain string " + s + ". Content is: \n\n" + getContent());
+                throw new TestingValidationException("Content does not contain string " + s + ". Content is: \n\n" + getContent());
             }
         }
     }

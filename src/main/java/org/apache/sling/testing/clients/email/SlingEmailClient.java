@@ -27,6 +27,7 @@ import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
 import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public final class SlingEmailClient extends SlingClient {
             JsonNode configNode = mapper.readTree(mockEmailConfig.getContent());
             return configNode.get("bindPort").intValue();
         } catch (IOException e) {
-            throw new ClientException("Failed retrieving configuration", e);
+            throw new TestingIOException("Failed retrieving configuration", e);
         }
     }
 
@@ -104,7 +105,7 @@ public final class SlingEmailClient extends SlingClient {
                 emails.add(msg);
             }
         } catch (IOException e) {
-            throw new ClientException("Failed retrieving email messages", e);
+            throw new TestingIOException("Failed retrieving email messages", e);
         }
 
 

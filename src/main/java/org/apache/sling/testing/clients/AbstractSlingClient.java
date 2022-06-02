@@ -26,6 +26,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.protocol.HttpContext;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.util.HttpUtils;
 import org.slf4j.LoggerFactory;
 
@@ -224,13 +226,13 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @throws ClientException if client can't be instantiated
      */
     @SuppressWarnings("unchecked")
-    public <T extends AbstractSlingClient> T adaptTo(Class<T> clientClass) throws ClientException {
+    public <T extends AbstractSlingClient> T adaptTo(Class<T> clientClass) throws TestingValidationException {
         T client;
         try {
             Constructor cons = clientClass.getConstructor(CloseableHttpClient.class, SlingClientConfig.class);
             client = (T) cons.newInstance(this.http, this.config);
         } catch (Exception e) {
-            throw new ClientException("Could not initialize client: '" + clientClass.getCanonicalName() + "'.", e);
+            throw new TestingValidationException("Could not initialize client: '" + clientClass.getCanonicalName() + "'.", e);
         }
         return client;
     }
@@ -338,7 +340,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
 
             return response;
         } catch (IOException e) {
-            throw new ClientException("Could not execute http request", e, request, response);
+            throw new TestingIOException("Could not execute http request", e, request, response);
         }
     }
 
@@ -391,7 +393,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
 
             return response;
         } catch (IOException e) {
-            throw new ClientException("Could not execute http request", e);
+            throw new TestingIOException("Could not execute http request", e);
         }
     }
 

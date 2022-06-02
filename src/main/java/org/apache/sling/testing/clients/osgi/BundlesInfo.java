@@ -19,6 +19,7 @@ package org.apache.sling.testing.clients.osgi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 import java.util.Iterator;
 
@@ -37,13 +38,13 @@ public class BundlesInfo {
      * @param root the root JSON node of the bundles info.
      * @throws ClientException if the json does not contain the proper info
      */
-    public BundlesInfo(JsonNode root) throws ClientException {
+    public BundlesInfo(JsonNode root) throws TestingValidationException {
         this.root = root;
         // some simple sanity checks
         if (root.get("s") == null)
-            throw new ClientException("No Status Info returned!");
+            throw new TestingValidationException("No Status Info returned!");
         if (root.get("s").size() != 5)
-            throw new ClientException("Wrong number of status numbers listed!");
+            throw new TestingValidationException("Wrong number of status numbers listed!");
         status = root.get("s");
     }
 
@@ -51,9 +52,9 @@ public class BundlesInfo {
      * @return the status message of the bundle context
      * @throws ClientException if the request cannot be completed
      */
-    public String getStatusMessage() throws ClientException {
+    public String getStatusMessage() throws TestingValidationException {
         if (root.get("status") == null)
-            throw new ClientException("No Status message returned!");
+            throw new TestingValidationException("No Status message returned!");
         return root.get("status").asText();
     }
 

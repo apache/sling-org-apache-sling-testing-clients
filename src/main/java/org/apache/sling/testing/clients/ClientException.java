@@ -19,7 +19,16 @@ package org.apache.sling.testing.clients;
 import org.apache.http.client.methods.HttpUriRequest;
 
 /**
- * An exception thrown when something went wrong with using the sling testing clients
+ * An exception thrown when something went wrong with using the sling testing clients.
+ * 
+ * This class will be turned into an abstract class eventually, so do use the specialized
+ * sub-classes instead:
+ * <ul>
+ *   <li>TestingIOException to indicate network and IO problems</li>
+ *   <li>TestingValidationException to indicate a mismatch between expecation and result</li>
+ * </ul>
+ * 
+ * 
  */
 public class ClientException extends Exception {
 
@@ -28,23 +37,28 @@ public class ClientException extends Exception {
     private HttpUriRequest request;
     private SlingHttpResponse response;
 
+    @Deprecated
     public ClientException(String message) {
         this(message, null);
     }
 
+    @Deprecated
     public ClientException(String message, Throwable throwable) {
         this(message, -1, throwable);
     }
 
+    @Deprecated
     public ClientException(String message, int httpStatusCode) {
         this(message, httpStatusCode, null);
     }
 
+    @Deprecated
     public ClientException(String message, int httpStatusCode, Throwable throwable) {
         super(message, throwable);
         this.httpStatusCode = httpStatusCode;
     }
 
+    @Deprecated
     public ClientException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
         this(message, throwable);
         this.request = request;

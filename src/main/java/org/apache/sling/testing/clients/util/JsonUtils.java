@@ -19,6 +19,7 @@ package org.apache.sling.testing.clients.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingIOException;
 
 import java.io.IOException;
 
@@ -30,12 +31,12 @@ public class JsonUtils {
      * @return A {@link JsonNode} that is the root node of the JSON structure.
      * @throws ClientException if error occurs while reading json string
      */
-    public static JsonNode getJsonNodeFromString(String jsonString) throws ClientException {
+    public static JsonNode getJsonNodeFromString(String jsonString) throws TestingIOException {
         try {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readTree(jsonString);
         } catch (IOException e) {
-            throw new ClientException("Could not read json node.", e);
+            throw new TestingIOException("Could not read json node.", e);
         }
     }
 }

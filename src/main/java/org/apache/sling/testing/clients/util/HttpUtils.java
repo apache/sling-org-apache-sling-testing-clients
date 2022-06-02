@@ -20,7 +20,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingHttpResponse;
-
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 import java.net.URI;
 
@@ -35,7 +35,7 @@ public class HttpUtils {
      * @param expectedStatus List of acceptable HTTP Statuses
      * @throws ClientException if status is not expected
      */
-    public static void verifyHttpStatus(SlingHttpResponse response, int... expectedStatus) throws ClientException {
+    public static void verifyHttpStatus(SlingHttpResponse response, int... expectedStatus) throws TestingValidationException {
         if (!checkStatus(response, expectedStatus)) {
             throwError(response, buildDefaultErrorMessage(response), expectedStatus);
         }
@@ -50,14 +50,13 @@ public class HttpUtils {
      * @throws ClientException if status is not expected
      */
     public static void verifyHttpStatus(HttpResponse response, String errorMessage, int... expectedStatus)
-            throws ClientException {
+            throws TestingValidationException {
         if (!checkStatus(response, expectedStatus)) {
             throwError(response, errorMessage, expectedStatus);
         }
     }
 
-    private static boolean checkStatus(HttpResponse response, int... expectedStatus)
-            throws ClientException {
+    private static boolean checkStatus(HttpResponse response, int... expectedStatus) {
 
         // if no HttpResponse was given
         if (response == null) {
@@ -83,7 +82,7 @@ public class HttpUtils {
     }
 
     private static boolean throwError(HttpResponse response, String errorMessage, int... expectedStatus)
-            throws ClientException {
+            throws TestingValidationException {
         // build error message
         String errorMsg = "Expected HTTP Status: ";
         for (int expected : expectedStatus) {
@@ -99,7 +98,7 @@ public class HttpUtils {
         }
 
         // throw the exception
-        throw new ClientException(errorMsg, givenStatus);
+        throw new TestingValidationException(errorMsg, givenStatus);
     }
 
 
@@ -133,7 +132,7 @@ public class HttpUtils {
      * @return The HTTP Status of the response
      * @throws ClientException never (kept for uniformity)
      */
-    public static int getHttpStatus(HttpResponse response) throws ClientException {
+    public static int getHttpStatus(HttpResponse response) {
         return response.getStatusLine().getStatusCode();
     }
 
@@ -144,8 +143,8 @@ public class HttpUtils {
      * @return the location path
      * @throws ClientException never (kept for uniformity)
      */
-    public static String getLocationHeader(HttpResponse response) throws ClientException {
-        if (response == null) throw new ClientException("Response must not be null!");
+    public static String getLocationHeader(HttpResponse response) throws TestingValidationException {
+        if (response == null) throw new TestingValidationException("Response must not be null!");
 
         String locationPath = null;
         Header locationHeader = response.getFirstHeader("Location");
@@ -156,7 +155,7 @@ public class HttpUtils {
         }
 
         if (locationPath == null) {
-            throw new ClientException("not able to determine location path");
+            throw new TestingValidationException("not able to determine location path");
         }
         return locationPath;
     }

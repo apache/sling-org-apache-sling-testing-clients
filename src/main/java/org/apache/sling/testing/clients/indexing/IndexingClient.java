@@ -23,6 +23,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.clients.query.QueryClient;
 import org.apache.sling.testing.clients.util.poller.Polling;
@@ -190,7 +191,7 @@ public class IndexingClient extends SlingClient {
      * Else, retrieves configured lanes on the instance
      *
      * @return list of lane names
-     * @throws ClientException if the request fails
+     * @throws ClientException 
      */
     public List<String> getLaneNames() throws ClientException {
         List<String> configuredLanes = getConfiguredLaneNames();
@@ -202,7 +203,7 @@ public class IndexingClient extends SlingClient {
         if (configs instanceof String[]) {
             return Stream.of((String[]) configs).map(e -> e.split(":")[0]).collect(Collectors.toList());
         } else {
-            throw new ClientException("Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
+            throw new TestingValidationException("Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
         }
     }
 
