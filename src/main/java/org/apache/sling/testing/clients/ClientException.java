@@ -26,6 +26,7 @@ import org.apache.http.client.methods.HttpUriRequest;
  * <ul>
  *   <li>TestingIOException to indicate network and IO problems</li>
  *   <li>TestingValidationException to indicate a mismatch between expecation and result</li>
+ *   <li>TestingSetupException to indicate problems in the test setup (incorrect parameters etc)</li>
  * </ul>
  * 
  * 
