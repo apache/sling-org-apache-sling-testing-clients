@@ -62,7 +62,7 @@ public class InputStreamBodyWithLength extends InputStreamBody {
             try {
                 stream.close();
             } catch (IOException e) {
-                throw new TestingIOException("Could not close Inputstream for " + resourcePath + "!", e);
+            	// ignore
             }
         }
         return streamLength;

@@ -38,27 +38,54 @@ public class ClientException extends Exception {
     private HttpUriRequest request;
     private SlingHttpResponse response;
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     */
     @Deprecated
     public ClientException(String message) {
         this(message, null);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param throwable
+     */
     @Deprecated
     public ClientException(String message, Throwable throwable) {
         this(message, -1, throwable);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param httpStatusCode
+     */
     @Deprecated
     public ClientException(String message, int httpStatusCode) {
         this(message, httpStatusCode, null);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param httpStatusCode
+     * @param throwable
+     */
     @Deprecated
     public ClientException(String message, int httpStatusCode, Throwable throwable) {
         super(message, throwable);
         this.httpStatusCode = httpStatusCode;
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param throwable
+     * @param request
+     * @param response
+     */
     @Deprecated
     public ClientException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
         this(message, throwable);
