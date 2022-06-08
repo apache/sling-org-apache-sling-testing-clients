@@ -23,22 +23,19 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 public class SlingClientExceptions {
-	
 
-	private static final String ERROR_PATH = "/content/missingResource.json";
-	
+    private static final String ERROR_PATH = "/content/missingResource.json";
+
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            
             serverBootstrap.registerHandler( ERROR_PATH, (request, response, context) -> {
-            		response.setStatusCode(500);
+                response.setStatusCode(500);
             });
-            
         }
     };
-	
+
     @Test(expected = TestingValidationException.class)
     public void testDoGetError() throws Exception {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");

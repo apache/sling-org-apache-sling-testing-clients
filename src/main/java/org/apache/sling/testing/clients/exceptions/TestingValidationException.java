@@ -29,12 +29,12 @@ import org.apache.sling.testing.clients.SlingHttpResponse;
  */
 public class TestingValidationException extends ClientException {
 
-	public TestingValidationException(String message) {
-		super(message);
-	}
-	
+    public TestingValidationException(String message) {
+        super(message);
+    }
+
     public TestingValidationException(String message, Throwable throwable) {
-    	super(message, throwable);
+        super(message, throwable);
     }
 
     public TestingValidationException(String message, int httpStatusCode) {

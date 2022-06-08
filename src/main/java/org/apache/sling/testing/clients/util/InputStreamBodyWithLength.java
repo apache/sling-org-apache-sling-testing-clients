@@ -62,7 +62,7 @@ public class InputStreamBodyWithLength extends InputStreamBody {
             try {
                 stream.close();
             } catch (IOException e) {
-            	// ignore
+                // ignore
             }
         }
         return streamLength;

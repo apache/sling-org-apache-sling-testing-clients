@@ -28,12 +28,12 @@ import org.apache.sling.testing.clients.SlingHttpResponse;
  */
 public class TestingSetupException extends ClientException {
 
-	public TestingSetupException(String message) {
-		super(message);
-	}
-	
+    public TestingSetupException(String message) {
+        super(message);
+    }
+
     public TestingSetupException(String message, Throwable throwable) {
-    	super(message, throwable);
+        super(message, throwable);
     }
 
     public TestingSetupException(String message, int httpStatusCode) {
