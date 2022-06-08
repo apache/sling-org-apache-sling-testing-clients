@@ -19,7 +19,17 @@ package org.apache.sling.testing.clients;
 import org.apache.http.client.methods.HttpUriRequest;
 
 /**
- * An exception thrown when something went wrong with using the sling testing clients
+ * An exception thrown when something went wrong with using the sling testing clients.
+ * 
+ * This class will be turned into an abstract class eventually, so do use the specialized
+ * sub-classes instead:
+ * <ul>
+ *   <li>TestingIOException to indicate network and IO problems</li>
+ *   <li>TestingValidationException to indicate a mismatch between expecation and result</li>
+ *   <li>TestingSetupException to indicate problems in the test setup (incorrect parameters etc)</li>
+ * </ul>
+ * 
+ * 
  */
 public class ClientException extends Exception {
 
@@ -28,23 +38,55 @@ public class ClientException extends Exception {
     private HttpUriRequest request;
     private SlingHttpResponse response;
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     */
+    @Deprecated
     public ClientException(String message) {
         this(message, null);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param throwable
+     */
+    @Deprecated
     public ClientException(String message, Throwable throwable) {
         this(message, -1, throwable);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param httpStatusCode
+     */
+    @Deprecated
     public ClientException(String message, int httpStatusCode) {
         this(message, httpStatusCode, null);
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param httpStatusCode
+     * @param throwable
+     */
+    @Deprecated
     public ClientException(String message, int httpStatusCode, Throwable throwable) {
         super(message, throwable);
         this.httpStatusCode = httpStatusCode;
     }
 
+    /**
+     * @deprecated use a constructor of one of the subclasses
+     * @param message
+     * @param throwable
+     * @param request
+     * @param response
+     */
+    @Deprecated
     public ClientException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
         this(message, throwable);
         this.request = request;

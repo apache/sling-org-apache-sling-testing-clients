@@ -18,7 +18,7 @@
 package org.apache.sling.testing.clients.osgi;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,13 +40,13 @@ public class ServicesInfo {
      * @param root the root JSON node of the bundles info.
      * @throws ClientException if the json does not contain the proper info
      */
-    public ServicesInfo(JsonNode root) throws ClientException {
+    public ServicesInfo(JsonNode root) throws TestingValidationException {
         this.root = root;
         // some simple sanity checks
         if (root.get("status") == null)
-            throw new ClientException("No Status returned!");
+            throw new TestingValidationException("No Status returned!");
         if (root.get("serviceCount") == null)
-            throw new ClientException("No serviceCount returned!");
+            throw new TestingValidationException("No serviceCount returned!");
     }
 
     /**
@@ -63,7 +63,7 @@ public class ServicesInfo {
      * @return the BundleInfo
      * @throws ClientException if the info could not be retrieved
      */
-    public ServiceInfo forId(String id) throws ClientException {
+    public ServiceInfo forId(String id) throws TestingValidationException {
         JsonNode serviceInfo = findBy("id", id);
         return (serviceInfo != null) ? new ServiceInfo(serviceInfo) : null;
     }
@@ -75,7 +75,7 @@ public class ServicesInfo {
      * @return a Collection of {@link ServiceInfo}s of all services with the given type. Might be empty, never {@code null}
      * @throws ClientException if the info cannot be retrieved
      */
-    public Collection<ServiceInfo> forType(String type) throws ClientException {
+    public Collection<ServiceInfo> forType(String type)throws TestingValidationException {
         List<ServiceInfo> results = new LinkedList<>();
         List<JsonNode> serviceInfoNodes = findAllContainingValueInArray("types", type);
         for (JsonNode serviceInfoNode : serviceInfoNodes) {

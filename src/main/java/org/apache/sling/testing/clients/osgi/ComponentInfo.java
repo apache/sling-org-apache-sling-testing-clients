@@ -19,20 +19,21 @@ package org.apache.sling.testing.clients.osgi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 public class ComponentInfo {
 
     private JsonNode component;
 
-    public ComponentInfo(JsonNode root) throws ClientException {
+    public ComponentInfo(JsonNode root) throws TestingValidationException {
         if (root.get("id") != null) {
             if (root.get("id") == null) {
-                throw new ClientException("No Component Info returned");
+                throw new TestingValidationException("No Component Info returned");
             }
             component = root;
         } else {
             if (root.get("data") == null && root.get("data").size() < 1) {
-                throw new ClientException("No Component Info returned");
+                throw new TestingValidationException("No Component Info returned");
             }
             component = root.get("data").get(0);
         }

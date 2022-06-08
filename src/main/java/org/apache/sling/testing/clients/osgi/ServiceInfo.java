@@ -19,6 +19,7 @@ package org.apache.sling.testing.clients.osgi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
 import java.util.List;
 
@@ -26,12 +27,12 @@ public class ServiceInfo {
 
     private JsonNode service;
 
-    public ServiceInfo(JsonNode root) throws ClientException {
+    public ServiceInfo(JsonNode root) throws TestingValidationException {
         if(root.get("id") != null) {
             service = root;
         } else {
             if(root.get("data") == null && root.get("data").size() < 1) {
-                throw new ClientException("No service info returned");
+                throw new TestingValidationException("No service info returned");
             }
             service = root.get("data").get(0);
         }

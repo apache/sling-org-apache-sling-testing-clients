@@ -46,6 +46,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
 import org.apache.sling.testing.clients.interceptors.HttpRequestResponseInterceptor;
 import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
@@ -249,7 +250,7 @@ public class SlingClient extends AbstractSlingClient {
      */
     @Deprecated
     public void waitUntilExists(final String path, final long waitMillis, int retryCount)
-            throws ClientException, InterruptedException {
+            throws TestingValidationException, InterruptedException {
         AbstractPoller poller =  new AbstractPoller(waitMillis, retryCount) {
             boolean found = false;
             public boolean call() {
@@ -269,7 +270,7 @@ public class SlingClient extends AbstractSlingClient {
 
         boolean found = poller.callUntilCondition();
         if (!found) {
-            throw new ClientException("path " + path + " does not exist after " + retryCount + " retries");
+            throw new TestingValidationException("path " + path + " does not exist after " + retryCount + " retries");
         }
     }
 
