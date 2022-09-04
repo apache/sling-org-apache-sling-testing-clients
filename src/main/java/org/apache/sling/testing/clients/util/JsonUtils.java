@@ -29,7 +29,7 @@ public class JsonUtils {
      *
      * @param jsonString A string containing JSON
      * @return A {@link JsonNode} that is the root node of the JSON structure.
-     * @throws ClientException if error occurs while reading json string
+     * @throws TestingIOException if error occurs while reading json string
      */
     public static JsonNode getJsonNodeFromString(String jsonString) throws TestingIOException {
         try {

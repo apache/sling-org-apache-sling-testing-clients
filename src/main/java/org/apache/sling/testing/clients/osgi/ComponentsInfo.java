@@ -35,7 +35,6 @@ public class ComponentsInfo {
      * The only constructor.
      *
      * @param rootNode the root JSON node of the components info.
-     * @throws ClientException if the info cannot be retrieved
      */
     public ComponentsInfo(JsonNode rootNode) {
         this.root = rootNode;
@@ -43,7 +42,7 @@ public class ComponentsInfo {
 
     /**
      * @return the number of installed components
-     * @throws ClientException if the info cannot be retrieved
+     * @throws TestingValidationException if the info cannot be retrieved
      */
     public int getNumberOfInstalledComponents() throws TestingValidationException {
         if (root.get("status") == null)
@@ -54,7 +53,7 @@ public class ComponentsInfo {
     /**
      * @param id the id of the component
      * @return the ComponentInfo for a component with the identifier {@code id}
-     * @throws ClientException if the info cannot be retrieved
+     * @throws TestingValidationException if the info cannot be retrieved
      */
     public ComponentInfo forId(String id) throws TestingValidationException {
         JsonNode component = findBy("id", id);
@@ -64,7 +63,7 @@ public class ComponentsInfo {
     /**
      * @param name the name of the component
      * @return the ComponentInfo for a component with the name {@code name}
-     * @throws ClientException if the info cannot be retrieved
+     * @throws TestingValidationException if the info cannot be retrieved
      */
     public ComponentInfo forName(String name) throws TestingValidationException {
         JsonNode component = findBy("name", name);
@@ -74,7 +73,7 @@ public class ComponentsInfo {
     /**
      * @param pid the pid of the component
      * @return the ComponentInfo for a component with the pid {@code pid}
-     * @throws ClientException if the info cannot be retrieved
+     * @throws TestingValidationException if the info cannot be retrieved
      */
     public ComponentInfo forPid(String pid) throws TestingValidationException {
         JsonNode component = findBy("pid", pid);

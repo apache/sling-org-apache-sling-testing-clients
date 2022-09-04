@@ -33,7 +33,7 @@ public class HttpUtils {
      *
      * @param response       The Sling HTTP response
      * @param expectedStatus List of acceptable HTTP Statuses
-     * @throws ClientException if status is not expected
+     * @throws TestingValidationException if status is not expected
      */
     public static void verifyHttpStatus(SlingHttpResponse response, int... expectedStatus) throws TestingValidationException {
         if (!checkStatus(response, expectedStatus)) {
@@ -47,7 +47,7 @@ public class HttpUtils {
      * @param response       The SlingHttpResponse of an executed request.
      * @param errorMessage   error message; if {@code null}, errorMessage is extracted from response
      * @param expectedStatus List of acceptable HTTP Statuses
-     * @throws ClientException if status is not expected
+     * @throws TestingValidationException if status is not expected
      */
     public static void verifyHttpStatus(HttpResponse response, String errorMessage, int... expectedStatus)
             throws TestingValidationException {
@@ -130,7 +130,6 @@ public class HttpUtils {
      *
      * @param response The RequestExecutor of an executed request.
      * @return The HTTP Status of the response
-     * @throws ClientException never (kept for uniformity)
      */
     public static int getHttpStatus(HttpResponse response) {
         return response.getStatusLine().getStatusCode();
@@ -141,7 +140,7 @@ public class HttpUtils {
      *
      * @param response HttpResponse the http response
      * @return the location path
-     * @throws ClientException never (kept for uniformity)
+     * @throws TestingValidationException never (kept for uniformity)
      */
     public static String getLocationHeader(HttpResponse response) throws TestingValidationException {
         if (response == null) throw new TestingValidationException("Response must not be null!");

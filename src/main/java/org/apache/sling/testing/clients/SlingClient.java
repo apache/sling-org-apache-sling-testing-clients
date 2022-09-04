@@ -185,6 +185,7 @@ public class SlingClient extends AbstractSlingClient {
 
     /**
      * End the impersonation of the current user.
+     * @return the SlingClient
      */
     public SlingClient endImpersonation() {
         BasicClientCookie c = new BasicClientCookie(getSudoCookieName(), "");
@@ -245,7 +246,7 @@ public class SlingClient extends AbstractSlingClient {
      * @param path path to be checked
      * @param waitMillis time to wait between retries
      * @param retryCount number of retries before throwing an exception
-     * @throws ClientException if the path was not found
+     * @throws TestingValidationException if the path was not found
      * @throws InterruptedException to mark this operation as "waiting"
      */
     @Deprecated
@@ -621,6 +622,7 @@ public class SlingClient extends AbstractSlingClient {
      *Passing a <code>null</code> will clear impersonation.
      *
      * @param userId   the user to impersonate. A <code>null</code> value clears impersonation
+     * @return the slingClient with the impersonation applied
      */
     public SlingClient impersonate(String userId) {
         if(userId == null){

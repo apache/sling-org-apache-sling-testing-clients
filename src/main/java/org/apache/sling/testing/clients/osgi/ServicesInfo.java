@@ -38,7 +38,7 @@ public class ServicesInfo {
      * The only constructor.
      *
      * @param root the root JSON node of the bundles info.
-     * @throws ClientException if the json does not contain the proper info
+     * @throws TestingValidationException if the json does not contain the proper info
      */
     public ServicesInfo(JsonNode root) throws TestingValidationException {
         this.root = root;
@@ -61,7 +61,7 @@ public class ServicesInfo {
      *
      * @param id the id of the service
      * @return the BundleInfo
-     * @throws ClientException if the info could not be retrieved
+     * @throws TestingValidationException if the info could not be retrieved
      */
     public ServiceInfo forId(String id) throws TestingValidationException {
         JsonNode serviceInfo = findBy("id", id);
@@ -73,7 +73,7 @@ public class ServicesInfo {
      *
      * @param type the type of the service
      * @return a Collection of {@link ServiceInfo}s of all services with the given type. Might be empty, never {@code null}
-     * @throws ClientException if the info cannot be retrieved
+     * @throws TestingValidationException if the info cannot be retrieved
      */
     public Collection<ServiceInfo> forType(String type)throws TestingValidationException {
         List<ServiceInfo> results = new LinkedList<>();

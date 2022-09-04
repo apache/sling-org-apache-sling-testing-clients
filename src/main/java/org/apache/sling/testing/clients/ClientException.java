@@ -25,7 +25,7 @@ import org.apache.http.client.methods.HttpUriRequest;
  * sub-classes instead:
  * <ul>
  *   <li>TestingIOException to indicate network and IO problems</li>
- *   <li>TestingValidationException to indicate a mismatch between expecation and result</li>
+ *   <li>TestingValidationException to indicate a mismatch between expectation and result</li>
  *   <li>TestingSetupException to indicate problems in the test setup (incorrect parameters etc)</li>
  * </ul>
  * 
@@ -40,7 +40,7 @@ public class ClientException extends Exception {
 
     /**
      * @deprecated use a constructor of one of the subclasses
-     * @param message
+     * @param message message
      */
     @Deprecated
     public ClientException(String message) {
@@ -49,8 +49,8 @@ public class ClientException extends Exception {
 
     /**
      * @deprecated use a constructor of one of the subclasses
-     * @param message
-     * @param throwable
+     * @param message message
+     * @param throwable a throwable
      */
     @Deprecated
     public ClientException(String message, Throwable throwable) {
@@ -59,8 +59,8 @@ public class ClientException extends Exception {
 
     /**
      * @deprecated use a constructor of one of the subclasses
-     * @param message
-     * @param httpStatusCode
+     * @param message message
+     * @param httpStatusCode statuscode
      */
     @Deprecated
     public ClientException(String message, int httpStatusCode) {
@@ -69,9 +69,9 @@ public class ClientException extends Exception {
 
     /**
      * @deprecated use a constructor of one of the subclasses
-     * @param message
-     * @param httpStatusCode
-     * @param throwable
+     * @param message message
+     * @param httpStatusCode statuscode
+     * @param throwable throwable
      */
     @Deprecated
     public ClientException(String message, int httpStatusCode, Throwable throwable) {
@@ -81,10 +81,10 @@ public class ClientException extends Exception {
 
     /**
      * @deprecated use a constructor of one of the subclasses
-     * @param message
-     * @param throwable
-     * @param request
-     * @param response
+     * @param message message
+     * @param throwable throwable
+     * @param request request
+     * @param response response
      */
     @Deprecated
     public ClientException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
@@ -105,7 +105,7 @@ public class ClientException extends Exception {
 
     /**
      * Set the request associated with this exception
-     * @param request
+     * @param request request
      */
     public void setRequest(HttpUriRequest request) {
         this.request = request;
@@ -120,7 +120,7 @@ public class ClientException extends Exception {
 
     /**
      * Set the response associated with this exception or {{null}}
-     * @param response
+     * @param response response
      */
     public void setResponse(SlingHttpResponse response) {
         this.response = response;

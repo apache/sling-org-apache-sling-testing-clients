@@ -150,7 +150,7 @@ public class Polling implements Callable<Boolean> {
 
     /**
      * Return the last exception while polling or {null}
-     * @return
+     * @return the last exception (can be null)
      */
     public Exception getLastException() {
         return lastException;
@@ -158,7 +158,7 @@ public class Polling implements Callable<Boolean> {
 
     /**
      * Return the list of all exceptions while polling
-     * @return
+     * @return the non-null list of exceptions
      */
     public List<Exception> getExceptions() {
         return exceptions;

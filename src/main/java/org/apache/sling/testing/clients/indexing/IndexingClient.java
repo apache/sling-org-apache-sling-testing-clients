@@ -191,7 +191,7 @@ public class IndexingClient extends SlingClient {
      * Else, retrieves configured lanes on the instance
      *
      * @return list of lane names
-     * @throws ClientException 
+     * @throws ClientException in case of problems
      */
     public List<String> getLaneNames() throws ClientException {
         List<String> configuredLanes = getConfiguredLaneNames();
