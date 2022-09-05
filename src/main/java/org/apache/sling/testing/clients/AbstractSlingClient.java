@@ -223,7 +223,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @param clientClass the type of client requested, identified by its Class
      * @param <T>         any class extending the AbstractSlingClient
      * @return instance of a class extending the AbstractSlingClient
-     * @throws ClientException if client can't be instantiated
+     * @throws TestingValidationException if client can't be instantiated
      */
     @SuppressWarnings("unchecked")
     public <T extends AbstractSlingClient> T adaptTo(Class<T> clientClass) throws TestingValidationException {

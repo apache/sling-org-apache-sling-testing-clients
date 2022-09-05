@@ -385,7 +385,7 @@ public class OsgiConsoleClient extends SlingClient {
      * @param pid pid
      * @param expectedStatus expected response status
      * @return the config properties
-     * @throws ClientException if the response status does not match any of the expectedStatus
+     * @throws TestingValidationException if the response status does not match any of the expectedStatus
      * @throws InterruptedException to mark this operation as "waiting"
      */
     @Deprecated

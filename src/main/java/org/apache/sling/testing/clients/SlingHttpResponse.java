@@ -78,7 +78,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that response matches supplied status</p>
      *
      * @param expected the expected http status
-     * @throws ClientException if the response does not match the expected
+     * @throws TestingValidationException if the response does not match the expected
      */
     public void checkStatus(int expected) throws TestingValidationException {
         if (this.getStatusLine().getStatusCode() != expected) {
@@ -91,7 +91,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that response matches supplied content type (from Content-Type header)</p>
      *
      * @param expected the expected content type
-     * @throws ClientException if the response content type does not match the expected
+     * @throws TestingValidationException if the response content type does not match the expected
      */
     public void checkContentType(String expected) throws TestingValidationException {
         // Remove whatever follows semicolon in content-type
@@ -111,7 +111,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>The regular expressions are automatically prefixed and suffixed with .* it order to partial-match the lines</p>
      *
      * @param regexp list of regular expressions
-     * @throws ClientException if the response content does not match one of the regexp
+     * @throws TestingValidationException if the response content does not match one of the regexp
      */
     public void checkContentRegexp(String... regexp) throws TestingValidationException {
         for(String expr : regexp) {
@@ -137,7 +137,9 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that all the provided {@code Strings} are contained in the response</p>
      *
      * @param expected list of expected strings
-     * @throws ClientException @throws ClientException if the response content does not match one of the strings
+     * @throws TestingValidationException 
+     * @throws TestingValidationException if the response content does not match one of the strings
+     * 
      */
     public void checkContentContains(String... expected) throws TestingValidationException {
         for (String s : expected) {

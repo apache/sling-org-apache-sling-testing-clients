@@ -36,7 +36,7 @@ public class BundlesInfo {
      * The only constructor.
      *
      * @param root the root JSON node of the bundles info.
-     * @throws ClientException if the json does not contain the proper info
+     * @throws TestingValidationException if the json does not contain the proper info
      */
     public BundlesInfo(JsonNode root) throws TestingValidationException {
         this.root = root;
@@ -50,7 +50,7 @@ public class BundlesInfo {
 
     /**
      * @return the status message of the bundle context
-     * @throws ClientException if the request cannot be completed
+     * @throws TestingValidationException if the request cannot be completed
      */
     public String getStatusMessage() throws TestingValidationException {
         if (root.get("status") == null)

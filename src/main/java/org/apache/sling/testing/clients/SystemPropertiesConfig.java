@@ -66,6 +66,7 @@ public class SystemPropertiesConfig {
     /**
      * Custom delay in milliseconds before an HTTP request goes through.
      * Used by {@link org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor}
+     * @return the delay in muliseconds
      */
     public static long getHttpDelay() {
         try {
@@ -77,6 +78,7 @@ public class SystemPropertiesConfig {
 
     /**
      * Number of http call retries in case of a 5XX response code
+     * @return the number of retries to be made
      */
     public static int getHttpRetries() {
         try {
@@ -88,6 +90,7 @@ public class SystemPropertiesConfig {
 
     /**
      * The delay in milliseconds between http retries
+     * @return the delay between http retries
      */
     public static int getHttpRetriesDelay() {
         try {
@@ -99,6 +102,7 @@ public class SystemPropertiesConfig {
 
     /**
      * Whether to log or not http request retries
+     * @return true if retries should be logged
      */
     public static boolean isHttpLogRetries() {
         try {
@@ -111,6 +115,7 @@ public class SystemPropertiesConfig {
     /**
      * Comma-separated list of http response codes for which to retry the request
      * If empty, all 5XX error codes will be retried
+     * @return a non-null collection with the http resonse codes
      */
     public static Collection<Integer> getHttpRetriesErrorCodes() {
         try {
