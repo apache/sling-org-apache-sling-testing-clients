@@ -137,7 +137,6 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * <p>Assert that all the provided {@code Strings} are contained in the response</p>
      *
      * @param expected list of expected strings
-     * @throws TestingValidationException 
      * @throws TestingValidationException if the response content does not match one of the strings
      * 
      */
