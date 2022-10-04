@@ -29,6 +29,7 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.exceptions.TestingIOException;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.util.HttpUtils;
+import org.apache.sling.testing.clients.util.poller.Polling;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
@@ -39,6 +40,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
 
@@ -539,6 +541,36 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         return doGet(requestPath, null, null, expectedStatus);
     }
 
+    public interface ResponseAssertion {
+        void assertResponse(SlingHttpResponse response) throws ClientException, InterruptedException, TimeoutException;
+    }
+    public SlingHttpResponse doGetWithRetry(final String requestPath, List<NameValuePair> parameters,
+                               List<Header> headers, ResponseAssertion assertion,
+                               final long timeout, final long delay, final int... expectedStatus) throws ClientException {
+
+        GetPolling p = new GetPolling(requestPath, parameters, headers, assertion, expectedStatus);
+        try {
+            p.poll(timeout, delay);
+            return p.getResponse();
+        } catch (TimeoutException | InterruptedException e) {
+            throw new TestingValidationException(e.getMessage(), e);
+        }
+    }
+
+    public SlingHttpResponse doGetWithRetry(String requestPath, List<NameValuePair> parameters,
+                                            ResponseAssertion assertion, final long timeout, final long delay,
+                                            int... expectedStatus)
+            throws ClientException {
+        return doGetWithRetry(requestPath, parameters, null, assertion, timeout, delay, expectedStatus);
+    }
+
+    public SlingHttpResponse doGetWithRetry(String requestPath, ResponseAssertion assertion, final long timeout, final long delay,
+                                            int... expectedStatus)
+            throws ClientException {
+        return doGetWithRetry(requestPath, null, null, assertion, timeout, delay, expectedStatus);
+    }
+
+
     /**
      * <p>Executes a HEAD request</p>
      *
@@ -732,5 +764,47 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
             throws IOException, ClientProtocolException {
         return this.http.execute(target, request, responseHandler, context);
+    }
+
+    private class GetPolling extends Polling {
+            private int lastStatusCode = -1;
+            private int[] expectedStatus;
+            private String requestPath;
+            private List<NameValuePair> parameters;
+            private List<Header> headers;
+            private ResponseAssertion assertion;
+
+        private SlingHttpResponse response;
+
+            GetPolling(String requestPath, List<NameValuePair> parameters, List<Header> headers, ResponseAssertion assertion, int[] expectedStatus) {
+                this.requestPath = requestPath;
+                this.parameters = parameters;
+                this.headers = headers;
+                this.expectedStatus = expectedStatus;
+                this.assertion = assertion;
+            }
+
+            public SlingHttpResponse getResponse() {
+                return response;
+            }
+
+            @Override
+            public Boolean call() throws ClientException {
+            SlingHttpResponse response = doGet(requestPath, parameters, headers);
+            lastStatusCode = response.getStatusLine().getStatusCode();
+            for (int count=0; count<expectedStatus.length; count++) {
+                if (lastStatusCode == expectedStatus[count]) {
+                    try {
+                        assertion.assertResponse(response);
+                        this.response = response;
+                        return true;
+                    } catch (TimeoutException | InterruptedException | AssertionError e) {
+                        throw new TestingValidationException(e.getMessage(), e);
+                    }
+                }
+            }
+            log.info(String.format("Retrying doGet. (expectedStatus=%d) != (lastStatusCode=%d) ", expectedStatus, lastStatusCode));
+            return false;
+        }
     }
 }
