@@ -546,27 +546,23 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     }
     public SlingHttpResponse doGetWithRetry(final String requestPath, List<NameValuePair> parameters,
                                List<Header> headers, ResponseAssertion assertion,
-                               final long timeout, final long delay, final int... expectedStatus) throws ClientException {
+                               final long timeout, final long delay, final int... expectedStatus) throws ClientException, InterruptedException, TimeoutException {
 
         GetPolling p = new GetPolling(requestPath, parameters, headers, assertion, expectedStatus);
-        try {
-            p.poll(timeout, delay);
-            return p.getResponse();
-        } catch (TimeoutException | InterruptedException e) {
-            throw new TestingValidationException(e.getMessage(), e);
-        }
+        p.poll(timeout, delay);
+        return p.getResponse();
     }
 
     public SlingHttpResponse doGetWithRetry(String requestPath, List<NameValuePair> parameters,
                                             ResponseAssertion assertion, final long timeout, final long delay,
                                             int... expectedStatus)
-            throws ClientException {
+            throws ClientException, InterruptedException, TimeoutException {
         return doGetWithRetry(requestPath, parameters, null, assertion, timeout, delay, expectedStatus);
     }
 
     public SlingHttpResponse doGetWithRetry(String requestPath, ResponseAssertion assertion, final long timeout, final long delay,
                                             int... expectedStatus)
-            throws ClientException {
+            throws ClientException, InterruptedException, TimeoutException {
         return doGetWithRetry(requestPath, null, null, assertion, timeout, delay, expectedStatus);
     }
 
@@ -789,7 +785,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             }
 
             @Override
-            public Boolean call() throws ClientException {
+            public Boolean call() throws ClientException, InterruptedException, TimeoutException {
             SlingHttpResponse response = doGet(requestPath, parameters, headers);
             lastStatusCode = response.getStatusLine().getStatusCode();
             for (int count=0; count<expectedStatus.length; count++) {
@@ -798,12 +794,12 @@ public class AbstractSlingClient implements HttpClient, Closeable {
                         assertion.assertResponse(response);
                         this.response = response;
                         return true;
-                    } catch (TimeoutException | InterruptedException | AssertionError e) {
+                    } catch (AssertionError e) {
                         throw new TestingValidationException(e.getMessage(), e);
                     }
                 }
             }
-            log.info(String.format("Retrying doGet. (expectedStatus=%d) != (lastStatusCode=%d) ", expectedStatus, lastStatusCode));
+            log.info(String.format("Retrying doGet. (expectedStatus=%d) != (lastStatusCode=%d) ", expectedStatus[expectedStatus.length], lastStatusCode));
             return false;
         }
     }
