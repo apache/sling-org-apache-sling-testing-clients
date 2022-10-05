@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -88,7 +89,7 @@ public class OsgiConsoleClientTest {
     };
 
     @Test
-    public void testGetConfigPIDFromServices() throws ClientException {
+    public void testGetConfigPIDFromServices() throws ClientException, InterruptedException, TimeoutException {
         OsgiConsoleClient c = new OsgiConsoleClient(httpServer.getURI(),"user","pass");
         String pid = c.getConfigPIDFromServices("testServiceType","testPropertyName", "testPropertyValue",1000, 200);
         assertEquals("pidValue", pid);

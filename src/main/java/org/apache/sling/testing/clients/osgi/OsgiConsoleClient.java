@@ -909,17 +909,14 @@ public class OsgiConsoleClient extends SlingClient {
      * @param propertyValue The unique value to be searched.
      * @return The final config PID. Null if it is not found.
      * @throws ClientException
-     * @throws JsonProcessingException
+     * @throws InterruptedException
+     * @throws TimeoutException
      */
-    public String getConfigPIDFromServices(String serviceType, String propertyName, String propertyValue, final long timeout, final long delay) throws ClientException {
+    public String getConfigPIDFromServices(String serviceType, String propertyName, String propertyValue, final long timeout, final long delay) throws ClientException, InterruptedException, TimeoutException {
 
         ConfigurationPollerByFilter p = new ConfigurationPollerByFilter(String.format("(service.pid=%s.*)", serviceType));
 
-        try {
-            p.poll(timeout, delay);
-        } catch (TimeoutException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        p.poll(timeout, delay);
         JsonNode jn = null;
         try {
             jn = new ObjectMapper().readTree(p.getConfigAsString());
@@ -1013,7 +1010,6 @@ public class OsgiConsoleClient extends SlingClient {
         public Map<String, Object> getConfig() {
             return config;
         }
-
     }
 
     class ConfigurationPollerByFilter extends Polling {
@@ -1037,6 +1033,7 @@ public class OsgiConsoleClient extends SlingClient {
                 this.configAsString = resp.getContent();
                 return true;
             } catch (Exception e) {
+                LOG.debug("Retrying doGet(/system/console/configMgr/*.json). Exception: "+e.getMessage(),e);
                 return false;
             }
         }
