@@ -181,8 +181,8 @@ public class OsgiConsoleClient extends SlingClient {
      * @param id the id of the component
      * @return the component info or {@code null} if the component with that name is not found
      */
-    private ComponentInfo getComponentInfo(String id) throws ClientException {
-        SlingHttpResponse resp = this.doGet(URL_COMPONENTS + "/" + id + ".json");
+    private ComponentInfo getComponentInfo(String name) throws ClientException {
+        SlingHttpResponse resp = this.doGet(URL_COMPONENTS + "/" + name + ".json");
         if (HttpUtils.getHttpStatus(resp) == SC_OK) {
             return new ComponentInfo(JsonUtils.getJsonNodeFromString(resp.getContent()));
         }
@@ -192,7 +192,7 @@ public class OsgiConsoleClient extends SlingClient {
     /**
      * Returns the service info wrapper for all services implementing the given type.
      *
-     * @param type the type of the service
+     * @param type the name of the service
      * @return the service infos or {@code null} if no service for the given type is registered
      */
     private Collection<ServiceInfo> getServiceInfos(String type) throws ClientException {
