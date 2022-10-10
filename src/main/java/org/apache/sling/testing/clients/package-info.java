@@ -17,7 +17,7 @@
  * under the License.
  */
 
-@Version("3.1.0")
+@Version("3.0.1")
 package org.apache.sling.testing.clients;
 
 import org.osgi.annotation.versioning.Version;

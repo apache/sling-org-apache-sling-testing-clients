@@ -27,7 +27,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 public class SlingClientDoGetWithRetryTest {
 
@@ -55,7 +54,7 @@ public class SlingClientDoGetWithRetryTest {
     };
 
     @Test
-    public void testDoGetWithRetry() throws ClientException, InterruptedException, TimeoutException {
+    public void testDoGetWithRetry() throws ClientException {
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         c.doGetWithRetry("/", response -> Assert.assertEquals(SUCCESS_RESPONSE, response.getContent()), 1000, 100, 200);
     }
