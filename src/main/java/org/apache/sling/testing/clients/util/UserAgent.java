@@ -16,6 +16,7 @@
  */
 package org.apache.sling.testing.clients.util;
 
+import javax.annotation.Generated;
 import java.util.Objects;
 
 public class UserAgent {
@@ -101,6 +102,7 @@ public class UserAgent {
         return result.toString();
     }
 
+    @Generated({})
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -112,6 +114,7 @@ public class UserAgent {
                 && Objects.equals(detailToken, userAgent.detailToken);
     }
 
+    @Generated({})
     @Override
     public int hashCode() {
         return Objects.hash(title, version, nextToken, detailToken);
