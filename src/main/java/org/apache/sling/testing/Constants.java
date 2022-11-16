@@ -37,4 +37,9 @@ public class Constants {
      * Http Context Attributes
      */
     public static final String EXPECTED_STATUS = "expected_status";
+
+    /**
+     * User Agent
+     */
+    public static final String SLING_CLIENT_USERAGENT_TITLE = "sling-testing-client";
 }

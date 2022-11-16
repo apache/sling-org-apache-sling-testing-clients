@@ -46,14 +46,10 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.sling.testing.Constants;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
-import org.apache.sling.testing.clients.interceptors.DelayRequestInterceptor;
-import org.apache.sling.testing.clients.interceptors.HttpRequestResponseInterceptor;
-import org.apache.sling.testing.clients.interceptors.TestDescriptionInterceptor;
-import org.apache.sling.testing.clients.util.FormEntityBuilder;
-import org.apache.sling.testing.clients.util.HttpUtils;
-import org.apache.sling.testing.clients.util.JsonUtils;
-import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
+import org.apache.sling.testing.clients.interceptors.*;
+import org.apache.sling.testing.clients.util.*;
 import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.apache.sling.testing.timeouts.TimeoutsProvider;
@@ -745,12 +741,13 @@ public class SlingClient extends AbstractSlingClient {
          */
         private InternalBuilder setDefaults() {
             httpClientBuilder.useSystemProperties();
-            httpClientBuilder.setUserAgent("Java");
+            httpClientBuilder.setUserAgent(Constants.SLING_CLIENT_USERAGENT_TITLE);
             // Connection
             httpClientBuilder.setMaxConnPerRoute(10);
             httpClientBuilder.setMaxConnTotal(100);
             // Interceptors
             httpClientBuilder.addInterceptorLast(new TestDescriptionInterceptor());
+            httpClientBuilder.addInterceptorLast(new UserAgentInterceptor());
             httpClientBuilder.addInterceptorLast(new DelayRequestInterceptor(SystemPropertiesConfig.getHttpDelay()));
 
             // HTTP request strategy
