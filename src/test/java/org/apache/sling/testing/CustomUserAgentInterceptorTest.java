@@ -17,14 +17,14 @@
 package org.apache.sling.testing;
 
 import org.apache.http.entity.StringEntity;
+import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.apache.sling.testing.clients.interceptors.UserAgentHolder;
 import org.apache.sling.testing.clients.interceptors.UserAgentInterceptor;
 import org.apache.sling.testing.clients.util.UserAgent;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -52,27 +52,30 @@ public class CustomUserAgentInterceptorTest {
             });
         }
     };
+    private static SlingClient c;
+
+    @BeforeClass
+    public static void beforeClass() throws ClientException {
+        c = SlingClient.Builder
+                .create(httpServer.getURI(), "user", "pass")
+                .addInterceptorLast(new UserAgentInterceptor())
+                .build();
+    }
+
+    @After
+    public void after() {
+        UserAgentHolder.set(null); // reset user-agent
+    }
 
     @Test
-    public void testDefault() throws Exception {
-        UserAgentInterceptor interceptor = new UserAgentInterceptor();
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
-
-        // reset user-agent
-        UserAgentHolder.set(null);
-
+    public void testDefault() throws ClientException {
         SlingHttpResponse response = c.doGet(PATH, 200);
         assertTrue(response.containsHeader(USER_AGENT_HEADER));
         assertEquals(Constants.SLING_CLIENT_USERAGENT_TITLE, response.getFirstHeader(USER_AGENT_HEADER).getValue());
     }
 
     @Test
-    public void testCustom() throws Exception {
-        UserAgentInterceptor interceptor = new UserAgentInterceptor();
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
-
+    public void testCustom() throws ClientException {
         UserAgent userAgent = new UserAgent(CUSTOM_USER_AGENT_TITLE, CUSTOM_USER_AGENT_VERSION);
         UserAgentHolder.set(userAgent);
 
@@ -82,11 +85,7 @@ public class CustomUserAgentInterceptorTest {
     }
 
     @Test
-    public void testCustomWithDetails() throws Exception {
-        UserAgentInterceptor interceptor = new UserAgentInterceptor();
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
-
+    public void testCustomWithDetails() throws ClientException {
         UserAgent userAgent = new UserAgent(CUSTOM_USER_AGENT_TITLE, CUSTOM_USER_AGENT_VERSION);
         UserAgent userAgentDetails = new UserAgent(CUSTOM_USER_AGENT_DETAILS, ((String) null));
         UserAgentHolder.set(userAgent.appendDetails(userAgentDetails));
@@ -97,11 +96,7 @@ public class CustomUserAgentInterceptorTest {
     }
 
     @Test
-    public void testCustomWithAppend() throws Exception {
-        UserAgentInterceptor interceptor = new UserAgentInterceptor();
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
-
+    public void testCustomWithAppend() throws ClientException {
         UserAgent userAgent = new UserAgent(CUSTOM_USER_AGENT_TITLE, CUSTOM_USER_AGENT_VERSION);
         UserAgent userAgentDetails = new UserAgent(CUSTOM_USER_AGENT_DETAILS, ((String) null));
         UserAgentHolder.set(userAgent.append(userAgentDetails));
