@@ -24,6 +24,8 @@ import org.apache.sling.testing.clients.util.UserAgent;
 
 public class UserAgentHolder {
 
+    private UserAgentHolder() {}
+
     private static final ThreadLocal<UserAgent> userAgent = new ThreadLocal<>();
 
     /**
@@ -53,5 +55,12 @@ public class UserAgentHolder {
      */
     public static void set(UserAgent userAgent) {
         UserAgentHolder.userAgent.set(userAgent);
+    }
+
+    /**
+     * Remove value of the user-agent
+     */
+    public static void reset() {
+        userAgent.remove();
     }
 }

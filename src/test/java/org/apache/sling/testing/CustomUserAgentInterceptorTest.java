@@ -64,7 +64,7 @@ public class CustomUserAgentInterceptorTest {
 
     @After
     public void after() {
-        UserAgentHolder.set(null); // reset user-agent
+        UserAgentHolder.reset();
     }
 
     @Test
@@ -81,7 +81,7 @@ public class CustomUserAgentInterceptorTest {
 
         SlingHttpResponse response = c.doGet(PATH, 200);
         assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(response.getFirstHeader(USER_AGENT_HEADER).getValue(), CUSTOM_USER_AGENT);
+        assertEquals(CUSTOM_USER_AGENT, response.getFirstHeader(USER_AGENT_HEADER).getValue());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class CustomUserAgentInterceptorTest {
 
         SlingHttpResponse response = c.doGet(PATH, 200);
         assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(response.getFirstHeader(USER_AGENT_HEADER).getValue(), CUSTOM_USER_AGENT_WITH_DETAILS);
+        assertEquals(CUSTOM_USER_AGENT_WITH_DETAILS, response.getFirstHeader(USER_AGENT_HEADER).getValue());
     }
 
     @Test
@@ -103,6 +103,6 @@ public class CustomUserAgentInterceptorTest {
 
         SlingHttpResponse response = c.doGet(PATH, 200);
         assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(response.getFirstHeader(USER_AGENT_HEADER).getValue(), CUSTOM_USER_AGENT_WITH_APPEND);
+        assertEquals(CUSTOM_USER_AGENT_WITH_APPEND, response.getFirstHeader(USER_AGENT_HEADER).getValue());
     }
 }
