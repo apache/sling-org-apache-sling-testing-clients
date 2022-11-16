@@ -57,10 +57,7 @@ public class CustomUserAgentInterceptorTest {
 
     @BeforeClass
     public static void beforeClass() throws ClientException {
-        client = SlingClient.Builder
-                .create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(new UserAgentInterceptor())
-                .build();
+        client = createClient();
     }
 
     @After
@@ -80,9 +77,7 @@ public class CustomUserAgentInterceptorTest {
         UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
         UserAgentHolder.set(userAgent);
 
-        SlingHttpResponse response = client.doGet(PATH, 200);
-        assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(CUSTOM_AGENT, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+        assertUserAgent(client, CUSTOM_AGENT);
     }
 
     @Test
@@ -91,9 +86,7 @@ public class CustomUserAgentInterceptorTest {
         UserAgent userAgentDetails = new UserAgent(CUSTOM_AGENT_DETAILS, ((String) null));
         UserAgentHolder.set(userAgent.appendDetails(userAgentDetails));
 
-        SlingHttpResponse response = client.doGet(PATH, 200);
-        assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(CUSTOM_AGENT_WITH_DETAILS, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+        assertUserAgent(client, CUSTOM_AGENT_WITH_DETAILS);
     }
 
     @Test
@@ -102,24 +95,56 @@ public class CustomUserAgentInterceptorTest {
         UserAgent userAgentDetails = new UserAgent(CUSTOM_AGENT_DETAILS, ((String) null));
         UserAgentHolder.set(userAgent.append(userAgentDetails));
 
-        SlingHttpResponse response = client.doGet(PATH, 200);
-        assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(CUSTOM_AGENT_WITH_APPEND, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+        assertUserAgent(client, CUSTOM_AGENT_WITH_APPEND);
     }
 
     @Test
     public void testManualModify() throws ClientException {
-        SlingClient.InternalBuilder<SlingClient> builder = SlingClient.Builder
-                .create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(new UserAgentInterceptor());
-        builder.httpClientBuilder().setUserAgent(MODIFIED_AGENT);
-        SlingClient clientModified = builder.build();
+        SlingClient clientModified = createClientWithBakedInUserAgent(MODIFIED_AGENT);
 
         UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
         UserAgentHolder.set(userAgent);
 
-        SlingHttpResponse response = clientModified.doGet(PATH, 200);
+        assertUserAgent(clientModified, MODIFIED_AGENT);
+    }
+
+    /**
+     * Sends a dummy request to the test-server to see if the response contains a specified user-agent header
+     * to assert whether the requests contained the user-agent as well.
+     * @param client the {@link SlingClient} to be used for sending the request
+     * @param userAgent the expected user-agent as a string
+     * @throws ClientException in case of request failure
+     */
+    private static void assertUserAgent(SlingClient client, String userAgent) throws ClientException {
+        SlingHttpResponse response = client.doGet(PATH, 200);
         assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(MODIFIED_AGENT, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+        assertEquals(userAgent, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+    }
+
+    /**
+     * Creates a simple {@link SlingClient} with the {@link UserAgentInterceptor}.
+     * @return {@link SlingClient} instance
+     * @throws ClientException in case of failure during client creation
+     */
+    private static SlingClient createClient() throws ClientException {
+        return createClientWithBakedInUserAgent(null);
+    }
+
+    /**
+     * Creates a simple {@link SlingClient} with the {@link UserAgentInterceptor} and a manually baked-in user-agent.
+     * @param userAgent user-agent of the client as a {@link String} (or null to omit it)
+     * @return {@link SlingClient} instance
+     * @throws ClientException in case of failure during client creation
+     */
+    private static SlingClient createClientWithBakedInUserAgent(String userAgent) throws ClientException {
+        SlingClient.InternalBuilder<SlingClient> builder = SlingClient.Builder
+                .create(httpServer.getURI(), "user", "pass")
+                .addInterceptorLast(new UserAgentInterceptor());
+
+        if (userAgent != null) {
+            builder.httpClientBuilder().setUserAgent(MODIFIED_AGENT);
+        }
+
+        return builder.build();
     }
 }
