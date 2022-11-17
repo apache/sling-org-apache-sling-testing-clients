@@ -20,6 +20,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.apache.sling.testing.Constants;
+import org.apache.sling.testing.clients.SystemPropertiesConfig;
 import org.slf4j.LoggerFactory;
 
 public class UserAgentInterceptor implements HttpRequestInterceptor {
@@ -35,7 +36,7 @@ public class UserAgentInterceptor implements HttpRequestInterceptor {
 
         // handle existing user-agent header
         if(httpRequest.containsHeader(USER_AGENT_HEADER)) {
-            if (!httpRequest.getFirstHeader(USER_AGENT_HEADER).getValue().equals(Constants.SLING_CLIENT_USERAGENT_TITLE)) {
+            if (!httpRequest.getFirstHeader(USER_AGENT_HEADER).getValue().equals(SystemPropertiesConfig.getDefaultUserAgent())) {
                 log.warn("User-agent of client-request changed manually; use CustomUserAgentRule instead!");
                 return;
             }

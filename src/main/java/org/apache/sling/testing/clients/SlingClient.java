@@ -741,7 +741,7 @@ public class SlingClient extends AbstractSlingClient {
          */
         private InternalBuilder setDefaults() {
             httpClientBuilder.useSystemProperties();
-            httpClientBuilder.setUserAgent(Constants.SLING_CLIENT_USERAGENT_TITLE);
+            httpClientBuilder.setUserAgent(SystemPropertiesConfig.getDefaultUserAgent());
             // Connection
             httpClientBuilder.setMaxConnPerRoute(10);
             httpClientBuilder.setMaxConnTotal(100);

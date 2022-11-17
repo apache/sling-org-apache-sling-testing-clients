@@ -17,10 +17,7 @@
 package org.apache.sling.testing;
 
 import org.apache.http.entity.StringEntity;
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.HttpServerRule;
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.*;
 import org.apache.sling.testing.clients.interceptors.UserAgentHolder;
 import org.apache.sling.testing.clients.interceptors.UserAgentInterceptor;
 import org.junit.*;
@@ -61,7 +58,7 @@ public class CustomUserAgentInterceptorTest {
 
     @Test
     public void testDefault() throws ClientException {
-        assertUserAgent(client, Constants.SLING_CLIENT_USERAGENT_TITLE);
+        assertUserAgent(client, SystemPropertiesConfig.getDefaultUserAgent());
     }
 
     @Test
@@ -80,7 +77,7 @@ public class CustomUserAgentInterceptorTest {
     @Test
     public void testWhitespace() throws ClientException {
         UserAgentHolder.set(" ");
-        assertUserAgent(client, Constants.SLING_CLIENT_USERAGENT_TITLE);
+        assertUserAgent(client, SystemPropertiesConfig.getDefaultUserAgent());
     }
 
     /**

@@ -16,6 +16,8 @@
  */
 package org.apache.sling.testing.clients;
 
+import org.apache.sling.testing.clients.util.UserAgentUtil;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +60,18 @@ public class SystemPropertiesConfig {
      * Prefixed by {@link SystemPropertiesConfig#CONFIG_PROP_PREFIX}
      */
     public static final String HTTP_RETRIES_ERROR_CODES_PROP = "http.retriesErrorCodes";
+
+    /**
+     * System property for {@link SystemPropertiesConfig#getClientUserAgentTitle()}
+     * Prefixed by {@link SystemPropertiesConfig#CONFIG_PROP_PREFIX}
+     */
+    public static final String CLIENT_USERAGENT_TITLE = "client.useragent.title";
+
+    /**
+     * System property for {@link SystemPropertiesConfig#isClientUserAgentUsingVersion()}
+     * Prefixed by {@link SystemPropertiesConfig#CONFIG_PROP_PREFIX}
+     */
+    public static final String CLIENT_USERAGENT_USEVERSION = "client.useragent.useversion";
 
     public static String getPrefixedPropertyName(String prop) {
         return SystemPropertiesConfig.CONFIG_PROP_PREFIX + prop;
@@ -132,4 +146,39 @@ public class SystemPropertiesConfig {
         }
     }
 
+    /**
+     * Returns the default user-agent title of the {@link SlingClient}
+     * @return default title
+     */
+    public static String getClientUserAgentTitle() {
+        String defaultTitle = "Java"; // for backwards compatibility this should stay "Java"
+
+        try {
+            return System.getProperty(getPrefixedPropertyName(CLIENT_USERAGENT_TITLE), defaultTitle);
+        } catch (Exception e) {
+            return defaultTitle;
+        }
+    }
+
+    /**
+     * Whether the user-agent of the {@link SlingClient} should be appended by the current library version
+     * @return true if version should be appended
+     */
+    public static boolean isClientUserAgentUsingVersion() {
+        try {
+            return Boolean.getBoolean(getPrefixedPropertyName(CLIENT_USERAGENT_USEVERSION));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns the fully constructed default user-agent from system properties
+     * @return default user-agent
+     */
+    public static String getDefaultUserAgent() {
+        String title = getClientUserAgentTitle();
+        boolean useVersion = isClientUserAgentUsingVersion();
+        return useVersion ? UserAgentUtil.constructAgent(title, SlingClient.class.getPackage()) : title;
+    }
 }
