@@ -30,24 +30,24 @@ public class UserAgentUtil {
     }
 
     /**
-     * Create user-agent from title and determine version through implementation version of the provided package.
+     * Create user-agent from name and determine version through implementation version of the provided package.
      * In case the implementation version of the package returns null, the version info is omitted.
-     * @param title the user-agent title
+     * @param name the user-agent name
      * @param pkg the package
      */
-    public static String constructAgent(String title, Package pkg) {
-        return constructAgent(title, pkg.getImplementationVersion());
+    public static String constructAgent(String name, Package pkg) {
+        return constructAgent(name, pkg.getImplementationVersion());
     }
 
     /**
-     * Create user-agent from title and version-string [title]/[version].
-     * @param title the user-agent title
-     * @param version the user-agent version (or null to use title only)
+     * Create user-agent from name and version-string [name]/[version].
+     * @param name the user-agent name
+     * @param version the user-agent version (or null to use name only)
      */
-    public static String constructAgent(String title, String version) {
+    public static String constructAgent(String name, String version) {
         if (version == null) {
-            return title;
+            return name;
         }
-        return title + "/" + version;
+        return name + "/" + version;
     }
 }

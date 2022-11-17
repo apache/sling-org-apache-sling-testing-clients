@@ -37,5 +37,4 @@ public class Constants {
      * Http Context Attributes
      */
     public static final String EXPECTED_STATUS = "expected_status";
-
 }

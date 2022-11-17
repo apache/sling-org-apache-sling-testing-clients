@@ -62,10 +62,10 @@ public class SystemPropertiesConfig {
     public static final String HTTP_RETRIES_ERROR_CODES_PROP = "http.retriesErrorCodes";
 
     /**
-     * System property for {@link SystemPropertiesConfig#getClientUserAgentTitle()}
+     * System property for {@link SystemPropertiesConfig#getClientUserAgentName()}
      * Prefixed by {@link SystemPropertiesConfig#CONFIG_PROP_PREFIX}
      */
-    public static final String CLIENT_USERAGENT_TITLE = "client.useragent.title";
+    public static final String CLIENT_USERAGENT_NAME = "client.useragent.name";
 
     /**
      * System property for {@link SystemPropertiesConfig#isClientUserAgentUsingVersion()}
@@ -147,16 +147,16 @@ public class SystemPropertiesConfig {
     }
 
     /**
-     * Returns the default user-agent title of the {@link SlingClient}
-     * @return default title
+     * Returns the default user-agent name of the {@link SlingClient}
+     * @return default name
      */
-    public static String getClientUserAgentTitle() {
-        String defaultTitle = "Java"; // for backwards compatibility this should stay "Java"
+    public static String getClientUserAgentName() {
+        String defaultName = "Java"; // for backwards compatibility this should stay "Java"
 
         try {
-            return System.getProperty(getPrefixedPropertyName(CLIENT_USERAGENT_TITLE), defaultTitle);
+            return System.getProperty(getPrefixedPropertyName(CLIENT_USERAGENT_NAME), defaultName);
         } catch (Exception e) {
-            return defaultTitle;
+            return defaultName;
         }
     }
 
@@ -177,8 +177,8 @@ public class SystemPropertiesConfig {
      * @return default user-agent
      */
     public static String getDefaultUserAgent() {
-        String title = getClientUserAgentTitle();
+        String name = getClientUserAgentName();
         boolean useVersion = isClientUserAgentUsingVersion();
-        return useVersion ? UserAgentUtil.constructAgent(title, SlingClient.class.getPackage()) : title;
+        return useVersion ? UserAgentUtil.constructAgent(name, SlingClient.class.getPackage()) : name;
     }
 }
