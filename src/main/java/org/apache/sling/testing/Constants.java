@@ -16,9 +16,6 @@
  */
 package org.apache.sling.testing;
 
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.util.UserAgentUtil;
-
 public class Constants {
 
     public static final String DEFAULT_URL = "http://localhost:8080/";

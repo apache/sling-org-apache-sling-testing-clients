@@ -19,7 +19,6 @@ package org.apache.sling.testing.clients.interceptors;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
-import org.apache.sling.testing.Constants;
 import org.apache.sling.testing.clients.SystemPropertiesConfig;
 import org.slf4j.LoggerFactory;
 
