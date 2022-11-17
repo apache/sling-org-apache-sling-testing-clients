@@ -23,7 +23,6 @@ import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.apache.sling.testing.clients.interceptors.UserAgentHolder;
 import org.apache.sling.testing.clients.interceptors.UserAgentInterceptor;
-import org.apache.sling.testing.clients.util.UserAgent;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -35,12 +34,7 @@ public class CustomUserAgentInterceptorTest {
 
     private static final String USER_AGENT_HEADER = "User-Agent";
     private static final String MODIFIED_AGENT = "modified-agent";
-    private static final String CUSTOM_AGENT_TITLE = "test-client";
-    private static final String CUSTOM_AGENT_VERSION = "1.2.3";
-    private static final String CUSTOM_AGENT_DETAILS = "details";
-    private static final String CUSTOM_AGENT = String.format("%s/%s", CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
-    private static final String CUSTOM_AGENT_WITH_DETAILS = String.format("%s/%s (%s)", CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION, CUSTOM_AGENT_DETAILS);
-    private static final String CUSTOM_AGENT_WITH_APPEND = String.format("%s/%s %s", CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION, CUSTOM_AGENT_DETAILS);
+    private static final String CUSTOM_AGENT = "test-client";
 
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
@@ -67,45 +61,26 @@ public class CustomUserAgentInterceptorTest {
 
     @Test
     public void testDefault() throws ClientException {
-        SlingHttpResponse response = client.doGet(PATH, 200);
-        assertTrue(response.containsHeader(USER_AGENT_HEADER));
-        assertEquals(Constants.SLING_CLIENT_USERAGENT_TITLE, response.getFirstHeader(USER_AGENT_HEADER).getValue());
+        assertUserAgent(client, Constants.SLING_CLIENT_USERAGENT_TITLE);
     }
 
     @Test
     public void testCustom() throws ClientException {
-        UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
-        UserAgentHolder.set(userAgent);
-
+        UserAgentHolder.set(CUSTOM_AGENT);
         assertUserAgent(client, CUSTOM_AGENT);
-    }
-
-    @Test
-    public void testCustomWithDetails() throws ClientException {
-        UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
-        UserAgent userAgentDetails = new UserAgent(CUSTOM_AGENT_DETAILS, ((String) null));
-        UserAgentHolder.set(userAgent.appendDetails(userAgentDetails));
-
-        assertUserAgent(client, CUSTOM_AGENT_WITH_DETAILS);
-    }
-
-    @Test
-    public void testCustomWithAppend() throws ClientException {
-        UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
-        UserAgent userAgentDetails = new UserAgent(CUSTOM_AGENT_DETAILS, ((String) null));
-        UserAgentHolder.set(userAgent.append(userAgentDetails));
-
-        assertUserAgent(client, CUSTOM_AGENT_WITH_APPEND);
     }
 
     @Test
     public void testManualModify() throws ClientException {
         SlingClient clientModified = createClientWithBakedInUserAgent(MODIFIED_AGENT);
-
-        UserAgent userAgent = new UserAgent(CUSTOM_AGENT_TITLE, CUSTOM_AGENT_VERSION);
-        UserAgentHolder.set(userAgent);
-
+        UserAgentHolder.set(CUSTOM_AGENT);
         assertUserAgent(clientModified, MODIFIED_AGENT);
+    }
+
+    @Test
+    public void testWhitespace() throws ClientException {
+        UserAgentHolder.set(" ");
+        assertUserAgent(client, Constants.SLING_CLIENT_USERAGENT_TITLE);
     }
 
     /**

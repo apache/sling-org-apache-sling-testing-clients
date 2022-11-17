@@ -18,44 +18,34 @@
  ******************************************************************************/
 package org.apache.sling.testing.clients.interceptors;
 
-import org.apache.sling.testing.Constants;
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.util.UserAgent;
+import org.apache.commons.lang3.StringUtils;
 
 public class UserAgentHolder {
 
     private UserAgentHolder() {}
 
-    private static final ThreadLocal<UserAgent> userAgent = new ThreadLocal<>();
+    private static final ThreadLocal<String> userAgent = new ThreadLocal<>();
 
     /**
-     * Returns the current user-agent object to read or extend it.
-     * @return the current user-agent instance
+     * Returns the current user-agent.
+     * @return the current user-agent
      */
-    public static UserAgent get() {
-        return userAgent.get();
-    }
-
-    /**
-     * Returns the current user-agent object to read or extend it. In case its value is null, it'll be initialized
-     * with its default value.
-     * @return the current user-agent instance
-     */
-    public static UserAgent getOrInit() {
-        if (userAgent.get() == null) {
-            // set default user-agent
-            set(new UserAgent(Constants.SLING_CLIENT_USERAGENT_TITLE, SlingClient.class.getPackage()));
-        }
+    public static String get() {
         return userAgent.get();
     }
 
     /**
      * Override the current user-agent with a completely new one.
-     * @param userAgent the desired new user-agent (or null for default)
+     * @param agent the desired new user-agent (or null for default)
      */
-    public static void set(UserAgent userAgent) {
-        UserAgentHolder.userAgent.set(userAgent);
+    public static void set(String agent) {
+        if (StringUtils.isBlank(agent)) {
+            reset(); // don't store whitespace
+            return;
+        }
+        userAgent.set(agent);
     }
+
 
     /**
      * Remove value of the user-agent

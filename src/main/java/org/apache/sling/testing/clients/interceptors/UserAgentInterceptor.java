@@ -29,6 +29,10 @@ public class UserAgentInterceptor implements HttpRequestInterceptor {
     public static final String USER_AGENT_HEADER = "User-Agent";
 
     public void process(HttpRequest httpRequest, HttpContext httpContext) {
+        if (UserAgentHolder.get() == null) {
+            return;
+        }
+
         // handle existing user-agent header
         if(httpRequest.containsHeader(USER_AGENT_HEADER)) {
             if (!httpRequest.getFirstHeader(USER_AGENT_HEADER).getValue().equals(Constants.SLING_CLIENT_USERAGENT_TITLE)) {
@@ -39,6 +43,6 @@ public class UserAgentInterceptor implements HttpRequestInterceptor {
         }
 
         // add custom user agent
-        httpRequest.addHeader(USER_AGENT_HEADER, UserAgentHolder.getOrInit().toString());
+        httpRequest.addHeader(USER_AGENT_HEADER, UserAgentHolder.get());
     }
 }
