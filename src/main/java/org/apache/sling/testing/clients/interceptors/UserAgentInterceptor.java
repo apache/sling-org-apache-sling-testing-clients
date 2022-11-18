@@ -34,7 +34,7 @@ public class UserAgentInterceptor implements HttpRequestInterceptor {
         }
 
         // handle existing user-agent header
-        if(httpRequest.containsHeader(USER_AGENT_HEADER)) {
+        if (httpRequest.containsHeader(USER_AGENT_HEADER)) {
             if (!httpRequest.getFirstHeader(USER_AGENT_HEADER).getValue().equals(SystemPropertiesConfig.getDefaultUserAgent())) {
                 log.warn("User-agent of client-request changed manually; use CustomUserAgentRule instead!");
                 return;
