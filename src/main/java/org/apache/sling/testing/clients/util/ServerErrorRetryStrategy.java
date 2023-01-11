@@ -18,6 +18,8 @@ package org.apache.sling.testing.clients.util;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
+import org.apache.http.client.methods.HttpRequestWrapper;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.sling.testing.clients.SystemPropertiesConfig;
@@ -28,7 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
 
 /**
@@ -48,14 +50,15 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries() && responseRetryCondition(response, expectedStatus);
 
         if (SystemPropertiesConfig.isHttpLogRetries() && needsRetry && LOG.isWarnEnabled()) {
-            LOG.warn("Request retry needed due to service unavailable response");
-            LOG.warn("Response headers contained:");
-            Arrays.stream(response.getAllHeaders()).forEach(h -> LOG.warn("Header {}:{}", h.getName(), h.getValue()));
+            LOG.warn("Request retry condition met: [count={}/{}], [expected-codes={}], [retry-codes={}]",
+                    executionCount, SystemPropertiesConfig.getHttpRetries(), expectedStatus, SystemPropertiesConfig.getHttpRetriesErrorCodes());
+            LOG.warn("Request: {}", getRequestDetails(context));
+            LOG.warn("Response: {}", getResponseDetails(response));
             try {
                 String content = EntityUtils.toString(response.getEntity());
-                LOG.warn("Response content: {}", content);
+                LOG.warn("Response Body: {}", content);
             } catch (IOException exc) {
-                LOG.warn("Response as no content");
+                LOG.warn("Failed to read the response body: {}", exc.getMessage());
             }
         }
         return needsRetry;
@@ -79,5 +82,33 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
             return statusCode >= SC_INTERNAL_SERVER_ERROR &&
                     statusCode < SC_INTERNAL_SERVER_ERROR + 100;
         }
+    }
+
+    /**
+     * Best effort attempt to build a request detail string for logging.
+     */
+    private String getRequestDetails(HttpContext context) {
+        String details = "Not available";
+        HttpClientContext clientContext = HttpClientContext.adapt(context);
+        HttpRequestWrapper wrapper = clientContext.getAttribute(HttpClientContext.HTTP_REQUEST, HttpRequestWrapper.class);
+        if (wrapper != null) {
+            details = wrapper.toString();
+        }
+        return details;
+    }
+
+    /**
+     * Best effort attempt to build response detail string for logging.
+     */
+    private String getResponseDetails(HttpResponse response) {
+        String details = "Not available";
+        if (response != null) {
+            final StringBuilder sb = new StringBuilder(response.getStatusLine().toString());
+            sb.append(" [");
+            Arrays.stream(response.getAllHeaders()).forEach(h -> sb.append(h.getName()).append(": ").append(h.getValue()).append(", "));
+            sb.append("]");
+            details = sb.toString();
+        }
+        return details;
     }
 }
