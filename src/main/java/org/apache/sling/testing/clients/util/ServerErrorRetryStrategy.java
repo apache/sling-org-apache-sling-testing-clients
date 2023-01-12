@@ -92,7 +92,14 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         HttpClientContext clientContext = HttpClientContext.adapt(context);
         HttpRequestWrapper wrapper = clientContext.getAttribute(HttpClientContext.HTTP_REQUEST, HttpRequestWrapper.class);
         if (wrapper != null) {
-            details = wrapper.toString();
+            // Build a request detail string like following example:
+            // GET /test/internalerror/resource HTTP/1.1 [Host: 127.0.0.1:35049, Connection: Keep-Alive, User-Agent: Java, Accept-Encoding: gzip,deflate, Authorization: Basic dXNlcjpwYXNz]
+            final StringBuilder sb = new StringBuilder(wrapper.getRequestLine().toString());
+            sb.append(" [");
+            Arrays.stream(wrapper.getAllHeaders()).forEach(header -> sb.append(header.getName()).append(": ").append(header.getValue()).append(", "));
+            sb.append("]");
+            details = sb.toString();
+
         }
         return details;
     }
@@ -103,6 +110,8 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     private String getResponseDetails(HttpResponse response) {
         String details = "Not available";
         if (response != null) {
+            // Build a response string like following example:
+            // HTTP/1.1 500 Internal Server Error [Date: Thu, 12 Jan 2023 08:32:42 GMT, Server: TEST/1.1, Content-Length: 8, Content-Type: text/plain; charset=ISO-8859-1, Connection: Keep-Alive, ]
             final StringBuilder sb = new StringBuilder(response.getStatusLine().toString());
             sb.append(" [");
             Arrays.stream(response.getAllHeaders()).forEach(h -> sb.append(h.getName()).append(": ").append(h.getValue()).append(", "));
