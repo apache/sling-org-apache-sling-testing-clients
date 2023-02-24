@@ -96,15 +96,8 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         HttpRequestWrapper wrapper = clientContext.getAttribute(HttpClientContext.HTTP_REQUEST, HttpRequestWrapper.class);
         if (wrapper != null) {
             // Build a request detail string like following example:
-            // GET /test/internalerror/resource HTTP/1.1 [Host: 127.0.0.1:35049, Connection: Keep-Alive, User-Agent: Java,
-            //   Accept-Encoding: gzip,deflate, Authorization: Basic dXNlcjpwYXNz]
-            final StringBuilder sb = new StringBuilder(wrapper.getRequestLine().toString());
-            sb.append(" [");
-            Arrays.stream(wrapper.getAllHeaders()).forEach(header ->
-                    sb.append(header.getName()).append(": ").append(header.getValue()).append(", "));
-            sb.append("]");
-            details = sb.toString();
-
+            // GET /test/internalerror/resource HTTP/1.1
+            details = wrapper.getRequestLine().toString();
         }
         return details;
     }
