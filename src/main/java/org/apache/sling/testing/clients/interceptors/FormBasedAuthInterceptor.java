@@ -133,6 +133,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         loginPost.setEntity(httpEntity);
 
         try (CloseableHttpClient client = HttpClientBuilder.create()
+                .useSystemProperties()
                 .setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy())
                 .disableRedirectHandling()
                 .build()) {
