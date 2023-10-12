@@ -38,7 +38,7 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git
         </developerConnection>
-        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-testing-clients.git</url>
+        <url>https://github.com/apache/sling-org-apache-sling-testing-clients.git</url>
         <tag>HEAD</tag>
     </scm>
     
