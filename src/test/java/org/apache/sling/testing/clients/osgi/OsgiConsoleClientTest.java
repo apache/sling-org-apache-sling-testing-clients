@@ -16,12 +16,23 @@
  */
 package org.apache.sling.testing.clients.osgi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.util.JsonUtils;
+import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -61,5 +72,26 @@ public class OsgiConsoleClientTest {
         final Map<String, Object> result = OsgiConsoleClient.extractOSGiConfiguration(rootNode);
         assertEquals(1, result.size());
         assertEquals("a", result.get("propset"));
+    }
+
+    @ClassRule
+    public static HttpServerRule httpServer = new HttpServerRule() {
+        @Override
+        protected void registerHandlers() throws IOException {
+            String JSON_RESPONSE = "[{\"pid\":\"pidValue\",\"properties\":{\"testPropertyName\":{\"value\":\"testPropertyValue\"}}}]";
+            serverBootstrap.registerHandler("/system/console/configMgr/*.json", new HttpRequestHandler() {
+                @Override
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+                    response.setEntity(new StringEntity(JSON_RESPONSE));
+                }
+            });
+        }
+    };
+
+    @Test
+    public void testGetConfigPIDFromServices() throws ClientException, InterruptedException, TimeoutException {
+        OsgiConsoleClient c = new OsgiConsoleClient(httpServer.getURI(),"user","pass");
+        String pid = c.getConfigPIDFromServices("testServiceType","testPropertyName", "testPropertyValue",1000, 200);
+        assertEquals("pidValue", pid);
     }
 }

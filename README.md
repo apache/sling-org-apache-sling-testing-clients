@@ -151,6 +151,24 @@ public class MyClient extends SlingClient {
     }
 }
 ```
+## <a name="builder"></a> How to retry HTTP Requests
+In several situations during IT Tests development, HTTP requests must be retried until some assertions are verified.
+In such cases, a good approach is to use the `Awaitility` library. For example:
+```java
+    public void testDoGetWithRetry() throws ClientException, InterruptedException, TimeoutException {
+        SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
+
+        Awaitility.await("doGet until expectedStatus and Assertions are satisfied")
+            .atMost(Duration.ofSeconds(1000))
+            .pollInterval(Duration.ofMillis(100))
+            .ignoreExceptionsInstanceOf(ClientException.class)
+            .until(() -> {
+                SlingHttpResponse response = c.doGet("/", 200);
+                return SUCCESS_RESPONSE.equals(response.getContent());
+            });
+    }
+    
+```
 
 ## FAQ
 ##### How can I change the server url of an existing client?
