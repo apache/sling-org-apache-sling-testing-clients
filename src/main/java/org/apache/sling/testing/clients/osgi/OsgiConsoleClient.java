@@ -101,7 +101,7 @@ public class OsgiConsoleClient extends SlingClient {
      * Default constructor. Simply calls {@link SlingClient#SlingClient(URI, String, String)}
      *
      * @param serverUrl the URL to the server under test
-     * @param userName the user name used for authentication
+     * @param userName the username used for authentication
      * @param password the password for this user
      * @throws ClientException if the client cannot be instantiated
      */
@@ -178,7 +178,7 @@ public class OsgiConsoleClient extends SlingClient {
     /**
      * Returns the wrapper for the component info json
      *
-     * @param id the id of the component
+     * @param name the name of the component
      * @return the component info or {@code null} if the component with that name is not found
      */
     private ComponentInfo getComponentInfo(String name) throws ClientException {
@@ -447,7 +447,7 @@ public class OsgiConsoleClient extends SlingClient {
             builder.addParameter("factoryPid", factoryPID);
         }
         // add properties to edit
-        StringBuilder propertyList = new StringBuilder("");
+        StringBuilder propertyList = new StringBuilder();
         for (String propName : configProperties.keySet()) {
             Object o = configProperties.get(propName);
             if (o instanceof String) {
@@ -467,7 +467,7 @@ public class OsgiConsoleClient extends SlingClient {
         HttpUtils.verifyHttpStatus(resp, HttpUtils.getExpectedStatus(SC_MOVED_TEMPORARILY, expectedStatus));
 
         Header[] locationHeader = resp.getHeaders("Location");
-        if (locationHeader!=null && locationHeader.length==1) {
+        if ((locationHeader != null) && (locationHeader.length == 1)) {
             // The location header can contain a relative or an absolute URL
             // Gathering where the URL_CONFIGURATION substring starts will allow adapting to both cases
             int urlPathStart = locationHeader[0].getValue().indexOf(URL_CONFIGURATION);
@@ -856,7 +856,6 @@ public class OsgiConsoleClient extends SlingClient {
 
     /**
      * Returns a data structure like:
-     *
      * {
      *   "status" : "Bundle information: 173 bundles in total - all 173 bundles active.",
      *   "s" : [173,171,2,0,0],
@@ -907,35 +906,24 @@ public class OsgiConsoleClient extends SlingClient {
      * @param serviceType   The type of service.
      * @param propertyName  The name of the property with the unique value to search.
      * @param propertyValue The unique value to be searched.
-     * @return The final config PID. Null if it is not found.
-     * @throws ClientException
-     * @throws InterruptedException
-     * @throws TimeoutException
+     * @return The final config PID. Null if it is not found.*
      */
     public String getConfigPIDFromServices(String serviceType, String propertyName, String propertyValue, final long timeout, final long delay) throws ClientException, InterruptedException, TimeoutException {
 
         ConfigurationPollerByFilter p = new ConfigurationPollerByFilter(String.format("(service.pid=%s.*)", serviceType));
 
         p.poll(timeout, delay);
-        JsonNode jn = null;
+        JsonNode jn;
         try {
             jn = new ObjectMapper().readTree(p.getConfigAsString());
         } catch (JsonProcessingException e) {
-            throw new TestingSetupException(e.getMessage(),e);
+            throw new TestingSetupException("Error reading configurations", e);
         }
 
-        int count = 0;
-        JsonNode configuration = jn.get(count);
-        while(configuration != null) {
-            if (
-                    (configuration.get("properties") != null) &&
-                            (configuration.get("properties").get(propertyName) != null) &&
-                            (configuration.get("properties").get(propertyName).get("value") != null) &&
-                            configuration.get("properties").get(propertyName).get("value").asText().equals(propertyValue)
-            ) {
+        for (JsonNode configuration: jn) {
+            if (configuration.path("properties").path(propertyName).path("value").asText().equals(propertyValue)) {
                 return configuration.get("pid").asText();
             }
-            configuration = jn.get(count++);
         }
         return null;
     }
