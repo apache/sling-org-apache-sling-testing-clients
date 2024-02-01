@@ -16,8 +16,10 @@
  */
 package org.apache.sling.testing;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
+import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor;
@@ -27,8 +29,6 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Optional;
-
-import static org.hamcrest.CoreMatchers.is;
 
 public class FormBasedAuthInterceptorTest {
 
@@ -46,13 +46,17 @@ public class FormBasedAuthInterceptorTest {
         protected void registerHandlers() {
             serverBootstrap.registerHandler(LOGIN_OK_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
-                response.setStatusCode(200);
+                response.setStatusCode(HttpStatus.SC_OK);
                 response.setHeader("set-cookie", LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE +
                         "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
             serverBootstrap.registerHandler(UNAUTHORIZED_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(UNAUTHORIZED_RESPONSE));
-                response.setStatusCode(401);
+                response.setStatusCode(HttpStatus.SC_UNAUTHORIZED);
+            });
+            serverBootstrap.registerHandler(OK_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_OK);
             });
         }
     };
@@ -64,17 +68,30 @@ public class FormBasedAuthInterceptorTest {
                 .addInterceptorLast(interceptor).build();
 
         // Make sure cookie is stored
-        c.doGet(LOGIN_OK_PATH, 200);
+        c.doGet(LOGIN_OK_PATH, HttpStatus.SC_OK);
         Optional<Cookie> loginCookie = getLoginCookie(c);
-        Assert.assertThat("login token cookie should be stored on the client config",
-                loginCookie.isPresent(), is(true));
-        Assert.assertThat("login token cookie should not be expired",
-                loginCookie.get().isExpired(new Date()), is(false));
+        Assert.assertTrue("login token cookie should be stored on the client config",
+                loginCookie.isPresent());
+        Assert.assertFalse("login token cookie should not be expired",
+                loginCookie.get().isExpired(new Date()));
 
-        c.doGet(UNAUTHORIZED_PATH, 401);
+        c.doGet(UNAUTHORIZED_PATH, HttpStatus.SC_UNAUTHORIZED);
         loginCookie = getLoginCookie(c);
-        Assert.assertThat("login token cookie should be forced removed from the client config",
-                loginCookie.isPresent(), is(false));
+        Assert.assertFalse("login token cookie should be forced removed from the client config",
+                loginCookie.isPresent());
+    }
+
+    /**
+     * Test no authentication attempt is performed when user is `null`
+     *
+     * @throws ClientException in problem occurs
+     */
+    @Test
+    public void testNullUser() throws ClientException {
+        FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
+        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), null, "pass")
+                .addInterceptorLast(interceptor).build();
+        c.doGet(OK_PATH, HttpStatus.SC_OK);
     }
 
     private static Optional<Cookie> getLoginCookie(SlingClient c) {
