@@ -163,9 +163,9 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
 
                     try (InputStream inputStream = response.getEntity().getContent()){
                         String responseText = new BufferedReader(
-                                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                                .lines()
-                                .collect(Collectors.joining("\n"));
+                            new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                              .lines()
+                              .collect(Collectors.joining("\n"));
 
                         LOG.error("Error response body was : '{}'", responseText);
                     }

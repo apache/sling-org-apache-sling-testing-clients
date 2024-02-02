@@ -159,4 +159,5 @@ public class FormBasedAuthInterceptorTest {
         return c.getCookieStore().getCookies().stream().filter(
                 cookie -> LOGIN_COOKIE_NAME.equals(cookie.getName())).findFirst();
     }
+
 }
