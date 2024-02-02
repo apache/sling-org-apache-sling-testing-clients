@@ -16,9 +16,9 @@
  */
 package org.apache.sling.testing.clients.interceptors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -27,6 +27,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -48,9 +49,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpRequestResponseInterceptor {
@@ -64,7 +67,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
+    public void process(HttpRequest request, HttpContext context) throws IOException {
         final URI uri = URI.create(request.getRequestLine().getUri());
         if (uri.getPath().endsWith(loginPath)) {
             LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
@@ -81,7 +84,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
     }
 
     @Override
-    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+    public void process(HttpResponse response, HttpContext context) {
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_UNAUTHORIZED) {
             return;
         }
@@ -103,7 +106,9 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         HttpClientContext.adapt(context).getCookieStore().addCookie(expiredLoginTokenCookie);
     }
 
-    /** Get login token cookie or null if not found */
+    /**
+     * Get login token cookie or null if not found
+     */
     private Cookie getLoginCookie(HttpContext context, String loginTokenName) {
         for (Cookie cookie : HttpClientContext.adapt(context).getCookieStore().getCookies()) {
             if (cookie.getName().equalsIgnoreCase(loginTokenName) && !cookie.getValue().isEmpty()) {
@@ -120,9 +125,16 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         // get the username and password from the credentials provider
         final CredentialsProvider credsProvider = HttpClientContext.adapt(context).getCredentialsProvider();
         final AuthScope scope = new AuthScope(host.getHostName(), host.getPort());
-        final String username = credsProvider.getCredentials(scope).getUserPrincipal().getName();
-        final String password = credsProvider.getCredentials(scope).getPassword();
-
+        final String username = Optional.ofNullable(credsProvider.getCredentials(scope))
+                .map(Credentials::getUserPrincipal)
+                .map(Principal::getName)
+                .orElse(null);
+        if (StringUtils.isEmpty(username)) {
+            return;
+        }
+        final String password = Optional.ofNullable(credsProvider.getCredentials(scope))
+                .map(Credentials::getPassword)
+                .orElse(null);
         List<NameValuePair> parameters = new LinkedList<>();
         parameters.add(new BasicNameValuePair("j_username", username));
         parameters.add(new BasicNameValuePair("j_password", password));
@@ -137,30 +149,30 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                 .setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy())
                 .disableRedirectHandling()
                 .build()) {
-            
+
             try (CloseableHttpResponse response = client.execute(host, loginPost, context)){
                 StatusLine sl = response.getStatusLine();
-                
-                if (sl.getStatusCode()>=400) {
-                    LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI.toString());
-                    
+
+                if (sl.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+                    LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI);
+
                     LOG.error("Dumping headers: ");
-                    for(Header header : response.getAllHeaders()) { 
+                    for(Header header : response.getAllHeaders()) {
                         LOG.error("\t '{}' = '{}'", header.getName(), header.getValue());
                     }
-                    
+
                     try (InputStream inputStream = response.getEntity().getContent()){
                         String responseText = new BufferedReader(
-                            new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                              .lines()
-                              .collect(Collectors.joining("\n"));
-                        
+                                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                                .lines()
+                                .collect(Collectors.joining("\n"));
+
                         LOG.error("Error response body was : '{}'", responseText);
                     }
                 } else if (getLoginCookie(context, loginTokenName) == null) {
-                    LOG.error("Login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI.toString(), loginTokenName);
+                    LOG.error("Login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI, loginTokenName);
                 } else {
-                    LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI.toString());
+                    LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI);
                 }
             }
         }

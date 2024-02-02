@@ -16,8 +16,10 @@
  */
 package org.apache.sling.testing;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
+import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor;
@@ -28,17 +30,21 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.is;
-
 public class FormBasedAuthInterceptorTest {
 
     private static final String LOGIN_COOKIE_NAME = "login-token";
     private static final String LOGIN_COOKIE_VALUE = "testvalue";
     private static final String OK_PATH = "/test/ok";
+    private static final String ANONYMOUS_PATH = "/test/anonymous";
+    private static final String LOGIN_PATH = "/test/j_security_check";
     private static final String LOGIN_OK_PATH = OK_PATH + "/j_security_check";
     private static final String UNAUTHORIZED_PATH = "/test/unauthorized";
     private static final String LOGIN_OK_RESPONSE = "TEST_OK LOGIN";
     private static final String UNAUTHORIZED_RESPONSE = "TEST_UNAUTHORIZED";
+    private static final String ANONYMOUS_RESPONSE = "TEST_ANONYMOUS";
+    private static final String OK_RESPONSE = "TEST_OK";
+    private static final String UNREACHABLE_PATH = "/unreachable/path";
+    private static final String UNREACHABLE_LOGIN_PATH = "/unreachable/j_security_check";
 
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
@@ -46,17 +52,45 @@ public class FormBasedAuthInterceptorTest {
         protected void registerHandlers() {
             serverBootstrap.registerHandler(LOGIN_OK_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
-                response.setStatusCode(200);
+                response.setStatusCode(HttpStatus.SC_OK);
+                response.setHeader("set-cookie", LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE +
+                        "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
+            });
+            serverBootstrap.registerHandler(LOGIN_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_OK);
                 response.setHeader("set-cookie", LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE +
                         "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
             serverBootstrap.registerHandler(UNAUTHORIZED_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(UNAUTHORIZED_RESPONSE));
-                response.setStatusCode(401);
+                response.setStatusCode(HttpStatus.SC_UNAUTHORIZED);
+            });
+            serverBootstrap.registerHandler(ANONYMOUS_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(ANONYMOUS_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_OK);
+            });
+            serverBootstrap.registerHandler(OK_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(OK_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_OK);
+            });
+            serverBootstrap.registerHandler(UNREACHABLE_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(OK_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+            });
+            serverBootstrap.registerHandler(UNREACHABLE_LOGIN_PATH, (request, response, context) -> {
+                response.setEntity(new StringEntity(OK_RESPONSE));
+                response.setStatusCode(HttpStatus.SC_BAD_GATEWAY);
             });
         }
     };
 
+    /**
+     * Test a login cookie is set by the response when request is successful
+     * and removed in case of unauthorized access
+     *
+     * @throws Exception if problem occurs
+     */
     @Test
     public void testLoginToken() throws Exception {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
@@ -64,22 +98,65 @@ public class FormBasedAuthInterceptorTest {
                 .addInterceptorLast(interceptor).build();
 
         // Make sure cookie is stored
-        c.doGet(LOGIN_OK_PATH, 200);
+        c.doGet(LOGIN_OK_PATH, HttpStatus.SC_OK);
         Optional<Cookie> loginCookie = getLoginCookie(c);
-        Assert.assertThat("login token cookie should be stored on the client config",
-                loginCookie.isPresent(), is(true));
-        Assert.assertThat("login token cookie should not be expired",
-                loginCookie.get().isExpired(new Date()), is(false));
+        Assert.assertTrue("login token cookie should be stored on the client config",
+                loginCookie.isPresent());
+        Assert.assertFalse("login token cookie should not be expired",
+                loginCookie.get().isExpired(new Date()));
 
-        c.doGet(UNAUTHORIZED_PATH, 401);
+        c.doGet(UNAUTHORIZED_PATH, HttpStatus.SC_UNAUTHORIZED);
         loginCookie = getLoginCookie(c);
-        Assert.assertThat("login token cookie should be forced removed from the client config",
-                loginCookie.isPresent(), is(false));
+        Assert.assertFalse("login token cookie should be forced removed from the client config",
+                loginCookie.isPresent());
+    }
+
+    /**
+     * Test no authentication attempt is performed when user is `null` or ""
+     *
+     * @throws ClientException if problem occurs
+     */
+    @Test
+    public void testAnonymousUser() throws ClientException {
+        FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
+        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), null, "pass")
+                .addInterceptorLast(interceptor).build();
+        c.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
+
+        SlingClient c2 = SlingClient.Builder.create(httpServer.getURI(), "", "pass")
+                .addInterceptorLast(interceptor).build();
+        c2.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
+    }
+
+    /**
+     * Test authentication attempt is performed when user is set.
+     *
+     * @throws ClientException if problem occurs
+     */
+    @Test
+    public void testUser() throws ClientException {
+        FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
+        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
+                .addInterceptorLast(interceptor).build();
+        c.doGet(OK_PATH, HttpStatus.SC_OK);
+    }
+
+    /**
+     * Simulate a login issue when login is not successful due to i.e. network issue,
+     * this should also dump the response headers
+     *
+     * @throws ClientException if problem occurs
+     */
+    @Test
+    public void testLoginIssue() throws ClientException {
+        FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
+        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
+                .addInterceptorLast(interceptor).build();
+        c.doGet(UNREACHABLE_PATH, HttpStatus.SC_BAD_REQUEST);
     }
 
     private static Optional<Cookie> getLoginCookie(SlingClient c) {
         return c.getCookieStore().getCookies().stream().filter(
                 cookie -> LOGIN_COOKIE_NAME.equals(cookie.getName())).findFirst();
     }
-
 }
