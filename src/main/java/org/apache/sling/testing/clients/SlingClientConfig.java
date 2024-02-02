@@ -221,7 +221,8 @@ public class SlingClientConfig {
             // Create default CredentialsProvider if not set
             if (credsProvider == null) {
                 credsProvider = new BasicCredentialsProvider();
-                if (StringUtils.isNotEmpty(this.user)) {
+                // Empty user "" is a valid user for basic authentication
+                if (this.user != null) {
                     credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
                             new UsernamePasswordCredentials(this.user, this.password));
                 }
