@@ -129,7 +129,7 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                 .map(Credentials::getUserPrincipal)
                 .map(Principal::getName)
                 .orElse(null);
-        if (StringUtils.isEmpty(username)) {
+        if (username == null) {
             return;
         }
         final String password = Optional.ofNullable(credsProvider.getCredentials(scope))

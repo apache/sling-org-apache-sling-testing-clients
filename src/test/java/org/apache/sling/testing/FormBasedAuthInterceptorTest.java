@@ -22,6 +22,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.SlingClient;
+import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -112,33 +113,38 @@ public class FormBasedAuthInterceptorTest {
     }
 
     /**
-     * Test no authentication attempt is performed when user is `null` or ""
+     * Test no authentication attempt is performed when user is `null`
      *
      * @throws ClientException if problem occurs
      */
     @Test
     public void testAnonymousUser() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), null, "pass")
+        SlingClient client = SlingClient.Builder.create(httpServer.getURI(), null, "pass")
                 .addInterceptorLast(interceptor).build();
-        c.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
+        SlingHttpResponse response = client.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
 
-        SlingClient c2 = SlingClient.Builder.create(httpServer.getURI(), "", "pass")
-                .addInterceptorLast(interceptor).build();
-        c2.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
+        Assert.assertSame(null, client.getUser());
+        Assert.assertSame("pass", client.getPassword());
+        Assert.assertEquals("Should return expected response", ANONYMOUS_RESPONSE, response.getContent());
     }
 
     /**
-     * Test authentication attempt is performed when user is set.
+     * Test authentication attempt is performed when empty user "" is set.
+     * This user is valid according to basic authentication schema
      *
      * @throws ClientException if problem occurs
      */
     @Test
     public void testUser() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
+        SlingClient client = SlingClient.Builder.create(httpServer.getURI(), "", "pass")
                 .addInterceptorLast(interceptor).build();
-        c.doGet(OK_PATH, HttpStatus.SC_OK);
+        SlingHttpResponse response = client.doGet(OK_PATH, HttpStatus.SC_OK);
+
+        Assert.assertSame("", client.getUser());
+        Assert.assertSame("pass", client.getPassword());
+        Assert.assertEquals("Should return expected response", OK_RESPONSE, response.getContent());
     }
 
     /**
@@ -150,9 +156,13 @@ public class FormBasedAuthInterceptorTest {
     @Test
     public void testLoginIssue() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
-        SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
+        SlingClient client = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
                 .addInterceptorLast(interceptor).build();
-        c.doGet(UNREACHABLE_PATH, HttpStatus.SC_BAD_REQUEST);
+        SlingHttpResponse response = client.doGet(UNREACHABLE_PATH, HttpStatus.SC_BAD_REQUEST);
+
+        Assert.assertSame("user", client.getUser());
+        Assert.assertSame("pass", client.getPassword());
+        Assert.assertEquals("Should return expected response", OK_RESPONSE, response.getContent());
     }
 
     private static Optional<Cookie> getLoginCookie(SlingClient c) {
