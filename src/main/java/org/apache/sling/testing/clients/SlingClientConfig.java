@@ -72,7 +72,7 @@ public class SlingClientConfig {
 
 
     /**
-     * Extra values to be used in interceptors, custom auth mechanisms, etc.
+     * Extra values to be used in interceptors, custom authentication mechanisms, etc.
      */
     protected final Map<String, String> values;
 

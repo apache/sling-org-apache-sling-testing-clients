@@ -113,7 +113,7 @@ public class FormBasedAuthInterceptorTest {
     }
 
     /**
-     * Test no authentication attempt is performed when user is `null`
+     * Test no authentication attempt is performed when user is {@code null}
      *
      * @throws ClientException if problem occurs
      */
@@ -130,8 +130,8 @@ public class FormBasedAuthInterceptorTest {
     }
 
     /**
-     * Test authentication attempt is performed when empty user "" is set.
-     * This user is valid according to basic authentication schema
+     * Test authentication attempt is performed when the user is set to the empty string.
+     * This user is valid according to the basic authentication schema
      *
      * @throws ClientException if problem occurs
      */
