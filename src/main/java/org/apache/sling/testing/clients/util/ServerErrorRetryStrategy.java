@@ -93,7 +93,7 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     private String getRequestDetails(HttpContext context) {
         String details = "Not available";
         HttpClientContext clientContext = HttpClientContext.adapt(context);
-        HttpRequest request = clientContext.getAttribute(HttpClientContext.HTTP_REQUEST, HttpRequest.class);
+        HttpRequest request = clientContext.getRequest();
         if (request != null) {
             // Build a request detail string like following example:
             // GET /test/internalerror/resource HTTP/1.1
