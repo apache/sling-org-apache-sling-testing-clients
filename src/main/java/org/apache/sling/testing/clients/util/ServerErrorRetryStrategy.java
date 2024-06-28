@@ -16,9 +16,9 @@
  */
 package org.apache.sling.testing.clients.util;
 
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -93,11 +93,11 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     private String getRequestDetails(HttpContext context) {
         String details = "Not available";
         HttpClientContext clientContext = HttpClientContext.adapt(context);
-        HttpRequestWrapper wrapper = clientContext.getAttribute(HttpClientContext.HTTP_REQUEST, HttpRequestWrapper.class);
-        if (wrapper != null) {
+        HttpRequest request = clientContext.getRequest();
+        if (request != null) {
             // Build a request detail string like following example:
             // GET /test/internalerror/resource HTTP/1.1
-            details = wrapper.getRequestLine().toString();
+            details = request.getRequestLine().toString();
         }
         return details;
     }
@@ -109,7 +109,7 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
         String details = "Not available";
         if (response != null) {
             // Build a response string like following example:
-            // HTTP/1.1 500 Internal Server Error [Date: Thu, 12 Jan 2023 08:32:42 GMT, Server: TEST/1.1, 
+            // HTTP/1.1 500 Internal Server Error [Date: Thu, 12 Jan 2023 08:32:42 GMT, Server: TEST/1.1,
             //   Content-Length: 8, Content-Type: text/plain; charset=ISO-8859-1, Connection: Keep-Alive, ]
             final StringBuilder sb = new StringBuilder(response.getStatusLine().toString());
             sb.append(" [");
