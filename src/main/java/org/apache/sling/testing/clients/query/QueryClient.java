@@ -29,7 +29,7 @@ import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.clients.query.servlet.QueryServlet;
 import org.apache.sling.testing.clients.util.JsonUtils;
 import org.apache.sling.testing.clients.util.URLParameterBuilder;
-import org.ops4j.pax.tinybundles.core.TinyBundles;
+import org.ops4j.pax.tinybundles.TinyBundles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,11 +190,11 @@ public class QueryClient extends SlingClient {
      */
     public QueryClient installServlet() throws ClientException, InterruptedException {
         InputStream bundleStream = TinyBundles.bundle()
-                .set("Bundle-SymbolicName", BUNDLE_BSN)
-                .set("Bundle-Version", BUNDLE_VERSION)
-                .set("Bundle-Name", BUNDLE_NAME)
-                .add(QueryServlet.class)
-                .build(TinyBundles.withBnd());
+                .setHeader("Bundle-SymbolicName", BUNDLE_BSN)
+                .setHeader("Bundle-Version", BUNDLE_VERSION)
+                .setHeader("Bundle-Name", BUNDLE_NAME)
+                .addClass(QueryServlet.class)
+                .build(TinyBundles.bndBuilder());
 
         try {
             File bundleFile = File.createTempFile(BUNDLE_BSN + "-" + BUNDLE_VERSION, ".jar");
