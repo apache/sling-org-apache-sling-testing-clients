@@ -1,21 +1,37 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.sling.testing.clients.osgi;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,21 +55,6 @@ import org.apache.sling.testing.clients.util.poller.Polling;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 
 import static org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -90,7 +91,6 @@ public class OsgiConsoleClient extends SlingClient {
      * The URL for service requests
      */
     private final String URL_SERVICES = CONSOLE_ROOT_URL + "/services";
-
 
     public static final String JSON_KEY_ID = "id";
     public static final String JSON_KEY_VERSION = "version";
@@ -213,13 +213,15 @@ public class OsgiConsoleClient extends SlingClient {
      * @throws InterruptedException if interrupted
      * @see "OSGi Comp. R6, §112.5 Component Life Cycle"
      */
-    public void waitComponentRegistered(final String componentName, final long timeout, final long delay) throws TimeoutException, InterruptedException {
+    public void waitComponentRegistered(final String componentName, final long timeout, final long delay)
+            throws TimeoutException, InterruptedException {
         Polling p = new Polling() {
             @Override
             public Boolean call() throws Exception {
                 ComponentInfo info = getComponentInfo(componentName);
                 if (info != null) {
-                    return ((info.getStatus() == Component.Status.SATISFIED) || (info.getStatus() == Component.Status.ACTIVE));
+                    return ((info.getStatus() == Component.Status.SATISFIED)
+                            || (info.getStatus() == Component.Status.ACTIVE));
                 } else {
                     LOG.debug("Could not get component info for component name {}", componentName);
                 }
@@ -244,7 +246,9 @@ public class OsgiConsoleClient extends SlingClient {
      * @throws TimeoutException if the component did not become registered before timeout was reached
      * @throws InterruptedException if interrupted
      */
-    public void waitServiceRegistered(final String type, final String bundleSymbolicName , final long timeout, final long delay) throws TimeoutException, InterruptedException {
+    public void waitServiceRegistered(
+            final String type, final String bundleSymbolicName, final long timeout, final long delay)
+            throws TimeoutException, InterruptedException {
         Polling p = new Polling() {
             @Override
             public Boolean call() throws Exception {
@@ -256,7 +260,10 @@ public class OsgiConsoleClient extends SlingClient {
                                 return true;
                             }
                         }
-                        LOG.debug("Could not find service info for service type {} provided by bundle {}", type, bundleSymbolicName);
+                        LOG.debug(
+                                "Could not find service info for service type {} provided by bundle {}",
+                                type,
+                                bundleSymbolicName);
                         return false;
                     } else {
                         return !infos.isEmpty();
@@ -298,21 +305,20 @@ public class OsgiConsoleClient extends SlingClient {
         JsonNode rootNode = JsonUtils.getJsonNodeFromString(resp.getContent());
         // go through the params
         Map<String, Object> props = new HashMap<String, Object>();
-        if(rootNode.get("properties") == null)
-            return props;
+        if (rootNode.get("properties") == null) return props;
         JsonNode properties = rootNode.get("properties");
-        for(Iterator<String> it = properties.fieldNames(); it.hasNext();) {
+        for (Iterator<String> it = properties.fieldNames(); it.hasNext(); ) {
             String propName = it.next();
             JsonNode value = properties.get(propName).get("value");
-            if(value != null) {
+            if (value != null) {
                 props.put(propName, value.asText());
                 continue;
             }
             value = properties.get(propName).get("values");
-            if(value != null) {
+            if (value != null) {
                 Iterator<JsonNode> iter = value.elements();
                 List<String> list = new ArrayList<String>();
-                while(iter.hasNext()) {
+                while (iter.hasNext()) {
                     list.add(iter.next().asText());
                 }
                 props.put(propName, list.toArray(new String[list.size()]));
@@ -344,20 +350,20 @@ public class OsgiConsoleClient extends SlingClient {
 
     static Map<String, Object> extractOSGiConfiguration(final JsonNode rootNode) {
         // bundle_location is not set, the configuration does not exist
-        if ( rootNode.get("bundle_location") == null ) {
+        if (rootNode.get("bundle_location") == null) {
             return null;
         }
 
         final Map<String, Object> result = new HashMap<String, Object>();
         // go through the properties
         final JsonNode propertiesNode = rootNode.get("properties");
-        if ( propertiesNode != null ) {
-            for(Iterator<String> it = propertiesNode.fieldNames(); it.hasNext();) {
+        if (propertiesNode != null) {
+            for (Iterator<String> it = propertiesNode.fieldNames(); it.hasNext(); ) {
                 final String propName = it.next();
                 final JsonNode propNode = propertiesNode.get(propName);
 
                 final boolean isSet = propNode.get("is_set").booleanValue();
-                if ( isSet ) {
+                if (isSet) {
                     JsonNode value = propNode.get("value");
                     if (value != null) {
                         result.put(propName, value.asText());
@@ -366,7 +372,7 @@ public class OsgiConsoleClient extends SlingClient {
                         if (value != null) {
                             final Iterator<JsonNode> iter = value.elements();
                             List<String> list = new ArrayList<String>();
-                            while(iter.hasNext()) {
+                            while (iter.hasNext()) {
                                 list.add(iter.next().asText());
                             }
                             result.put(propName, list.toArray(new String[list.size()]));
@@ -437,7 +443,8 @@ public class OsgiConsoleClient extends SlingClient {
      * @return the location of the config
      * @throws ClientException if the response status does not match any of the expectedStatus
      */
-    public String editConfiguration(String PID, String factoryPID, Map<String, Object> configProperties, int... expectedStatus)
+    public String editConfiguration(
+            String PID, String factoryPID, Map<String, Object> configProperties, int... expectedStatus)
             throws ClientException {
         FormEntityBuilder builder = FormEntityBuilder.create();
         builder.addParameter("apply", "true");
@@ -451,9 +458,9 @@ public class OsgiConsoleClient extends SlingClient {
         for (String propName : configProperties.keySet()) {
             Object o = configProperties.get(propName);
             if (o instanceof String) {
-                builder.addParameter(propName, (String)o);
+                builder.addParameter(propName, (String) o);
             } else if (o instanceof String[]) {
-                for (String s : (String[])o) {
+                for (String s : (String[]) o) {
                     builder.addParameter(propName, s);
                 }
             }
@@ -473,7 +480,7 @@ public class OsgiConsoleClient extends SlingClient {
             int urlPathStart = locationHeader[0].getValue().indexOf(URL_CONFIGURATION);
             return locationHeader[0].getValue().substring(urlPathStart + URL_CONFIGURATION.length() + 1);
         } else {
-        	return null;
+            return null;
         }
     }
 
@@ -494,8 +501,9 @@ public class OsgiConsoleClient extends SlingClient {
      * @throws InterruptedException to mark this operation as "waiting"
      */
     @Deprecated
-    public String editConfigurationWithWait(int waitCount, String PID, String factoryPID, Map<String, Object> configProperties,
-                                            int... expectedStatus) throws ClientException, InterruptedException {
+    public String editConfigurationWithWait(
+            int waitCount, String PID, String factoryPID, Map<String, Object> configProperties, int... expectedStatus)
+            throws ClientException, InterruptedException {
         String pid = editConfiguration(PID, factoryPID, configProperties, expectedStatus);
         getConfigurationWithWait(waitCount, pid);
         return pid;
@@ -515,8 +523,8 @@ public class OsgiConsoleClient extends SlingClient {
      * @throws InterruptedException to mark this operation as "waiting"
      * @throws TimeoutException if the timeout was reached
      */
-    public String waitEditConfiguration(long timeout, String PID, String factoryPID, Map<String, Object> configProperties,
-                                        int... expectedStatus)
+    public String waitEditConfiguration(
+            long timeout, String PID, String factoryPID, Map<String, Object> configProperties, int... expectedStatus)
             throws ClientException, InterruptedException, TimeoutException {
         String pid = editConfiguration(PID, factoryPID, configProperties, expectedStatus);
         waitGetConfiguration(timeout, pid);
@@ -581,9 +589,8 @@ public class OsgiConsoleClient extends SlingClient {
      */
     public SlingHttpResponse installBundle(File f, boolean startBundle, int startLevel) throws ClientException {
         // Setup request for Felix Webconsole bundle install
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create()
-                .addTextBody("action", "install")
-                .addBinaryBody("bundlefile", f);
+        MultipartEntityBuilder builder =
+                MultipartEntityBuilder.create().addTextBody("action", "install").addBinaryBody("bundlefile", f);
         if (startBundle) {
             builder.addTextBody("bundlestart", "true");
         }
@@ -595,7 +602,6 @@ public class OsgiConsoleClient extends SlingClient {
         }
 
         return this.doPost(URL_BUNDLES, builder.build(), 302);
-
     }
 
     /**
@@ -780,7 +786,8 @@ public class OsgiConsoleClient extends SlingClient {
         // To start the bundle we POST action=start to its URL
         final String path = getBundlePath(symbolicName);
         LOG.info("Starting bundle {} via {}", symbolicName, path);
-        this.doPost(path, FormEntityBuilder.create().addParameter("action", "start").build(), SC_OK);
+        this.doPost(
+                path, FormEntityBuilder.create().addParameter("action", "start").build(), SC_OK);
     }
 
     /**
@@ -792,9 +799,9 @@ public class OsgiConsoleClient extends SlingClient {
         // To stop the bundle we POST action=stop to its URL
         final String path = getBundlePath(symbolicName);
         LOG.info("Stopping bundle {} via {}", symbolicName, path);
-        this.doPost(path, FormEntityBuilder.create().addParameter("action", "stop").build(), SC_OK);
+        this.doPost(
+                path, FormEntityBuilder.create().addParameter("action", "stop").build(), SC_OK);
     }
-
 
     /**
      * Starts a bundle and waits for it to be started
@@ -841,7 +848,6 @@ public class OsgiConsoleClient extends SlingClient {
         this.doPost(URL_BUNDLES, builder.build(), 200);
     }
 
-
     //
     // private methods
     //
@@ -877,7 +883,8 @@ public class OsgiConsoleClient extends SlingClient {
         final JsonNode root = JsonUtils.getJsonNodeFromString(content);
 
         if (root.get(JSON_KEY_DATA) == null) {
-            throw new TestingValidationException(path + " does not provide '" + JSON_KEY_DATA + "' element, JSON content=" + content);
+            throw new TestingValidationException(
+                    path + " does not provide '" + JSON_KEY_DATA + "' element, JSON content=" + content);
         }
 
         Iterator<JsonNode> data = root.get(JSON_KEY_DATA).elements();
@@ -908,9 +915,12 @@ public class OsgiConsoleClient extends SlingClient {
      * @param propertyValue The unique value to be searched.
      * @return The final config PID. Null if it is not found.*
      */
-    public String getConfigPIDFromServices(String serviceType, String propertyName, String propertyValue, final long timeout, final long delay) throws ClientException, InterruptedException, TimeoutException {
+    public String getConfigPIDFromServices(
+            String serviceType, String propertyName, String propertyValue, final long timeout, final long delay)
+            throws ClientException, InterruptedException, TimeoutException {
 
-        ConfigurationPollerByFilter p = new ConfigurationPollerByFilter(String.format("(service.pid=%s.*)", serviceType));
+        ConfigurationPollerByFilter p =
+                new ConfigurationPollerByFilter(String.format("(service.pid=%s.*)", serviceType));
 
         p.poll(timeout, delay);
         JsonNode jn;
@@ -920,8 +930,13 @@ public class OsgiConsoleClient extends SlingClient {
             throw new TestingSetupException("Error reading configurations", e);
         }
 
-        for (JsonNode configuration: jn) {
-            if (configuration.path("properties").path(propertyName).path("value").asText().equals(propertyValue)) {
+        for (JsonNode configuration : jn) {
+            if (configuration
+                    .path("properties")
+                    .path(propertyName)
+                    .path("value")
+                    .asText()
+                    .equals(propertyValue)) {
                 return configuration.get("pid").asText();
             }
         }
@@ -964,7 +979,7 @@ public class OsgiConsoleClient extends SlingClient {
         final JarInputStream jis = new JarInputStream(new FileInputStream(bundleFile));
         try {
             final Manifest m = jis.getManifest();
-            if(m == null) {
+            if (m == null) {
                 throw new IOException("Manifest is null in " + bundleFile.getAbsolutePath());
             }
             version = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
@@ -973,7 +988,6 @@ public class OsgiConsoleClient extends SlingClient {
         }
         return version;
     }
-
 
     class ConfigurationPoller extends Polling {
 
@@ -1007,24 +1021,23 @@ public class OsgiConsoleClient extends SlingClient {
         public ConfigurationPollerByFilter(String filter) {
             this.filter = filter;
         }
+
         public String getConfigAsString() {
             return configAsString;
         }
+
         @Override
-        public Boolean call()  {
+        public Boolean call() {
             try {
-                SlingHttpResponse resp = doGet("/system/console/configMgr/*.json",
-                        Collections.singletonList(
-                                new BasicNameValuePair("pidFilter", filter)
-                        )
-                );
+                SlingHttpResponse resp = doGet(
+                        "/system/console/configMgr/*.json",
+                        Collections.singletonList(new BasicNameValuePair("pidFilter", filter)));
                 this.configAsString = resp.getContent();
                 return true;
             } catch (Exception e) {
-                LOG.debug("Retrying doGet(/system/console/configMgr/*.json). Exception: "+e.getMessage(),e);
+                LOG.debug("Retrying doGet(/system/console/configMgr/*.json). Exception: " + e.getMessage(), e);
                 return false;
             }
         }
-
     }
 }

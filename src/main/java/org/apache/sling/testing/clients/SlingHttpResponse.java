@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
 
@@ -102,7 +104,8 @@ public class SlingHttpResponse implements CloseableHttpResponse {
 
         // check for match
         if (!contentType.equals(expected)) {
-            throw new TestingValidationException(this + " has wrong content type (" + contentType + "). Expected " + expected);
+            throw new TestingValidationException(
+                    this + " has wrong content type (" + contentType + "). Expected " + expected);
         }
     }
 
@@ -114,7 +117,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @throws TestingValidationException if the response content does not match one of the regexp
      */
     public void checkContentRegexp(String... regexp) throws TestingValidationException {
-        for(String expr : regexp) {
+        for (String expr : regexp) {
             final Pattern p = Pattern.compile(".*" + expr + ".*");
             boolean matched = false;
             try (final Scanner scanner = new Scanner(this.getContent())) {
@@ -128,7 +131,8 @@ public class SlingHttpResponse implements CloseableHttpResponse {
             }
 
             if (!matched) {
-                throw new TestingValidationException("Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
+                throw new TestingValidationException(
+                        "Pattern " + p + " didn't match any line in content. Content is: \n\n" + getContent());
             }
         }
     }
@@ -138,12 +142,13 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      *
      * @param expected list of expected strings
      * @throws TestingValidationException if the response content does not match one of the strings
-     * 
+     *
      */
     public void checkContentContains(String... expected) throws TestingValidationException {
         for (String s : expected) {
             if (!this.getContent().contains(s)) {
-                throw new TestingValidationException("Content does not contain string " + s + ". Content is: \n\n" + getContent());
+                throw new TestingValidationException(
+                        "Content does not contain string " + s + ". Content is: \n\n" + getContent());
             }
         }
     }

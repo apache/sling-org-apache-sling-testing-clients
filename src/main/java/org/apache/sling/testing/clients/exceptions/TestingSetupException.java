@@ -44,7 +44,8 @@ public class TestingSetupException extends ClientException {
         super(message, httpStatusCode, throwable);
     }
 
-    public TestingSetupException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
+    public TestingSetupException(
+            String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
         super(message, throwable, request, response);
     }
 }

@@ -18,6 +18,12 @@
  */
 package org.apache.sling.testing.clients.email;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
@@ -28,12 +34,6 @@ import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingClientConfig;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.apache.sling.testing.clients.exceptions.TestingIOException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -54,7 +54,6 @@ public final class SlingEmailClient extends SlingClient {
      * The well-known property name of the email body contents
      */
     private static final String PN_CONTENT = "-Content-";
-
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -108,7 +107,6 @@ public final class SlingEmailClient extends SlingClient {
             throw new TestingIOException("Failed retrieving email messages", e);
         }
 
-
         return emails;
     }
 
@@ -118,7 +116,10 @@ public final class SlingEmailClient extends SlingClient {
      * @throws ClientException in case of any errors
      */
     public void deleteMessages() throws ClientException {
-        doDelete(EMAIL_SERVLET_PATH, Collections.<NameValuePair>emptyList(),
-                Collections.<Header>emptyList(), SC_NO_CONTENT);
+        doDelete(
+                EMAIL_SERVLET_PATH,
+                Collections.<NameValuePair>emptyList(),
+                Collections.<Header>emptyList(),
+                SC_NO_CONTENT);
     }
 }
