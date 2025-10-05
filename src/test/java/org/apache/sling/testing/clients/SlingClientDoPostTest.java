@@ -20,12 +20,12 @@ package org.apache.sling.testing.clients;
 
 import java.io.IOException;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.util.FormEntityBuilder;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -40,9 +40,9 @@ public class SlingClientDoPostTest {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(POST_PATH, new HttpRequestHandler() {
+            serverBootstrap.register(POST_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     response.setEntity(new StringEntity(HTML_RESPONSE));
                 }

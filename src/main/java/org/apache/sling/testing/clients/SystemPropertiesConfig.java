@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.sling.testing.clients.util.UserAgentUtil;
 
 public class SystemPropertiesConfig {
@@ -108,11 +109,11 @@ public class SystemPropertiesConfig {
      * The delay in milliseconds between http retries
      * @return the delay between http retries
      */
-    public static int getHttpRetriesDelay() {
+    public static TimeValue getHttpRetriesDelay() {
         try {
-            return Integer.getInteger(getPrefixedPropertyName(HTTP_RETRIES_DELAY_PROP), 1000);
+            return TimeValue.ofMilliseconds(Integer.getInteger(getPrefixedPropertyName(HTTP_RETRIES_DELAY_PROP), 1000));
         } catch (Exception e) {
-            return 0;
+            return TimeValue.ofSeconds(0);
         }
     }
 

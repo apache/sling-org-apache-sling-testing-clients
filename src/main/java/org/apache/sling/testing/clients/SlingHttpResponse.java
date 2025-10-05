@@ -19,23 +19,14 @@
 package org.apache.sling.testing.clients;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
-public class SlingHttpResponse implements CloseableHttpResponse {
+public class SlingHttpResponse implements ClassicHttpResponse {
 
     public static final String STATUS = "Status";
     public static final String MESSAGE = "Message";
@@ -45,10 +36,10 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     public static final String REFERER = "Referer";
     public static final String CHANGE_LOG = "ChangeLog";
 
-    private final CloseableHttpResponse httpResponse;
+    private final ClassicHttpResponse httpResponse;
     private String content;
 
-    public SlingHttpResponse(CloseableHttpResponse response) {
+    public SlingHttpResponse(ClassicHttpResponse response) {
         this.httpResponse = response;
     }
 
@@ -66,6 +57,8 @@ public class SlingHttpResponse implements CloseableHttpResponse {
                 this.close();
             } catch (IOException e) {
                 throw new RuntimeException("Could not read content from response", e);
+            } catch (ParseException e) {
+                throw new RuntimeException("Could not parse content from response", e);
             }
         }
 
@@ -83,9 +76,9 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      * @throws TestingValidationException if the response does not match the expected
      */
     public void checkStatus(int expected) throws TestingValidationException {
-        if (this.getStatusLine().getStatusCode() != expected) {
-            throw new TestingValidationException(this + " has wrong response status ("
-                    + this.getStatusLine().getStatusCode() + "). Expected " + expected);
+        if (this.getCode() != expected) {
+            throw new TestingValidationException(
+                    this + " has wrong response status (" + this.getCode() + "). Expected " + expected);
         }
     }
 
@@ -97,7 +90,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
      */
     public void checkContentType(String expected) throws TestingValidationException {
         // Remove whatever follows semicolon in content-type
-        String contentType = this.getEntity().getContentType().getValue();
+        String contentType = this.getEntity().getContentType();
         if (contentType != null) {
             contentType = contentType.split(";")[0].trim();
         }
@@ -271,28 +264,18 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     // HttpResponse delegated methods
 
     @Override
-    public StatusLine getStatusLine() {
-        return httpResponse.getStatusLine();
+    public int getCode() {
+        return httpResponse.getCode();
     }
 
     @Override
-    public void setStatusLine(StatusLine statusline) {
-        httpResponse.setStatusLine(statusline);
+    public void setCode(int code) throws IllegalStateException {
+        httpResponse.setCode(code);
     }
 
     @Override
-    public void setStatusLine(ProtocolVersion ver, int code) {
-        httpResponse.setStatusLine(ver, code);
-    }
-
-    @Override
-    public void setStatusLine(ProtocolVersion ver, int code, String reason) {
-        httpResponse.setStatusLine(ver, code, reason);
-    }
-
-    @Override
-    public void setStatusCode(int code) throws IllegalStateException {
-        httpResponse.setStatusCode(code);
+    public String getReasonPhrase() {
+        return httpResponse.getReasonPhrase();
     }
 
     @Override
@@ -321,13 +304,13 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     }
 
     @Override
-    public ProtocolVersion getProtocolVersion() {
-        return httpResponse.getProtocolVersion();
+    public boolean containsHeader(String name) {
+        return httpResponse.containsHeader(name);
     }
 
     @Override
-    public boolean containsHeader(String name) {
-        return httpResponse.containsHeader(name);
+    public int countHeaders(String name) {
+        return httpResponse.countHeaders(name);
     }
 
     @Override
@@ -341,13 +324,28 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     }
 
     @Override
+    public Header getHeader(String name) throws ProtocolException {
+        return httpResponse.getHeader(name);
+    }
+
+    @Override
+    public Header[] getHeaders() {
+        return httpResponse.getHeaders();
+    }
+
+    @Override
     public Header getLastHeader(String name) {
         return httpResponse.getLastHeader(name);
     }
 
     @Override
-    public Header[] getAllHeaders() {
-        return httpResponse.getAllHeaders();
+    public void setVersion(ProtocolVersion protocolVersion) {
+        httpResponse.setVersion(protocolVersion);
+    }
+
+    @Override
+    public ProtocolVersion getVersion() {
+        return httpResponse.getVersion();
     }
 
     @Override
@@ -356,7 +354,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     }
 
     @Override
-    public void addHeader(String name, String value) {
+    public void addHeader(String name, Object value) {
         httpResponse.addHeader(name, value);
     }
 
@@ -366,7 +364,7 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     }
 
     @Override
-    public void setHeader(String name, String value) {
+    public void setHeader(String name, Object value) {
         httpResponse.setHeader(name, value);
     }
 
@@ -376,35 +374,23 @@ public class SlingHttpResponse implements CloseableHttpResponse {
     }
 
     @Override
-    public void removeHeader(Header header) {
-        httpResponse.removeHeader(header);
+    public boolean removeHeader(Header header) {
+        return httpResponse.removeHeader(header);
     }
 
     @Override
-    public void removeHeaders(String name) {
-        httpResponse.removeHeaders(name);
+    public boolean removeHeaders(String name) {
+        return httpResponse.removeHeaders(name);
     }
 
     @Override
-    public HeaderIterator headerIterator() {
+    public Iterator<Header> headerIterator() {
         return httpResponse.headerIterator();
     }
 
     @Override
-    public HeaderIterator headerIterator(String name) {
+    public Iterator<Header> headerIterator(String name) {
         return httpResponse.headerIterator(name);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public org.apache.http.params.HttpParams getParams() {
-        return httpResponse.getParams();
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void setParams(org.apache.http.params.HttpParams params) {
-        httpResponse.setParams(params);
     }
 
     @Override

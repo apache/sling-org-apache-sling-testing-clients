@@ -18,7 +18,7 @@
  */
 package org.apache.sling.testing.clients;
 
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 
 /**
  * An exception thrown when something went wrong with using the sling testing clients.
@@ -94,7 +94,7 @@ public class ClientException extends Exception {
         this.request = request;
         this.response = response;
         if (this.response != null) {
-            this.httpStatusCode = response.getStatusLine().getStatusCode();
+            this.httpStatusCode = response.getCode();
         }
     }
 
@@ -149,15 +149,12 @@ public class ClientException extends Exception {
         StringBuilder messageBuilder = new StringBuilder(super.toString()).append(System.lineSeparator());
         if (null != request) {
             messageBuilder.append("Request: ");
-            messageBuilder.append(request.getMethod()).append(" ").append(request.getURI());
+            messageBuilder.append(request.getMethod()).append(" ").append(request.getRequestUri());
             messageBuilder.append(System.lineSeparator());
         }
         if (null != response) {
             messageBuilder.append("Response: ");
-            messageBuilder
-                    .append(response.getStatusLine().getStatusCode())
-                    .append(" ")
-                    .append(response.getStatusLine().getReasonPhrase());
+            messageBuilder.append(response.getCode()).append(" ").append(response.getReasonPhrase());
             messageBuilder.append(response.getContent());
         }
         return messageBuilder.toString();

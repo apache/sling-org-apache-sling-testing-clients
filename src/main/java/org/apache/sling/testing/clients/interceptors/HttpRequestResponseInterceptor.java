@@ -18,7 +18,7 @@
  */
 package org.apache.sling.testing.clients.interceptors;
 
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponseInterceptor;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.HttpResponseInterceptor;
 
 public interface HttpRequestResponseInterceptor extends HttpRequestInterceptor, HttpResponseInterceptor {}

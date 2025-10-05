@@ -23,15 +23,12 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicHttpEntityEnclosingRequest;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.junit.Assert;
@@ -76,12 +73,12 @@ public class QueryClientTest {
         protected void registerHandlers() throws IOException {
 
             // Normal query request
-            serverBootstrap.registerHandler(QUERY_PATH, new HttpRequestHandler() {
+            serverBootstrap.register(QUERY_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     List<NameValuePair> parameters =
-                            URLEncodedUtils.parse(request.getRequestLine().getUri(), Charset.defaultCharset());
+                            URLEncodedUtils.parse(request.getRequestUri(), Charset.defaultCharset());
 
                     for (NameValuePair parameter : parameters) {
                         if (parameter.getName().equals("explain")
@@ -96,34 +93,34 @@ public class QueryClientTest {
             });
 
             // Install servlet
-            serverBootstrap.registerHandler("/system/console/bundles", new HttpRequestHandler() {
+            serverBootstrap.register("/system/console/bundles", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     // is install (post) or checking status (get)
-                    if (request instanceof BasicHttpEntityEnclosingRequest) {
-                        response.setStatusCode(302);
+                    if (HttpPost.METHOD_NAME.equals(request.getMethod())) {
+                        response.setCode(302);
                     } else {
-                        response.setStatusCode(200);
+                        response.setCode(200);
                     }
                 }
             });
 
             // Check bundle status
-            serverBootstrap.registerHandler(BUNDLE_PATH + ".json", new HttpRequestHandler() {
+            serverBootstrap.register(BUNDLE_PATH + ".json", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     response.setEntity(new StringEntity(JSON_BUNDLE));
                 }
             });
 
             // Uninstall bundle
-            serverBootstrap.registerHandler(BUNDLE_PATH, new HttpRequestHandler() {
+            serverBootstrap.register(BUNDLE_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
-                    response.setStatusCode(200);
+                    response.setCode(200);
                 }
             });
         }

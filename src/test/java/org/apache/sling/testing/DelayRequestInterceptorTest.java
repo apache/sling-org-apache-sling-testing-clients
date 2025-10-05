@@ -28,7 +28,7 @@ public class DelayRequestInterceptorTest {
     public void testDelay() throws Exception {
         DelayRequestInterceptor interceptor = new DelayRequestInterceptor(700);
         long before = System.currentTimeMillis();
-        interceptor.process(null, null);
+        interceptor.process(null, null, null);
         long after = System.currentTimeMillis();
         Assert.assertTrue(after - before >= 700);
     }

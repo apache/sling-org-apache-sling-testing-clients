@@ -25,19 +25,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.utils.URIUtils;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.hc.client5.http.auth.*;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.auth.BasicScheme;
+import org.apache.hc.client5.http.utils.URIUtils;
+import org.apache.hc.core5.annotation.Contract;
+import org.apache.hc.core5.annotation.ThreadingBehavior;
+import org.apache.hc.core5.http.HttpHost;
 import org.apache.sling.testing.clients.exceptions.TestingSetupException;
 
 @Contract(threading = ThreadingBehavior.SAFE)
@@ -223,20 +220,27 @@ public class SlingClientConfig {
                 throw new TestingSetupException("Failed to extract hostname from url " + url);
             }
 
+            Credentials credentials = null;
+
+            if (this.user != null) {
+                credentials = new UsernamePasswordCredentials(this.user, this.password.toCharArray());
+            }
+
             // Create default CredentialsProvider if not set
             if (credsProvider == null) {
-                credsProvider = new BasicCredentialsProvider();
+                BasicCredentialsProvider basicCredsProvider = new BasicCredentialsProvider();
                 // Empty user "" is a valid user for basic authentication
                 if (this.user != null) {
-                    credsProvider.setCredentials(
-                            new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-                            new UsernamePasswordCredentials(this.user, this.password));
+                    basicCredsProvider.setCredentials(new AuthScope(targetHost), credentials);
                 }
+
+                credsProvider = basicCredsProvider;
             }
 
             // Create default AuthCache for basic if not set
             if (authCache == null) {
                 BasicScheme basicScheme = new BasicScheme();
+                basicScheme.initPreemptive(credentials);
                 authCache = new BasicAuthCache();
                 authCache.put(targetHost, basicScheme);
             }

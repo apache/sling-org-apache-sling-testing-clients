@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.clients</artifactId>
-    <version>3.1.1-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
 
     <name>Apache Sling Testing Clients</name>
     <description>Sling testing http clients and utils</description>
@@ -40,7 +40,7 @@
     </scm>
 
     <properties>
-        <sling.java.version>17</sling.java.version>
+        <sling.java.version>11</sling.java.version>
         <jackson.version>2.20.0</jackson.version>
         <project.build.outputTimestamp>1734423468</project.build.outputTimestamp>
     </properties>
@@ -75,15 +75,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.14</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5-fluent</artifactId>
+            <version>5.5.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -113,12 +107,6 @@
             <groupId>org.ops4j.pax.tinybundles</groupId>
             <artifactId>tinybundles</artifactId>
             <version>4.0.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.hapi.client</artifactId>
-            <version>1.0.2</version>
             <scope>compile</scope>
         </dependency>
 
@@ -157,13 +145,6 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <version>3.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
-            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>

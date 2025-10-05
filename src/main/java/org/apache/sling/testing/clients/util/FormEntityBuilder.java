@@ -18,23 +18,24 @@
  */
 package org.apache.sling.testing.clients.util;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 
 /**
  * Helper for creating Entity objects for POST requests.
  */
 public class FormEntityBuilder {
-    public static final String DEFAULT_ENCODING = "UTF-8";
+    public static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
     private final List<NameValuePair> params;
-    private String encoding;
+    private Charset encoding;
 
     public static FormEntityBuilder create() {
         return new FormEntityBuilder();
@@ -68,16 +69,12 @@ public class FormEntityBuilder {
         return this;
     }
 
-    public FormEntityBuilder setEncoding(String encoding) {
+    public FormEntityBuilder setEncoding(Charset encoding) {
         this.encoding = encoding;
         return this;
     }
 
     public UrlEncodedFormEntity build() {
-        try {
-            return new UrlEncodedFormEntity(params, encoding);
-        } catch (UnsupportedEncodingException ue) {
-            throw new Error("Unexpected UnsupportedEncodingException", ue);
-        }
+        return new UrlEncodedFormEntity(params, encoding);
     }
 }

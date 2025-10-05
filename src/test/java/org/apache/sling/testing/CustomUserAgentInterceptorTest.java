@@ -18,7 +18,7 @@
  */
 package org.apache.sling.testing;
 
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.sling.testing.clients.*;
 import org.apache.sling.testing.clients.interceptors.UserAgentHolder;
 import org.apache.sling.testing.clients.interceptors.UserAgentInterceptor;
@@ -39,9 +39,9 @@ public class CustomUserAgentInterceptorTest {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() {
-            serverBootstrap.registerHandler(PATH, (request, response, context) -> {
+            serverBootstrap.register(PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity("Success!"));
-                response.setStatusCode(200);
+                response.setCode(200);
                 response.setHeaders(request.getHeaders(USER_AGENT_HEADER));
             });
         }

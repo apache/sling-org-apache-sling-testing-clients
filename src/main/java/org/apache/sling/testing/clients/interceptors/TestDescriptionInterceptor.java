@@ -20,10 +20,11 @@ package org.apache.sling.testing.clients.interceptors;
 
 import java.io.IOException;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 /**
  * HttpClient interceptor that propagates the current test name as part HTTP request headers.
@@ -38,7 +39,8 @@ public class TestDescriptionInterceptor implements HttpRequestInterceptor {
     public static final String TEST_CLASS_HEADER = "X-Sling-TestClass";
     public static final String TEST_NAME_HEADER = "X-Sling-TestName";
 
-    public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+    public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext)
+            throws HttpException, IOException {
         addHeader(httpRequest, TEST_NAME_HEADER, TestDescriptionHolder.getMethodName());
         addHeader(httpRequest, TEST_CLASS_HEADER, TestDescriptionHolder.getClassName());
     }

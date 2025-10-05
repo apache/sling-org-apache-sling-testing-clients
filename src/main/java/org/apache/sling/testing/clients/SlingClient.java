@@ -29,22 +29,21 @@ import java.util.concurrent.TimeoutException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.NameValuePair;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+import org.apache.hc.core5.annotation.Contract;
+import org.apache.hc.core5.annotation.ThreadingBehavior;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.interceptors.*;
 import org.apache.sling.testing.clients.util.*;
@@ -52,10 +51,10 @@ import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.apache.sling.testing.timeouts.TimeoutsProvider;
 
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NOT_IMPLEMENTED;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_CREATED;
+import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.hc.core5.http.HttpStatus.SC_NOT_IMPLEMENTED;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 /**
  * <p>The Base class for all Integration Test Clients. It provides generic methods to send HTTP requests to a server. </p>
@@ -209,7 +208,7 @@ public class SlingClient extends AbstractSlingClient {
      */
     public boolean exists(String path) throws ClientException {
         SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_CREATED, SC_NOT_FOUND, SC_NOT_IMPLEMENTED);
-        final int status = response.getStatusLine().getStatusCode();
+        final int status = response.getCode();
         return status == SC_OK;
     }
 
@@ -758,30 +757,39 @@ public class SlingClient extends AbstractSlingClient {
          * @return this
          */
         private InternalBuilder setDefaults() {
+            PoolingHttpClientConnectionManagerBuilder connectionManager =
+                    PoolingHttpClientConnectionManagerBuilder.create()
+                            .setMaxConnPerRoute(10)
+                            .setMaxConnTotal(100);
+
             httpClientBuilder.useSystemProperties();
             httpClientBuilder.setUserAgent(SystemPropertiesConfig.getDefaultUserAgent());
-            // Connection
-            httpClientBuilder.setMaxConnPerRoute(10);
-            httpClientBuilder.setMaxConnTotal(100);
             // Interceptors
-            httpClientBuilder.addInterceptorLast(new TestDescriptionInterceptor());
-            httpClientBuilder.addInterceptorLast(new UserAgentInterceptor());
-            httpClientBuilder.addInterceptorLast(new DelayRequestInterceptor(SystemPropertiesConfig.getHttpDelay()));
+            httpClientBuilder.addRequestInterceptorLast(new TestDescriptionInterceptor());
+            httpClientBuilder.addRequestInterceptorLast(new UserAgentInterceptor());
+            httpClientBuilder.addRequestInterceptorLast(
+                    new DelayRequestInterceptor(SystemPropertiesConfig.getHttpDelay()));
 
             // HTTP request strategy
-            httpClientBuilder.setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy());
+            httpClientBuilder.setRetryStrategy(new ServerErrorRetryStrategy());
 
             // connection timeouts
             int timeoutSeconds = TimeoutsProvider.getInstance().getTimeout(CLIENT_CONNECTION_TIMEOUT_PROP, -1);
             if (timeoutSeconds > 0) {
                 int timeoutMs = (int) TimeUnit.SECONDS.toMillis(timeoutSeconds);
                 RequestConfig config = RequestConfig.custom()
-                        .setConnectTimeout(timeoutMs)
-                        .setConnectionRequestTimeout(timeoutMs)
-                        .setSocketTimeout(timeoutMs)
+                        .setConnectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                        .setConnectionRequestTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                         .build();
                 this.httpClientBuilder.setDefaultRequestConfig(config);
+
+                connectionManager = connectionManager.setDefaultConnectionConfig(ConnectionConfig.custom()
+                        .setSocketTimeout(Timeout.ofMilliseconds(timeoutMs))
+                        .build());
             }
+
+            // Connection
+            httpClientBuilder.setConnectionManager(connectionManager.build());
 
             return this;
         }
@@ -790,85 +798,71 @@ public class SlingClient extends AbstractSlingClient {
         // HttpClientBuilder delegating methods
         //
 
+        /**
+         * Adds this protocol interceptor to the head of the protocol processing list.
+         *
+         * @param itcp the interceptor
+         * @return this
+         */
         public final InternalBuilder<T> addInterceptorFirst(final HttpResponseInterceptor itcp) {
-            httpClientBuilder.addInterceptorFirst(itcp);
+            httpClientBuilder.addResponseInterceptorFirst(itcp);
             return this;
         }
 
         /**
          * Adds this protocol interceptor to the tail of the protocol processing list.
-         * <p>
-         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
-         * org.apache.http.protocol.HttpProcessor)} method.
-         * </p>
          *
          * @param itcp the interceptor
          * @return this
          */
         public final InternalBuilder<T> addInterceptorLast(final HttpResponseInterceptor itcp) {
-            httpClientBuilder.addInterceptorLast(itcp);
+            httpClientBuilder.addResponseInterceptorLast(itcp);
             return this;
         }
 
         /**
          * Adds this protocol interceptor to the head of the protocol processing list.
-         * <p>
-         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
-         * org.apache.http.protocol.HttpProcessor)} method.
-         * </p>
          *
          * @param itcp the interceptor
          * @return this
          */
         public final InternalBuilder<T> addInterceptorFirst(final HttpRequestInterceptor itcp) {
-            httpClientBuilder.addInterceptorFirst(itcp);
+            httpClientBuilder.addRequestInterceptorFirst(itcp);
             return this;
         }
 
         /**
          * Adds this protocol interceptor to the tail of the protocol processing list.
-         * <p>
-         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
-         * org.apache.http.protocol.HttpProcessor)} method.
-         * </p>
          *
          * @param itcp the interceptor
          * @return this
          */
         public final InternalBuilder<T> addInterceptorLast(final HttpRequestInterceptor itcp) {
-            httpClientBuilder.addInterceptorLast(itcp);
+            httpClientBuilder.addRequestInterceptorLast(itcp);
             return this;
         }
 
         /**
          * Adds this protocol interceptor to the head of the protocol processing list  for both requests and responses
-         * <p>
-         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
-         * org.apache.http.protocol.HttpProcessor)} method.
-         * </p>
          *
          * @param itcp the request and response interceptor
          * @return this
          */
         public final InternalBuilder<T> addInterceptorFirst(final HttpRequestResponseInterceptor itcp) {
-            httpClientBuilder.addInterceptorFirst((HttpRequestInterceptor) itcp);
-            httpClientBuilder.addInterceptorFirst((HttpResponseInterceptor) itcp);
+            httpClientBuilder.addRequestInterceptorFirst((HttpRequestInterceptor) itcp);
+            httpClientBuilder.addResponseInterceptorFirst((HttpResponseInterceptor) itcp);
             return this;
         }
 
         /**
          * Adds this protocol interceptor to the tail of the protocol processing list for both requests and responses
-         * <p>
-         * Please note this value can be overridden by the {@link HttpClientBuilder#setHttpProcessor(
-         * org.apache.http.protocol.HttpProcessor)} method.
-         * </p>
          *
          * @param itcp the request and response interceptor
          * @return this
          */
         public final InternalBuilder<T> addInterceptorLast(final HttpRequestResponseInterceptor itcp) {
-            httpClientBuilder.addInterceptorLast((HttpRequestInterceptor) itcp);
-            httpClientBuilder.addInterceptorLast((HttpResponseInterceptor) itcp);
+            httpClientBuilder.addRequestInterceptorLast((HttpRequestInterceptor) itcp);
+            httpClientBuilder.addResponseInterceptorLast((HttpResponseInterceptor) itcp);
             return this;
         }
 

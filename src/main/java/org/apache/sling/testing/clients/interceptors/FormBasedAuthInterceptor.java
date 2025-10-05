@@ -31,28 +31,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.Credentials;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +60,8 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext context) throws IOException {
-        final URI uri = URI.create(request.getRequestLine().getUri());
+    public void process(HttpRequest request, EntityDetails entityDetails, HttpContext context) throws IOException {
+        final URI uri = URI.create(request.getRequestUri());
         if (uri.getPath().endsWith(loginPath)) {
             LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
             return;
@@ -85,15 +77,12 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
     }
 
     @Override
-    public void process(HttpResponse response, HttpContext context) {
-        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_UNAUTHORIZED) {
+    public void process(HttpResponse response, EntityDetails entityDetails, HttpContext context) {
+        if (response.getCode() != HttpStatus.SC_UNAUTHORIZED) {
             return;
         }
 
-        if (URI.create(HttpClientContext.adapt(context)
-                        .getRequest()
-                        .getRequestLine()
-                        .getUri())
+        if (URI.create(HttpClientContext.adapt(context).getRequest().getRequestUri())
                 .getPath()
                 .endsWith(loginPath)) {
             LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
@@ -127,45 +116,44 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
 
     private void doLogin(HttpRequest request, HttpContext context) throws IOException {
         // get host
-        final HttpHost host = HttpClientContext.adapt(context).getTargetHost();
+        final HttpHost host = HttpClientContext.adapt(context).getHttpRoute().getTargetHost();
 
         // get the username and password from the credentials provider
         final CredentialsProvider credsProvider =
                 HttpClientContext.adapt(context).getCredentialsProvider();
         final AuthScope scope = new AuthScope(host.getHostName(), host.getPort());
-        final String username = Optional.ofNullable(credsProvider.getCredentials(scope))
+        final String username = Optional.ofNullable(credsProvider.getCredentials(scope, context))
                 .map(Credentials::getUserPrincipal)
                 .map(Principal::getName)
                 .orElse(null);
         if (username == null) {
             return;
         }
-        final String password = Optional.ofNullable(credsProvider.getCredentials(scope))
+        final String password = Optional.ofNullable(credsProvider.getCredentials(scope, context))
                 .map(Credentials::getPassword)
+                .map(String::valueOf)
                 .orElse(null);
         List<NameValuePair> parameters = new LinkedList<>();
         parameters.add(new BasicNameValuePair("j_username", username));
         parameters.add(new BasicNameValuePair("j_password", password));
-        HttpEntity httpEntity = new UrlEncodedFormEntity(parameters, "utf-8");
+        HttpEntity httpEntity = new UrlEncodedFormEntity(parameters, StandardCharsets.UTF_8);
 
-        URI loginURI = URI.create(request.getRequestLine().getUri()).resolve(loginPath);
+        URI loginURI = URI.create(request.getRequestUri()).resolve(loginPath);
         HttpPost loginPost = new HttpPost(loginURI);
         loginPost.setEntity(httpEntity);
 
         try (CloseableHttpClient client = HttpClientBuilder.create()
                 .useSystemProperties()
-                .setServiceUnavailableRetryStrategy(new ServerErrorRetryStrategy())
+                .setRetryStrategy(new ServerErrorRetryStrategy())
                 .disableRedirectHandling()
                 .build()) {
 
             try (CloseableHttpResponse response = client.execute(host, loginPost, context)) {
-                StatusLine sl = response.getStatusLine();
-
-                if (sl.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
-                    LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI);
+                if (response.getCode() >= HttpStatus.SC_BAD_REQUEST) {
+                    LOG.error("Got error login response code {} from '{}'", response.getCode(), loginURI);
 
                     LOG.error("Dumping headers: ");
-                    for (Header header : response.getAllHeaders()) {
+                    for (Header header : response.getHeaders()) {
                         LOG.error("\t '{}' = '{}'", header.getName(), header.getValue());
                     }
 
@@ -180,11 +168,11 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                 } else if (getLoginCookie(context, loginTokenName) == null) {
                     LOG.error(
                             "Login response {} from '{}' did not include cookie '{}'.",
-                            sl.getStatusCode(),
+                            response.getCode(),
                             loginURI,
                             loginTokenName);
                 } else {
-                    LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI);
+                    LOG.debug("Login response {} from '{}'", response.getCode(), loginURI);
                 }
             }
         }

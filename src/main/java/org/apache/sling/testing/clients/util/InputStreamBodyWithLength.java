@@ -21,8 +21,8 @@ package org.apache.sling.testing.clients.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.hc.client5.http.entity.mime.InputStreamBody;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.exceptions.TestingIOException;
 

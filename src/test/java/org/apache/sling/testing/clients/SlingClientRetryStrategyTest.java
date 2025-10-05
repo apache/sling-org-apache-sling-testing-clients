@@ -20,7 +20,7 @@ package org.apache.sling.testing.clients;
 
 import java.io.IOException;
 
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.hamcrest.CoreMatchers;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -54,42 +54,42 @@ public class SlingClientRetryStrategyTest {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(GET_UNAVAILABLE_PATH, (request, response, context) -> {
+            serverBootstrap.register(GET_UNAVAILABLE_PATH, (request, response, context) -> {
                 requestCount++;
                 if (requestCount == availableAtRequestCount) {
                     response.setEntity(new StringEntity(OK_RESPONSE));
-                    response.setStatusCode(200);
+                    response.setCode(200);
                 } else {
                     response.setEntity(new StringEntity(NOK_RESPONSE));
-                    response.setStatusCode(503);
+                    response.setCode(503);
                 }
             });
 
-            serverBootstrap.registerHandler(GET_INTERNAL_ERROR_PATH, (request, response, context) -> {
+            serverBootstrap.register(GET_INTERNAL_ERROR_PATH, (request, response, context) -> {
                 requestCount++;
                 if (requestCount == availableAtRequestCount) {
                     response.setEntity(new StringEntity(OK_RESPONSE));
-                    response.setStatusCode(200);
+                    response.setCode(200);
                 } else {
                     response.setEntity(new StringEntity(NOK_RESPONSE));
-                    response.setStatusCode(500);
+                    response.setCode(500);
                 }
             });
 
-            serverBootstrap.registerHandler(GET_INEXISTENT_PATH, (request, response, context) -> {
+            serverBootstrap.register(GET_INEXISTENT_PATH, (request, response, context) -> {
                 requestCount++;
                 response.setEntity(new StringEntity(NOK_RESPONSE));
-                response.setStatusCode(404);
+                response.setCode(404);
             });
 
-            serverBootstrap.registerHandler(GET_505_PATH, (request, response, context) -> {
+            serverBootstrap.register(GET_505_PATH, (request, response, context) -> {
                 requestCount++;
                 if (requestCount == availableAtRequestCount) {
                     response.setEntity(new StringEntity(OK_RESPONSE));
-                    response.setStatusCode(200);
+                    response.setCode(200);
                 } else {
                     response.setEntity(new StringEntity(NOK_RESPONSE));
-                    response.setStatusCode(505);
+                    response.setCode(505);
                 }
             });
         }

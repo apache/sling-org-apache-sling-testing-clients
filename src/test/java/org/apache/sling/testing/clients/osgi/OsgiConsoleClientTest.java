@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.HttpServerRule;
 import org.apache.sling.testing.clients.util.JsonUtils;
@@ -81,9 +81,9 @@ public class OsgiConsoleClientTest {
         protected void registerHandlers() throws IOException {
             String JSON_RESPONSE =
                     "[{\"pid\":\"pidValue\",\"properties\":{\"testPropertyName\":{\"value\":\"testPropertyValue\"}}}]";
-            serverBootstrap.registerHandler("/system/console/configMgr/*.json", new HttpRequestHandler() {
+            serverBootstrap.register("/system/console/configMgr/*.json", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     response.setEntity(new StringEntity(JSON_RESPONSE));
                 }

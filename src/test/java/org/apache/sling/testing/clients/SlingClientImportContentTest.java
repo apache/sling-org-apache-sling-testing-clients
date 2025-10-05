@@ -27,19 +27,19 @@ import java.util.List;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.*;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.hc.core5.http.HttpStatus.SC_CREATED;
 
 public class SlingClientImportContentTest {
     private static final Logger LOG = LoggerFactory.getLogger(SlingClientImportContentTest.class);
@@ -53,64 +53,64 @@ public class SlingClientImportContentTest {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(IMPORT_PATH, new HttpRequestHandler() {
+            serverBootstrap.register(IMPORT_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     List<NameValuePair> params = extractParameters(request);
                     String operation = getParameter(":operation", params);
                     String content = getParameter(":content", params);
 
                     if (!"import".equals(operation)) {
-                        response.setStatusCode(SC_BAD_REQUEST);
+                        response.setCode(SC_BAD_REQUEST);
                         response.setEntity(new StringEntity("Unexpected operation: " + operation));
                         return;
                     }
 
                     if (!"{\"something\":{\"prop1\":\"val1\"}}".equals(content)) {
-                        response.setStatusCode(SC_BAD_REQUEST);
+                        response.setCode(SC_BAD_REQUEST);
                         response.setEntity(new StringEntity("Unexpected content: " + content));
                         return;
                     }
 
-                    response.setStatusCode(SC_CREATED);
+                    response.setCode(SC_CREATED);
                 }
             });
 
-            serverBootstrap.registerHandler(IMPORT_FILE_PATH, new HttpRequestHandler() {
+            serverBootstrap.register(IMPORT_FILE_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     LOG.debug("received: {}", request);
-                    if (request instanceof HttpEntityEnclosingRequest) {
-                        HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+                    if (request.getEntity() != null) {
+                        HttpEntity entity = request.getEntity();
                         String content = IOUtils.toString(entity.getContent(), UTF_8);
                         LOG.debug("content: {}", content);
 
                         if (!content.contains(":operation") || !content.contains("import")) {
-                            response.setStatusCode(SC_BAD_REQUEST);
+                            response.setCode(SC_BAD_REQUEST);
                             response.setEntity(new StringEntity("Operation not found"));
                             return;
                         } else if (!content.contains(IMPORT_FILE_CONTENT)) {
-                            response.setStatusCode(SC_BAD_REQUEST);
+                            response.setCode(SC_BAD_REQUEST);
                             response.setEntity(new StringEntity("File content not found"));
                             return;
                         }
 
-                        response.setStatusCode(SC_CREATED);
+                        response.setCode(SC_CREATED);
                     } else {
-                        response.setStatusCode(SC_BAD_REQUEST);
+                        response.setCode(SC_BAD_REQUEST);
                         response.setEntity(new StringEntity("Request doesn't contain an entity"));
                     }
                 }
             });
         }
 
-        private List<NameValuePair> extractParameters(HttpRequest request) {
-            if (request instanceof HttpEntityEnclosingRequest) {
-                HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+        private List<NameValuePair> extractParameters(ClassicHttpRequest request) {
+            if (request.getEntity() != null) {
+                HttpEntity entity = request.getEntity();
                 try {
-                    return URLEncodedUtils.parse(entity);
+                    return EntityUtils.parse(entity);
                 } catch (IOException e) {
                     LOG.error("Failed to parse entity", e);
                 }

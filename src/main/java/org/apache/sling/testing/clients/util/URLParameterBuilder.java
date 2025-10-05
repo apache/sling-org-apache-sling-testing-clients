@@ -18,19 +18,21 @@
  */
 package org.apache.sling.testing.clients.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 public class URLParameterBuilder {
 
-    public static final String DEFAULT_ENCODING = "UTF-8";
+    public static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
     private List<NameValuePair> params;
-    private String encoding;
+    private Charset encoding;
 
     public static URLParameterBuilder create() {
         return new URLParameterBuilder();
@@ -61,7 +63,7 @@ public class URLParameterBuilder {
         return this;
     }
 
-    public URLParameterBuilder setEncoding(String encoding) {
+    public URLParameterBuilder setEncoding(Charset encoding) {
         this.encoding = encoding;
         return this;
     }

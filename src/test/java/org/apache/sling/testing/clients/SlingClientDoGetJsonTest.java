@@ -21,12 +21,12 @@ package org.apache.sling.testing.clients;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -42,17 +42,17 @@ public class SlingClientDoGetJsonTest {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(GET_JSON_PATH + ".1.json", new HttpRequestHandler() {
+            serverBootstrap.register(GET_JSON_PATH + ".1.json", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     response.setEntity(new StringEntity(JSON_RESPONSE));
                 }
             });
 
-            serverBootstrap.registerHandler(GET_JSON_PATH + ".infinity.json", new HttpRequestHandler() {
+            serverBootstrap.register(GET_JSON_PATH + ".infinity.json", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
                         throws HttpException, IOException {
                     response.setEntity(new StringEntity(JSON_INF_RESPONSE));
                 }

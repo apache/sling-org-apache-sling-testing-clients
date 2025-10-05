@@ -32,8 +32,8 @@ public class SlingClientExceptions {
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() throws IOException {
-            serverBootstrap.registerHandler(ERROR_PATH, (request, response, context) -> {
-                response.setStatusCode(500);
+            serverBootstrap.register(ERROR_PATH, (request, response, context) -> {
+                response.setCode(500);
             });
         }
     };

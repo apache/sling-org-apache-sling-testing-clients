@@ -20,14 +20,14 @@ package org.apache.sling.testing.clients;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.utils.URIUtils;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.bootstrap.HttpServer;
-import org.apache.http.impl.bootstrap.ServerBootstrap;
-import org.apache.http.localserver.SSLTestContexts;
+import org.apache.hc.client5.http.utils.URIUtils;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.impl.bootstrap.HttpServer;
+import org.apache.hc.core5.http.impl.bootstrap.ServerBootstrap;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.rules.ExternalResource;
 
 /** JUnit Rule that starts an HTTP server */
@@ -58,22 +58,19 @@ public class HttpServerRule extends ExternalResource {
 
     @Override
     protected void after() {
-        server.shutdown(-1, TimeUnit.SECONDS);
+        server.close(CloseMode.IMMEDIATE);
     }
 
     @Override
     protected void before() throws Throwable {
         final SocketConfig socketConfig =
-                SocketConfig.custom().setSoTimeout(5000).build();
+                SocketConfig.custom().setSoTimeout(Timeout.ofMilliseconds(5000)).build();
         serverBootstrap =
-                ServerBootstrap.bootstrap().setSocketConfig(socketConfig).setServerInfo(ORIGIN);
-        if (ProtocolScheme.https.equals(protocolScheme)) {
-            serverBootstrap.setSslContext(SSLTestContexts.createServerSSLContext());
-        }
+                ServerBootstrap.bootstrap().setSocketConfig(socketConfig).setCanonicalHostName("127.0.0.1");
         registerHandlers();
         server = serverBootstrap.create();
         server.start();
-        host = new HttpHost("127.0.0.1", server.getLocalPort(), protocolScheme.name());
+        host = new HttpHost(protocolScheme.name(), "127.0.0.1", server.getLocalPort());
         uri = URIUtils.rewriteURI(new URI("/"), host);
     }
 

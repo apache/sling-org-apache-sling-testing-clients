@@ -20,8 +20,8 @@ package org.apache.sling.testing.clients.util;
 
 import java.net.URI;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpResponse;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 
@@ -132,7 +132,7 @@ public class HttpUtils {
      * @return The HTTP Status of the response
      */
     public static int getHttpStatus(HttpResponse response) {
-        return response.getStatusLine().getStatusCode();
+        return response.getCode();
     }
 
     /**
@@ -167,7 +167,7 @@ public class HttpUtils {
      * @return true if response is in range
      */
     public static boolean isInHttpStatusRange(HttpResponse response, int range) {
-        return range == response.getStatusLine().getStatusCode() / 100 * 100;
+        return range == response.getCode() / 100 * 100;
     }
 
     public static int[] getExpectedStatus(int defaultStatus, int... expectedStatus) {

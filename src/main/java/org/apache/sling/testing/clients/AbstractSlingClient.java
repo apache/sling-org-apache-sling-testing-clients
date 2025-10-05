@@ -27,16 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.http.*;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.client.*;
-import org.apache.http.client.methods.*;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.annotation.Contract;
+import org.apache.hc.core5.annotation.ThreadingBehavior;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.net.URIBuilder;
 import org.apache.sling.testing.clients.exceptions.TestingIOException;
 import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.util.HttpUtils;
@@ -324,7 +328,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         }
         SlingHttpResponse response = null;
         try {
-            log.debug("request {} {}", request.getMethod(), request.getURI());
+            log.debug("request {} {}", request.getMethod(), request.getRequestUri());
             response = new SlingHttpResponse(this.execute(request, context));
             log.debug("response {}", HttpUtils.getHttpStatus(response));
             // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity
@@ -371,8 +375,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
         HttpClientContext context = createHttpClientContextFromConfig();
         context.setAttribute(EXPECTED_STATUS, expectedStatus);
 
-        HttpHost host = new HttpHost(getUrl().getHost(), getUrl().getPort(), getUrl().getScheme());
-        HttpRequest request = new BasicHttpRequest(method, uri);
+        HttpHost host = new HttpHost(getUrl().getScheme(), getUrl().getHost(), getUrl().getPort());
+        ClassicHttpRequest request = new BasicClassicHttpRequest(method, uri);
 
         // add headers
         if (headers != null) {
@@ -461,7 +465,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      */
     public SlingHttpResponse doStreamPost(
             String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus) throws ClientException {
-        HttpEntityEnclosingRequestBase request = new HttpPost(getUrl(requestPath));
+        HttpUriRequestBase request = new HttpPost(getUrl(requestPath));
         if (entity != null) {
             request.setEntity(entity);
         }
@@ -579,7 +583,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      */
     public SlingHttpResponse doPost(String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus)
             throws ClientException {
-        HttpEntityEnclosingRequestBase request = new HttpPost(getUrl(requestPath));
+        HttpUriRequestBase request = new HttpPost(getUrl(requestPath));
         if (entity != null) {
             request.setEntity(entity);
         }
@@ -618,7 +622,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      */
     public SlingHttpResponse doPut(String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus)
             throws ClientException {
-        HttpEntityEnclosingRequestBase request = new HttpPut(getUrl(requestPath));
+        HttpUriRequestBase request = new HttpPut(getUrl(requestPath));
         if (entity != null) {
             request.setEntity(entity);
         }
@@ -640,7 +644,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      */
     public SlingHttpResponse doPatch(String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus)
             throws ClientException {
-        HttpEntityEnclosingRequestBase request = new HttpPatch(getUrl(requestPath));
+        HttpUriRequestBase request = new HttpPatch(getUrl(requestPath));
         if (entity != null) {
             request.setEntity(entity);
         }
@@ -680,63 +684,60 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     // HttpClient  base methods
     //
 
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public org.apache.http.params.HttpParams getParams() {
-        return this.http.getParams();
-    }
-
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public org.apache.http.conn.ClientConnectionManager getConnectionManager() {
-        return this.http.getConnectionManager();
-    }
-
-    @SuppressWarnings("DuplicateThrows")
-    public HttpResponse execute(HttpUriRequest request) throws IOException, ClientProtocolException {
+    @Override
+    public CloseableHttpResponse execute(ClassicHttpRequest request) throws IOException {
         return this.http.execute(request);
     }
 
-    // maybe throw UnsupportedMethodException
-    @SuppressWarnings("DuplicateThrows")
-    public CloseableHttpResponse execute(HttpUriRequest request, HttpContext context)
-            throws IOException, ClientProtocolException {
+    @Override
+    public CloseableHttpResponse execute(ClassicHttpRequest request, HttpContext context) throws IOException {
         return this.http.execute(request, context);
     }
 
-    @SuppressWarnings("DuplicateThrows")
-    public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException, ClientProtocolException {
+    @Override
+    public CloseableHttpResponse execute(HttpHost target, ClassicHttpRequest request) throws IOException {
         return this.http.execute(target, request);
     }
 
-    @SuppressWarnings("DuplicateThrows")
-    public CloseableHttpResponse execute(HttpHost target, HttpRequest request, HttpContext context)
-            throws IOException, ClientProtocolException {
+    @Override
+    public CloseableHttpResponse execute(HttpHost target, ClassicHttpRequest request, HttpContext context)
+            throws IOException {
         return this.http.execute(target, request, context);
     }
 
-    @SuppressWarnings("DuplicateThrows")
-    public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler)
-            throws IOException, ClientProtocolException {
+    @Override
+    public CloseableHttpResponse executeOpen(HttpHost target, ClassicHttpRequest request, HttpContext context)
+            throws IOException {
+        return this.http.execute(target, request, context);
+    }
+
+    @Override
+    public <T> T execute(ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
+            throws IOException {
         return this.http.execute(request, responseHandler);
     }
 
-    @SuppressWarnings("DuplicateThrows")
-    public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
-            throws IOException, ClientProtocolException {
-        return this.http.execute(request, responseHandler, context);
+    @Override
+    public <T> T execute(
+            ClassicHttpRequest request, HttpContext context, HttpClientResponseHandler<? extends T> responseHandler)
+            throws IOException {
+        return this.http.execute(request, context, responseHandler);
     }
 
-    @SuppressWarnings("DuplicateThrows")
-    public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler)
-            throws IOException, ClientProtocolException {
+    @Override
+    public <T> T execute(
+            HttpHost target, ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
+            throws IOException {
         return this.http.execute(target, request, responseHandler);
     }
 
-    @SuppressWarnings("DuplicateThrows")
+    @Override
     public <T> T execute(
-            HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
-            throws IOException, ClientProtocolException {
-        return this.http.execute(target, request, responseHandler, context);
+            HttpHost target,
+            ClassicHttpRequest request,
+            HttpContext context,
+            HttpClientResponseHandler<? extends T> responseHandler)
+            throws IOException {
+        return this.http.execute(target, request, context, responseHandler);
     }
 }

@@ -22,17 +22,19 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 public class StickyCookieInterceptor implements HttpRequestInterceptor {
 
-    public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+    public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext)
+            throws HttpException, IOException {
         final HttpClientContext clientContext = HttpClientContext.adapt(httpContext);
         List<Cookie> cookies = clientContext.getCookieStore().getCookies();
         boolean set = (null != StickyCookieHolder.getTestStickySessionCookie());

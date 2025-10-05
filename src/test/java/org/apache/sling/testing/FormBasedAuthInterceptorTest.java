@@ -21,17 +21,17 @@ package org.apache.sling.testing;
 import java.util.Date;
 import java.util.Optional;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.StringEntity;
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.HttpServerRule;
-import org.apache.sling.testing.clients.SlingClient;
-import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.sling.testing.clients.*;
 import org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.apache.sling.testing.clients.SystemPropertiesConfig.CONFIG_PROP_PREFIX;
+import static org.apache.sling.testing.clients.SystemPropertiesConfig.HTTP_RETRIES_ERROR_CODES_PROP;
 
 public class FormBasedAuthInterceptorTest {
 
@@ -49,45 +49,52 @@ public class FormBasedAuthInterceptorTest {
     private static final String UNREACHABLE_PATH = "/unreachable/path";
     private static final String UNREACHABLE_LOGIN_PATH = "/unreachable/j_security_check";
 
+    static {
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_LOG_RETRIES_PROP, "true");
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_DELAY_PROP, "50");
+        System.setProperty(CONFIG_PROP_PREFIX + SystemPropertiesConfig.HTTP_RETRIES_PROP, "4");
+        System.setProperty(CONFIG_PROP_PREFIX + HTTP_RETRIES_ERROR_CODES_PROP, "500,502,503");
+    }
+
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
         @Override
         protected void registerHandlers() {
-            serverBootstrap.registerHandler(LOGIN_OK_PATH, (request, response, context) -> {
+            serverBootstrap.register(LOGIN_OK_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_OK);
+                response.setCode(HttpStatus.SC_OK);
                 response.setHeader(
                         "set-cookie",
                         LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE
                                 + "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
-            serverBootstrap.registerHandler(LOGIN_PATH, (request, response, context) -> {
+            serverBootstrap.register(LOGIN_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_OK);
+                response.setCode(HttpStatus.SC_OK);
                 response.setHeader(
                         "set-cookie",
                         LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE
                                 + "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
-            serverBootstrap.registerHandler(UNAUTHORIZED_PATH, (request, response, context) -> {
+            serverBootstrap.register(UNAUTHORIZED_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(UNAUTHORIZED_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_UNAUTHORIZED);
+                response.setCode(HttpStatus.SC_UNAUTHORIZED);
             });
-            serverBootstrap.registerHandler(ANONYMOUS_PATH, (request, response, context) -> {
+            serverBootstrap.register(ANONYMOUS_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(ANONYMOUS_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_OK);
+                response.setCode(HttpStatus.SC_OK);
             });
-            serverBootstrap.registerHandler(OK_PATH, (request, response, context) -> {
+            serverBootstrap.register(OK_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(OK_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_OK);
+                response.setCode(HttpStatus.SC_OK);
             });
-            serverBootstrap.registerHandler(UNREACHABLE_PATH, (request, response, context) -> {
+            serverBootstrap.register(UNREACHABLE_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(OK_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+                response.setCode(HttpStatus.SC_BAD_REQUEST);
             });
-            serverBootstrap.registerHandler(UNREACHABLE_LOGIN_PATH, (request, response, context) -> {
+            serverBootstrap.register(UNREACHABLE_LOGIN_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(OK_RESPONSE));
-                response.setStatusCode(HttpStatus.SC_BAD_GATEWAY);
+                response.setCode(HttpStatus.SC_BAD_GATEWAY);
             });
         }
     };

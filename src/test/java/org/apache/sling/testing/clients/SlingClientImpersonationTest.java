@@ -21,7 +21,7 @@ package org.apache.sling.testing.clients;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.junit.Before;
 import org.junit.Test;
 
