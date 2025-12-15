@@ -18,7 +18,7 @@
  */
 package org.apache.sling.testing.clients.osgi;
 
-import org.hamcrest.Matchers;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,14 +26,14 @@ public class ServicesInfoTest {
 
     @Test
     public void testSplitPseudoJsonValueArray() {
-        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("test"), Matchers.contains("test"));
-        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[]"), Matchers.contains(""));
-        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[one, two]"), Matchers.contains("one", "two"));
-        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[one,two]"), Matchers.contains("one", "two"));
+        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("test"), CoreMatchers.hasItem("test"));
+        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[]"), CoreMatchers.hasItem(""));
+        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[one, two]"), CoreMatchers.hasItems("one", "two"));
+        Assert.assertThat(ServicesInfo.splitPseudoJsonValueArray("[one,two]"), CoreMatchers.hasItems("one", "two"));
         Assert.assertThat(
                 ServicesInfo.splitPseudoJsonValueArray(
                         "[java.lang.Runnable, org.apache.sling.event.impl.jobs.queues.QueueManager, org.osgi.service.event.EventHandler]"),
-                Matchers.contains(
+                CoreMatchers.hasItems(
                         "java.lang.Runnable",
                         "org.apache.sling.event.impl.jobs.queues.QueueManager",
                         "org.osgi.service.event.EventHandler"));
