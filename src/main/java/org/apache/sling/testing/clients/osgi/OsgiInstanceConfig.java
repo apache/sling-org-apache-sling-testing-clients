@@ -1,30 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.osgi;
 
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.util.config.InstanceConfig;
-import org.apache.sling.testing.clients.util.config.InstanceConfigException;
-import org.apache.sling.testing.clients.SlingClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.SlingClient;
+import org.apache.sling.testing.clients.util.config.InstanceConfig;
+import org.apache.sling.testing.clients.util.config.InstanceConfigException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Allows saving and restoring the OSGiConfig to be used before and after altering OSGi configurations for tests</p>
@@ -36,7 +38,7 @@ public class OsgiInstanceConfig implements InstanceConfig {
     /**
      * Time im ms to wait for retrieving the current osgi config for save() and restore()
      */
-    private static final long WAIT_TIMEOUT = 20000;  // in ms
+    private static final long WAIT_TIMEOUT = 20000; // in ms
 
     private final OsgiConsoleClient osgiClient;
     private final String configPID;
@@ -75,7 +77,8 @@ public class OsgiInstanceConfig implements InstanceConfig {
         } catch (ClientException e) {
             throw new InstanceConfigException("Error getting config", e);
         } catch (TimeoutException e) {
-            throw new InstanceConfigException("Timeout of " + WAIT_TIMEOUT + " ms was reached while waiting for the configuration", e);
+            throw new InstanceConfigException(
+                    "Timeout of " + WAIT_TIMEOUT + " ms was reached while waiting for the configuration", e);
         }
         return this;
     }
@@ -92,7 +95,8 @@ public class OsgiInstanceConfig implements InstanceConfig {
         } catch (ClientException e) {
             throw new InstanceConfigException("Could not edit OSGi configuration", e);
         } catch (TimeoutException e) {
-            throw new InstanceConfigException("Timeout of " + WAIT_TIMEOUT + " ms was reached while waiting for the configuration", e);
+            throw new InstanceConfigException(
+                    "Timeout of " + WAIT_TIMEOUT + " ms was reached while waiting for the configuration", e);
         }
         return this;
     }

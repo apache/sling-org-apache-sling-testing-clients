@@ -1,20 +1,35 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.interceptors;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -41,19 +56,6 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.sling.testing.clients.util.ServerErrorRetryStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.Principal;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpRequestResponseInterceptor {
     static final Logger LOG = LoggerFactory.getLogger(FormBasedAuthInterceptor.class);
@@ -88,7 +90,12 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
             return;
         }
 
-        if (URI.create(HttpClientContext.adapt(context).getRequest().getRequestLine().getUri()).getPath().endsWith(loginPath)) {
+        if (URI.create(HttpClientContext.adapt(context)
+                        .getRequest()
+                        .getRequestLine()
+                        .getUri())
+                .getPath()
+                .endsWith(loginPath)) {
             LOG.trace("Request ends with {} so I'm not intercepting the request", loginPath);
             return;
         }
@@ -110,7 +117,8 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
      */
     private Cookie getLoginCookie(HttpContext context, String loginTokenName) {
         for (Cookie cookie : HttpClientContext.adapt(context).getCookieStore().getCookies()) {
-            if (cookie.getName().equalsIgnoreCase(loginTokenName) && !cookie.getValue().isEmpty()) {
+            if (cookie.getName().equalsIgnoreCase(loginTokenName)
+                    && !cookie.getValue().isEmpty()) {
                 return cookie;
             }
         }
@@ -122,7 +130,8 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
         final HttpHost host = HttpClientContext.adapt(context).getTargetHost();
 
         // get the username and password from the credentials provider
-        final CredentialsProvider credsProvider = HttpClientContext.adapt(context).getCredentialsProvider();
+        final CredentialsProvider credsProvider =
+                HttpClientContext.adapt(context).getCredentialsProvider();
         final AuthScope scope = new AuthScope(host.getHostName(), host.getPort());
         final String username = Optional.ofNullable(credsProvider.getCredentials(scope))
                 .map(Credentials::getUserPrincipal)
@@ -149,27 +158,31 @@ public class FormBasedAuthInterceptor implements HttpRequestInterceptor, HttpReq
                 .disableRedirectHandling()
                 .build()) {
 
-            try (CloseableHttpResponse response = client.execute(host, loginPost, context)){
+            try (CloseableHttpResponse response = client.execute(host, loginPost, context)) {
                 StatusLine sl = response.getStatusLine();
 
                 if (sl.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
                     LOG.error("Got error login response code {} from '{}'", sl.getStatusCode(), loginURI);
 
                     LOG.error("Dumping headers: ");
-                    for(Header header : response.getAllHeaders()) {
+                    for (Header header : response.getAllHeaders()) {
                         LOG.error("\t '{}' = '{}'", header.getName(), header.getValue());
                     }
 
-                    try (InputStream inputStream = response.getEntity().getContent()){
+                    try (InputStream inputStream = response.getEntity().getContent()) {
                         String responseText = new BufferedReader(
-                            new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                              .lines()
-                              .collect(Collectors.joining("\n"));
+                                        new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                                .lines()
+                                .collect(Collectors.joining("\n"));
 
                         LOG.error("Error response body was : '{}'", responseText);
                     }
                 } else if (getLoginCookie(context, loginTokenName) == null) {
-                    LOG.error("Login response {} from '{}' did not include cookie '{}'.", sl.getStatusCode(), loginURI, loginTokenName);
+                    LOG.error(
+                            "Login response {} from '{}' did not include cookie '{}'.",
+                            sl.getStatusCode(),
+                            loginURI,
+                            loginTokenName);
                 } else {
                     LOG.debug("Login response {} from '{}'", sl.getStatusCode(), loginURI);
                 }

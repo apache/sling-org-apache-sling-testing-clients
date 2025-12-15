@@ -45,7 +45,8 @@ public class TestingValidationException extends ClientException {
         super(message, httpStatusCode, throwable);
     }
 
-    public TestingValidationException(String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
+    public TestingValidationException(
+            String message, Throwable throwable, HttpUriRequest request, SlingHttpResponse response) {
         super(message, throwable, request, response);
     }
 }

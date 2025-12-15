@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
-
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -35,6 +33,10 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * SLING-9757 verify configurable connection timeout for SlingClient
  */
@@ -48,7 +50,8 @@ public class SlingClientConnectionTimeoutTest {
         protected void registerHandlers() throws IOException {
             serverBootstrap.registerHandler(GET_TIMEOUT_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                        throws HttpException, IOException {
                     // block for 15 seconds
                     try {
                         Thread.sleep(TimeUnit.SECONDS.toMillis(15));
@@ -74,7 +77,7 @@ public class SlingClientConnectionTimeoutTest {
             try (SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass")) {
                 // start the client request
                 c.doGet(GET_TIMEOUT_PATH);
-                
+
                 // should not get here
                 fail("Did not recieve the expected SocketTimeoutException");
             }
@@ -82,15 +85,15 @@ public class SlingClientConnectionTimeoutTest {
             Throwable cause = e.getCause();
             assertTrue("expected a SocketTimeoutException", cause instanceof SocketTimeoutException);
         } finally {
-            //put the original value back
+            // put the original value back
             if (originalValue == null) {
                 System.clearProperty(SlingClient.CLIENT_CONNECTION_TIMEOUT_PROP);
             } else {
                 System.setProperty(SlingClient.CLIENT_CONNECTION_TIMEOUT_PROP, originalValue);
             }
-        }        
+        }
     }
-    
+
     /**
      * Test that when no connection timeout is supplied, the client connection waits
      */
@@ -119,16 +122,15 @@ public class SlingClientConnectionTimeoutTest {
                 } catch (TimeoutException e) {
                     // expected that we killed the future when it didn't finish
                     //  on it's own in a timely manner
-                }            
+                }
             }
         } finally {
-            //put the original value back
+            // put the original value back
             if (originalValue == null) {
                 System.clearProperty(SlingClient.CLIENT_CONNECTION_TIMEOUT_PROP);
             } else {
                 System.setProperty(SlingClient.CLIENT_CONNECTION_TIMEOUT_PROP, originalValue);
             }
-        }        
+        }
     }
-
 }

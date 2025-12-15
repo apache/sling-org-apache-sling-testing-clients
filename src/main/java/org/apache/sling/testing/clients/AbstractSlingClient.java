@@ -1,20 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.apache.http.*;
 import org.apache.http.annotation.Contract;
@@ -31,15 +42,6 @@ import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.util.HttpUtils;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
 
 /**
@@ -50,7 +52,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
 
     private final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
 
-    private final static URI slash = URI.create("/");
+    private static final URI slash = URI.create("/");
 
     /**
      * The clientId for the client, generated automatically during instantiation of client.
@@ -101,7 +103,6 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     public URI getUrl() {
         return config.getUrl();
     }
-
 
     /**
      * Returns the name of the user that will be used to authenticate the requests (by basic auth, if not replaced).
@@ -232,7 +233,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             Constructor cons = clientClass.getConstructor(CloseableHttpClient.class, SlingClientConfig.class);
             client = (T) cons.newInstance(this.http, this.config);
         } catch (Exception e) {
-            throw new TestingValidationException("Could not initialize client: '" + clientClass.getCanonicalName() + "'.", e);
+            throw new TestingValidationException(
+                    "Could not initialize client: '" + clientClass.getCanonicalName() + "'.", e);
         }
         return client;
     }
@@ -325,7 +327,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             log.debug("request {} {}", request.getMethod(), request.getURI());
             response = new SlingHttpResponse(this.execute(request, context));
             log.debug("response {}", HttpUtils.getHttpStatus(response));
-            // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity before
+            // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity
+            // before
             if (expectedStatus != null && expectedStatus.length > 0) {
                 try {
                     HttpUtils.verifyHttpStatus(response, expectedStatus);
@@ -380,7 +383,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
             log.debug("request {} {}", method, uri);
             SlingHttpResponse response = new SlingHttpResponse(this.execute(host, request, context));
             log.debug("response {}", HttpUtils.getHttpStatus(response));
-            // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity before
+            // Check the status and throw a ClientException if it doesn't match expectedStatus, but close the entity
+            // before
             if (expectedStatus != null && expectedStatus.length > 0) {
                 try {
                     HttpUtils.verifyHttpStatus(response, expectedStatus);
@@ -431,7 +435,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity not consumed
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doStreamGet(String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
+    public SlingHttpResponse doStreamGet(
+            String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
             throws ClientException {
         // create full uri, including server url, given path and given parameters
         URI uri = getUrl(requestPath, parameters);
@@ -454,8 +459,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity not consumed
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doStreamPost(String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus)
-            throws ClientException {
+    public SlingHttpResponse doStreamPost(
+            String requestPath, HttpEntity entity, List<Header> headers, int... expectedStatus) throws ClientException {
         HttpEntityEnclosingRequestBase request = new HttpPost(getUrl(requestPath));
         if (entity != null) {
             request.setEntity(entity);
@@ -476,7 +481,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity consumed and the content cached
      * @throws ClientException if the request could not be executed
      */
-    public  SlingHttpResponse doRequest(HttpUriRequest request, List<Header> headers, int... expectedStatus) throws ClientException {
+    public SlingHttpResponse doRequest(HttpUriRequest request, List<Header> headers, int... expectedStatus)
+            throws ClientException {
         SlingHttpResponse response = doStreamRequest(request, headers, expectedStatus);
 
         // Consume entity and cache the content so the connection is closed
@@ -498,7 +504,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity consumed amd the content cached
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doGet(String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
+    public SlingHttpResponse doGet(
+            String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
             throws ClientException {
         SlingHttpResponse response = doStreamGet(requestPath, parameters, headers, expectedStatus);
 
@@ -534,8 +541,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity consumed amd the content cached
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doGet(String requestPath, int... expectedStatus)
-            throws ClientException {
+    public SlingHttpResponse doGet(String requestPath, int... expectedStatus) throws ClientException {
         return doGet(requestPath, null, null, expectedStatus);
     }
 
@@ -551,12 +557,12 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doHead(String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
+    public SlingHttpResponse doHead(
+            String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
             throws ClientException {
         HttpUriRequest request = new HttpHead(getUrl(requestPath, parameters));
         return doRequest(request, headers, expectedStatus);
     }
-
 
     /**
      * <p>Executes a POST request and consumes the entity in the response. The content is cached and be retrieved by calling
@@ -654,7 +660,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
      * @return the response with the entity consumed and the content cached
      * @throws ClientException if the request could not be executed
      */
-    public SlingHttpResponse doDelete(String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
+    public SlingHttpResponse doDelete(
+            String requestPath, List<NameValuePair> parameters, List<Header> headers, int... expectedStatus)
             throws ClientException {
         HttpUriRequest request = new HttpDelete(getUrl(requestPath, parameters));
         return doRequest(request, headers, expectedStatus);
@@ -668,7 +675,6 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     public void close() throws IOException {
         this.http.close();
     }
-
 
     //
     // HttpClient  base methods
@@ -699,8 +705,7 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     }
 
     @SuppressWarnings("DuplicateThrows")
-    public HttpResponse execute(HttpHost target, HttpRequest request)
-            throws IOException, ClientProtocolException {
+    public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException, ClientProtocolException {
         return this.http.execute(target, request);
     }
 
@@ -729,7 +734,8 @@ public class AbstractSlingClient implements HttpClient, Closeable {
     }
 
     @SuppressWarnings("DuplicateThrows")
-    public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
+    public <T> T execute(
+            HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
             throws IOException, ClientProtocolException {
         return this.http.execute(target, request, responseHandler, context);
     }

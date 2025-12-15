@@ -1,22 +1,29 @@
-/*******************************************************************************
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
+ * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
+ * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
+ * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- ******************************************************************************/
+ */
 package org.apache.sling.testing.clients.indexing;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.*;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -34,26 +41,20 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class IndexingClientTest {
     private static final Logger LOG = LoggerFactory.getLogger(IndexingClientTest.class);
 
-    private static final String EXPLAIN_RESPONSE = "{\"plan\": \"random plan with testIndexingLane-async and testIndexingLane-fulltext-async\",\"time\": 1}";
+    private static final String EXPLAIN_RESPONSE =
+            "{\"plan\": \"random plan with testIndexingLane-async and testIndexingLane-fulltext-async\",\"time\": 1}";
     private static final String QUERY_RESPONSE = "{\"total\": 1234,\"time\": 1}";
 
-    private static final String [] PRE_DEFINED_INDEXING_LANES = new String[]{"async", "fulltext-async"};
+    private static final String[] PRE_DEFINED_INDEXING_LANES = new String[] {"async", "fulltext-async"};
 
     private static final AtomicInteger NUM_INDEXING_LANE_CONSOLE_CALLS = new AtomicInteger();
 
     @ClassRule
     public static HttpServerRule httpServer = new HttpServerRule() {
-        HttpRequestHandler okHandler =  new HttpRequestHandler() {
+        HttpRequestHandler okHandler = new HttpRequestHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response, HttpContext context)
                     throws HttpException, IOException {
@@ -62,7 +63,7 @@ public class IndexingClientTest {
             }
         };
 
-        HttpRequestHandler createdHandler =  new HttpRequestHandler() {
+        HttpRequestHandler createdHandler = new HttpRequestHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response, HttpContext context)
                     throws HttpException, IOException {
@@ -78,11 +79,12 @@ public class IndexingClientTest {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response, HttpContext context)
                         throws HttpException, IOException {
-                    List<NameValuePair> parameters = URLEncodedUtils.parse(
-                            request.getRequestLine().getUri(), Charset.defaultCharset());
+                    List<NameValuePair> parameters =
+                            URLEncodedUtils.parse(request.getRequestLine().getUri(), Charset.defaultCharset());
 
                     for (NameValuePair parameter : parameters) {
-                        if (parameter.getName().equals("explain") && !parameter.getValue().equals("false")) {
+                        if (parameter.getName().equals("explain")
+                                && !parameter.getValue().equals("false")) {
                             response.setEntity(new StringEntity(EXPLAIN_RESPONSE));
                             return;
                         }
@@ -133,11 +135,10 @@ public class IndexingClientTest {
                                 throws HttpException, IOException {
                             NUM_INDEXING_LANE_CONSOLE_CALLS.incrementAndGet();
                             response.setStatusCode(200);
-                            response.setEntity(new StringEntity("{\"properties\":{" +
-                                    "\"asyncConfigs\":{\"values\":[\"async:5\",\"fulltext-async:5\"]}}}"));
+                            response.setEntity(new StringEntity("{\"properties\":{"
+                                    + "\"asyncConfigs\":{\"values\":[\"async:5\",\"fulltext-async:5\"]}}}"));
                         }
-                    }
-            );
+                    });
 
             serverBootstrap.registerHandler("/tmp/testing/waitForAsyncIndexing/content/*", new HttpRequestHandler() {
                 @Override
@@ -146,7 +147,8 @@ public class IndexingClientTest {
                     List<NameValuePair> params = extractParameters(request);
 
                     for (NameValuePair param : params) {
-                        if (param.getName().equals(":operation") && (param.getValue().equals("delete"))) {
+                        if (param.getName().equals(":operation")
+                                && (param.getValue().equals("delete"))) {
                             response.setStatusCode(200);
                             return;
                         }
@@ -164,7 +166,8 @@ public class IndexingClientTest {
                     List<NameValuePair> params = extractParameters(request);
 
                     for (NameValuePair param : params) {
-                        if (param.getName().equals(":operation") && (param.getValue().equals("delete"))) {
+                        if (param.getName().equals(":operation")
+                                && (param.getValue().equals("delete"))) {
                             response.setStatusCode(200);
                             return;
                         }
@@ -190,7 +193,7 @@ public class IndexingClientTest {
     public IndexingClientTest() throws ClientException {
         NUM_INDEXING_LANE_CONSOLE_CALLS.set(0);
         client = new IndexingClient(httpServer.getURI(), "admin", "admin");
-        //client = new IndexingClient(java.net.URI.create("http://localhost:4502"), "admin", "admin");
+        // client = new IndexingClient(java.net.URI.create("http://localhost:4502"), "admin", "admin");
     }
 
     @Test
@@ -209,7 +212,8 @@ public class IndexingClientTest {
     }
 
     @Test
-    public void testWaitForAsyncIndexingConfiguredLanes() throws ClientException, TimeoutException, InterruptedException {
+    public void testWaitForAsyncIndexingConfiguredLanes()
+            throws ClientException, TimeoutException, InterruptedException {
         client.setLaneNames(PRE_DEFINED_INDEXING_LANES);
 
         List<String> retrievedLaneNames = client.getLaneNames();
@@ -226,8 +230,8 @@ public class IndexingClientTest {
 
         otherClient.waitForAsyncIndexing();
 
-        Assert.assertEquals("Must not get indexing lanes from /system/console",
-                0, NUM_INDEXING_LANE_CONSOLE_CALLS.get());
+        Assert.assertEquals(
+                "Must not get indexing lanes from /system/console", 0, NUM_INDEXING_LANE_CONSOLE_CALLS.get());
     }
 
     private static List<NameValuePair> extractParameters(HttpRequest request) {

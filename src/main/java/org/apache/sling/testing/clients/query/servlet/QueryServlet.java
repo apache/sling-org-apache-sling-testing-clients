@@ -1,20 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.query.servlet;
+
+import javax.jcr.Session;
+import javax.jcr.query.*;
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+
+import java.io.IOException;
+import java.util.Date;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -24,24 +34,13 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 
-import javax.jcr.Session;
-import javax.jcr.query.*;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.Date;
-
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_METHODS;
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_PATHS;
 
 @Component(
         name = QueryServlet.SERVLET_NAME,
         service = {Servlet.class},
-        property = {
-                SLING_SERVLET_PATHS + "=" + QueryServlet.SERVLET_PATH,
-                SLING_SERVLET_METHODS + "=GET"
-        }
-)
+        property = {SLING_SERVLET_PATHS + "=" + QueryServlet.SERVLET_PATH, SLING_SERVLET_METHODS + "=GET"})
 public class QueryServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
@@ -56,8 +55,10 @@ public class QueryServlet extends SlingSafeMethodsServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            final QueryManager qm = request.getResourceResolver().adaptTo(Session.class)
-                    .getWorkspace().getQueryManager();
+            final QueryManager qm = request.getResourceResolver()
+                    .adaptTo(Session.class)
+                    .getWorkspace()
+                    .getQueryManager();
 
             long before = 0;
             long after = 0;
@@ -117,7 +118,8 @@ public class QueryServlet extends SlingSafeMethodsServlet {
             ObjectNode responseJson = mapper.createObjectNode();
 
             if (explainQuery) {
-                responseJson.put("plan", result.getRows().nextRow().getValue("plan").getString());
+                responseJson.put(
+                        "plan", result.getRows().nextRow().getValue("plan").getString());
             } else if (showResults) {
                 ArrayNode results = mapper.createArrayNode();
 
@@ -151,7 +153,8 @@ public class QueryServlet extends SlingSafeMethodsServlet {
             responseJson.put("time", after - before);
 
             if (tidy) {
-                response.getWriter().write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseJson));
+                response.getWriter()
+                        .write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseJson));
             } else {
                 response.getWriter().write(responseJson.toString());
             }

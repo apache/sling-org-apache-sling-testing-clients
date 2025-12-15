@@ -1,20 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing;
+
+import java.util.Date;
+import java.util.Optional;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.cookie.Cookie;
@@ -27,9 +32,6 @@ import org.apache.sling.testing.clients.interceptors.FormBasedAuthInterceptor;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.util.Date;
-import java.util.Optional;
 
 public class FormBasedAuthInterceptorTest {
 
@@ -54,14 +56,18 @@ public class FormBasedAuthInterceptorTest {
             serverBootstrap.registerHandler(LOGIN_OK_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
                 response.setStatusCode(HttpStatus.SC_OK);
-                response.setHeader("set-cookie", LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE +
-                        "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
+                response.setHeader(
+                        "set-cookie",
+                        LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE
+                                + "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
             serverBootstrap.registerHandler(LOGIN_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(LOGIN_OK_RESPONSE));
                 response.setStatusCode(HttpStatus.SC_OK);
-                response.setHeader("set-cookie", LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE +
-                        "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
+                response.setHeader(
+                        "set-cookie",
+                        LOGIN_COOKIE_NAME + "=" + LOGIN_COOKIE_VALUE
+                                + "; Path=/; HttpOnly; Max-Age=3600; Secure; SameSite=Lax");
             });
             serverBootstrap.registerHandler(UNAUTHORIZED_PATH, (request, response, context) -> {
                 response.setEntity(new StringEntity(UNAUTHORIZED_RESPONSE));
@@ -96,20 +102,20 @@ public class FormBasedAuthInterceptorTest {
     public void testLoginToken() throws Exception {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
         SlingClient c = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
+                .addInterceptorLast(interceptor)
+                .build();
 
         // Make sure cookie is stored
         c.doGet(LOGIN_OK_PATH, HttpStatus.SC_OK);
         Optional<Cookie> loginCookie = getLoginCookie(c);
-        Assert.assertTrue("login token cookie should be stored on the client config",
-                loginCookie.isPresent());
-        Assert.assertFalse("login token cookie should not be expired",
-                loginCookie.get().isExpired(new Date()));
+        Assert.assertTrue("login token cookie should be stored on the client config", loginCookie.isPresent());
+        Assert.assertFalse(
+                "login token cookie should not be expired", loginCookie.get().isExpired(new Date()));
 
         c.doGet(UNAUTHORIZED_PATH, HttpStatus.SC_UNAUTHORIZED);
         loginCookie = getLoginCookie(c);
-        Assert.assertFalse("login token cookie should be forced removed from the client config",
-                loginCookie.isPresent());
+        Assert.assertFalse(
+                "login token cookie should be forced removed from the client config", loginCookie.isPresent());
     }
 
     /**
@@ -121,7 +127,8 @@ public class FormBasedAuthInterceptorTest {
     public void testAnonymousUser() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
         SlingClient client = SlingClient.Builder.create(httpServer.getURI(), null, "pass")
-                .addInterceptorLast(interceptor).build();
+                .addInterceptorLast(interceptor)
+                .build();
         SlingHttpResponse response = client.doGet(ANONYMOUS_PATH, HttpStatus.SC_OK);
 
         Assert.assertSame(null, client.getUser());
@@ -139,7 +146,8 @@ public class FormBasedAuthInterceptorTest {
     public void testUser() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
         SlingClient client = SlingClient.Builder.create(httpServer.getURI(), "", "pass")
-                .addInterceptorLast(interceptor).build();
+                .addInterceptorLast(interceptor)
+                .build();
         SlingHttpResponse response = client.doGet(OK_PATH, HttpStatus.SC_OK);
 
         Assert.assertSame("", client.getUser());
@@ -157,7 +165,8 @@ public class FormBasedAuthInterceptorTest {
     public void testLoginIssue() throws ClientException {
         FormBasedAuthInterceptor interceptor = new FormBasedAuthInterceptor(LOGIN_COOKIE_NAME);
         SlingClient client = SlingClient.Builder.create(httpServer.getURI(), "user", "pass")
-                .addInterceptorLast(interceptor).build();
+                .addInterceptorLast(interceptor)
+                .build();
         SlingHttpResponse response = client.doGet(UNREACHABLE_PATH, HttpStatus.SC_BAD_REQUEST);
 
         Assert.assertSame("user", client.getUser());
@@ -166,8 +175,8 @@ public class FormBasedAuthInterceptorTest {
     }
 
     private static Optional<Cookie> getLoginCookie(SlingClient c) {
-        return c.getCookieStore().getCookies().stream().filter(
-                cookie -> LOGIN_COOKIE_NAME.equals(cookie.getName())).findFirst();
+        return c.getCookieStore().getCookies().stream()
+                .filter(cookie -> LOGIN_COOKIE_NAME.equals(cookie.getName()))
+                .findFirst();
     }
-
 }
