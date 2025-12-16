@@ -1,20 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,12 +36,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
@@ -53,7 +55,8 @@ public class SlingClientImportContentTest {
         protected void registerHandlers() throws IOException {
             serverBootstrap.registerHandler(IMPORT_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                        throws HttpException, IOException {
                     List<NameValuePair> params = extractParameters(request);
                     String operation = getParameter(":operation", params);
                     String content = getParameter(":content", params);
@@ -76,7 +79,8 @@ public class SlingClientImportContentTest {
 
             serverBootstrap.registerHandler(IMPORT_FILE_PATH, new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                        throws HttpException, IOException {
                     LOG.debug("received: {}", request);
                     if (request instanceof HttpEntityEnclosingRequest) {
                         HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
@@ -126,8 +130,6 @@ public class SlingClientImportContentTest {
         }
     };
 
-
-
     private SlingClient client;
 
     public SlingClientImportContentTest() throws ClientException {
@@ -150,6 +152,7 @@ public class SlingClientImportContentTest {
         node.put("something", props);
         client.importJson(IMPORT_PATH, node);
     }
+
     @Test
     public void testImportContentFile() throws Exception {
         File tmp = File.createTempFile("import-json", null);

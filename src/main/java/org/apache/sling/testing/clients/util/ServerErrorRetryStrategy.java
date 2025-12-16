@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.util;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -25,10 +31,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.sling.testing.clients.SystemPropertiesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.sling.testing.Constants.EXPECTED_STATUS;
@@ -48,12 +50,15 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     @Override
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
         int[] expectedStatus = (int[]) context.getAttribute(EXPECTED_STATUS);
-        boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries() &&
-                responseRetryCondition(response, expectedStatus);
+        boolean needsRetry = executionCount <= SystemPropertiesConfig.getHttpRetries()
+                && responseRetryCondition(response, expectedStatus);
 
         if (SystemPropertiesConfig.isHttpLogRetries() && needsRetry && LOG.isWarnEnabled()) {
-            LOG.warn("Request retry condition met: [count={}/{}], [expected-codes={}], [retry-codes={}]",
-                    executionCount, SystemPropertiesConfig.getHttpRetries(), expectedStatus,
+            LOG.warn(
+                    "Request retry condition met: [count={}/{}], [expected-codes={}], [retry-codes={}]",
+                    executionCount,
+                    SystemPropertiesConfig.getHttpRetries(),
+                    expectedStatus,
                     httpRetriesErrorCodes);
             LOG.warn("Request: {}", getRequestDetails(context));
             LOG.warn("Response: {}", getResponseDetails(response));
@@ -75,15 +80,15 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
     private boolean responseRetryCondition(final HttpResponse response, int... expectedStatus) {
         final Integer statusCode = response.getStatusLine().getStatusCode();
         final Collection<Integer> errorCodes = SystemPropertiesConfig.getHttpRetriesErrorCodes();
-        if ((expectedStatus != null) && (expectedStatus.length > 0) &&
-                Arrays.stream(expectedStatus).anyMatch(expected -> statusCode == expected)) {
+        if ((expectedStatus != null)
+                && (expectedStatus.length > 0)
+                && Arrays.stream(expectedStatus).anyMatch(expected -> statusCode == expected)) {
             return false;
         }
         if (errorCodes != null && !errorCodes.isEmpty()) {
             return errorCodes.contains(statusCode);
         } else {
-            return statusCode >= SC_INTERNAL_SERVER_ERROR &&
-                    statusCode < SC_INTERNAL_SERVER_ERROR + 100;
+            return statusCode >= SC_INTERNAL_SERVER_ERROR && statusCode < SC_INTERNAL_SERVER_ERROR + 100;
         }
     }
 
@@ -113,8 +118,10 @@ public class ServerErrorRetryStrategy implements ServiceUnavailableRetryStrategy
             //   Content-Length: 8, Content-Type: text/plain; charset=ISO-8859-1, Connection: Keep-Alive, ]
             final StringBuilder sb = new StringBuilder(response.getStatusLine().toString());
             sb.append(" [");
-            Arrays.stream(response.getAllHeaders()).forEach(h ->
-                    sb.append(h.getName()).append(": ").append(h.getValue()).append(", "));
+            Arrays.stream(response.getAllHeaders()).forEach(h -> sb.append(h.getName())
+                    .append(": ")
+                    .append(h.getValue())
+                    .append(", "));
             sb.append("]");
             details = sb.toString();
         }

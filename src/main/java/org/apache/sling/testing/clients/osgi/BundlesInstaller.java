@@ -1,32 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.osgi;
-
-import org.apache.sling.testing.clients.ClientException;
-import org.apache.sling.testing.clients.exceptions.TestingValidationException;
-import org.apache.sling.testing.clients.util.poller.Polling;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.sling.testing.clients.ClientException;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
+import org.apache.sling.testing.clients.util.poller.Polling;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility for installing and starting additional bundles for testing
@@ -78,8 +79,11 @@ public class BundlesInstaller {
         if (versionOnServer.equals(versionInBundle)) {
             return true;
         } else {
-            log.warn("Installed bundle doesn't match: {}, versionOnServer={}, versionInBundle={}",
-                    bundleSymbolicName, versionOnServer, versionInBundle);
+            log.warn(
+                    "Installed bundle doesn't match: {}, versionOnServer={}, versionInBundle={}",
+                    bundleSymbolicName,
+                    versionOnServer,
+                    versionInBundle);
             return false;
         }
     }
@@ -92,7 +96,7 @@ public class BundlesInstaller {
      * @throws IOException if reading the file fails
      */
     public void installBundles(List<File> toInstall, boolean startBundles) throws ClientException, IOException {
-        for(File f : toInstall) {
+        for (File f : toInstall) {
             final String bundleSymbolicName = OsgiConsoleClient.getBundleSymbolicName(f);
             if (isInstalled(f)) {
                 if (f.getName().contains("SNAPSHOT")) {
@@ -123,7 +127,7 @@ public class BundlesInstaller {
      * @throws IOException if the files cannot be read from disk
      */
     public void uninstallBundles(List<File> toUninstall) throws ClientException, IOException {
-        for(File f : toUninstall) {
+        for (File f : toUninstall) {
             final String bundleSymbolicName = OsgiConsoleClient.getBundleSymbolicName(f);
             if (isInstalled(f)) {
                 log.info("Uninstalling bundle: {}", bundleSymbolicName);
@@ -139,7 +143,6 @@ public class BundlesInstaller {
         log.info("{} additional bundles uninstalled", toUninstall.size());
     }
 
-
     /**
      * Wait for all bundles specified in symbolicNames list to be installed in the OSGi web console.
      * @deprecated use {@link #waitBundlesInstalled(List, long)}
@@ -150,8 +153,12 @@ public class BundlesInstaller {
      * @return true if all the bundles were installed
      */
     @Deprecated
-    public boolean waitForBundlesInstalled(List<String> symbolicNames, int timeoutSeconds) throws ClientException, InterruptedException {
-        log.info("Checking that the following bundles are installed (timeout {} seconds): {}", timeoutSeconds, symbolicNames);
+    public boolean waitForBundlesInstalled(List<String> symbolicNames, int timeoutSeconds)
+            throws ClientException, InterruptedException {
+        log.info(
+                "Checking that the following bundles are installed (timeout {} seconds): {}",
+                timeoutSeconds,
+                symbolicNames);
         for (String symbolicName : symbolicNames) {
             boolean started = osgiConsoleClient.checkBundleInstalled(symbolicName, 500, 2 * timeoutSeconds);
             if (!started) return false;
@@ -186,7 +193,8 @@ public class BundlesInstaller {
      * @throws TimeoutException if the timeout is reached before all the bundles are started
      * @throws InterruptedException to mark this operation as "waiting", callers should rethrow it
      */
-    public void startAllBundles(final List<String> symbolicNames, int timeout) throws InterruptedException, TimeoutException {
+    public void startAllBundles(final List<String> symbolicNames, int timeout)
+            throws InterruptedException, TimeoutException {
         log.info("Starting bundles (timeout {} seconds): {}", timeout, symbolicNames);
 
         Polling p = new Polling() {

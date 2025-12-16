@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
-
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NOT_IMPLEMENTED;
-import static org.apache.http.HttpStatus.SC_OK;
 
 import java.io.File;
 import java.net.URI;
@@ -55,6 +52,10 @@ import org.apache.sling.testing.clients.util.poller.AbstractPoller;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.apache.sling.testing.timeouts.TimeoutsProvider;
 
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_NOT_IMPLEMENTED;
+import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * <p>The Base class for all Integration Test Clients. It provides generic methods to send HTTP requests to a server. </p>
@@ -95,7 +96,9 @@ public class SlingClient extends AbstractSlingClient {
      * @throws ClientException never, kept for uniformity with the other constructors
      */
     public SlingClient(URI url, String user, String password) throws ClientException {
-        super(Builder.create(url, user, password).buildHttpClient(), Builder.create(url, user, password).buildSlingClientConfig());
+        super(
+                Builder.create(url, user, password).buildHttpClient(),
+                Builder.create(url, user, password).buildSlingClientConfig());
     }
 
     /**
@@ -125,7 +128,8 @@ public class SlingClient extends AbstractSlingClient {
      * @throws ClientException if an error occurs during operation
      */
     public SlingHttpResponse deletePath(String path, int... expectedStatus) throws ClientException {
-        HttpEntity entity = FormEntityBuilder.create().addParameter(":operation", "delete").build();
+        HttpEntity entity =
+                FormEntityBuilder.create().addParameter(":operation", "delete").build();
 
         return this.doPost(path, entity, expectedStatus);
     }
@@ -154,7 +158,7 @@ public class SlingClient extends AbstractSlingClient {
      * If the node already exists, the method will return null, with no errors.<br>
      * The method ignores trailing slashes so a path like this <i>/a/b/c///</i> is accepted and will create the <i>c</i> node if the rest of
      * the path exists.
-     * 
+     *
      * @param path the path to the node to create
      * @param nodeType the type of the node to create
      * @return the sling HTTP response or null if the path already existed
@@ -168,12 +172,15 @@ public class SlingClient extends AbstractSlingClient {
                 nodeTypeValue = DEFAULT_NODE_TYPE;
             }
 
-            // Use the property for creating the actual node for working around the Sling issue with dot containing node names.
+            // Use the property for creating the actual node for working around the Sling issue with dot containing node
+            // names.
             // The request will be similar with doing:
             // curl -F "nodeName/jcr:primaryType=nodeTypeValue" -u admin:admin http://localhost:8080/nodeParentPath
             final String nodeName = getNodeNameFromPath(path);
             final String nodeParentPath = getParentPath(path);
-            final HttpEntity entity = FormEntityBuilder.create().addParameter(nodeName + "/jcr:primaryType", nodeTypeValue).build();
+            final HttpEntity entity = FormEntityBuilder.create()
+                    .addParameter(nodeName + "/jcr:primaryType", nodeTypeValue)
+                    .build();
             return this.doPost(nodeParentPath, entity, SC_OK, SC_CREATED);
         } else {
             return null;
@@ -201,7 +208,7 @@ public class SlingClient extends AbstractSlingClient {
      * @throws ClientException if the request could not be performed
      */
     public boolean exists(String path) throws ClientException {
-        SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_CREATED, SC_NOT_FOUND,SC_NOT_IMPLEMENTED);
+        SlingHttpResponse response = this.doGet(path + ".json", SC_OK, SC_CREATED, SC_NOT_FOUND, SC_NOT_IMPLEMENTED);
         final int status = response.getStatusLine().getStatusCode();
         return status == SC_OK;
     }
@@ -214,7 +221,7 @@ public class SlingClient extends AbstractSlingClient {
      */
     protected String getParentPath(final String path) {
         // TODO define more precisely what is the parent of a folder and of a file
-        final String normalizedPath = StringUtils.removeEnd(path, "/");  // remove trailing slash in case of folders
+        final String normalizedPath = StringUtils.removeEnd(path, "/"); // remove trailing slash in case of folders
         return StringUtils.substringBeforeLast(normalizedPath, "/");
     }
 
@@ -226,7 +233,7 @@ public class SlingClient extends AbstractSlingClient {
      */
     protected String getNodeNameFromPath(final String path) {
         // TODO define the output for all the cases (e.g. paths with trailing slash)
-        final String normalizedPath = StringUtils.removeEnd(path, "/");  // remove trailing slash in case of folders
+        final String normalizedPath = StringUtils.removeEnd(path, "/"); // remove trailing slash in case of folders
         final int pos = normalizedPath.lastIndexOf('/');
         if (pos != -1) {
             return normalizedPath.substring(pos + 1, normalizedPath.length());
@@ -249,8 +256,9 @@ public class SlingClient extends AbstractSlingClient {
     @Deprecated
     public void waitUntilExists(final String path, final long waitMillis, int retryCount)
             throws TestingValidationException, InterruptedException {
-        AbstractPoller poller =  new AbstractPoller(waitMillis, retryCount) {
+        AbstractPoller poller = new AbstractPoller(waitMillis, retryCount) {
             boolean found = false;
+
             public boolean call() {
                 try {
                     found = exists(path);
@@ -310,10 +318,11 @@ public class SlingClient extends AbstractSlingClient {
      * @return the response object
      * @throws ClientException if something fails during the request/response cycle
      */
-    public SlingHttpResponse setPropertyString(String nodePath, String propName, String propValue, int... expectedStatus)
-            throws ClientException {
+    public SlingHttpResponse setPropertyString(
+            String nodePath, String propName, String propValue, int... expectedStatus) throws ClientException {
         // prepare the form
-        HttpEntity formEntry = FormEntityBuilder.create().addParameter(propName, propValue).build();
+        HttpEntity formEntry =
+                FormEntityBuilder.create().addParameter(propName, propValue).build();
         // send the request
         return this.doPost(nodePath, formEntry, HttpUtils.getExpectedStatus(SC_OK, expectedStatus));
     }
@@ -328,7 +337,8 @@ public class SlingClient extends AbstractSlingClient {
      * @return                 the response
      * @throws ClientException if something fails during the request/response cycle
      */
-    public SlingHttpResponse setPropertyStringArray(String nodePath, String propName, List<String> propValueList, int... expectedStatus)
+    public SlingHttpResponse setPropertyStringArray(
+            String nodePath, String propName, List<String> propValueList, int... expectedStatus)
             throws ClientException {
         // prepare the form
         FormEntityBuilder formEntry = FormEntityBuilder.create();
@@ -351,7 +361,8 @@ public class SlingClient extends AbstractSlingClient {
     public SlingHttpResponse setPropertiesString(String nodePath, List<NameValuePair> properties, int... expectedStatus)
             throws ClientException {
         // prepare the form
-        HttpEntity formEntry = FormEntityBuilder.create().addAllParameters(properties).build();
+        HttpEntity formEntry =
+                FormEntityBuilder.create().addAllParameters(properties).build();
         // send the request and return the sling response
         return this.doPost(nodePath, formEntry, HttpUtils.getExpectedStatus(SC_OK, expectedStatus));
     }
@@ -387,7 +398,8 @@ public class SlingClient extends AbstractSlingClient {
      * @throws InterruptedException to mark this operation as "waiting"
      */
     @Deprecated
-    public JsonNode getJsonNode(String path, int depth, final long waitMillis, final int retryNumber, int... expectedStatus)
+    public JsonNode getJsonNode(
+            String path, int depth, final long waitMillis, final int retryNumber, int... expectedStatus)
             throws ClientException, InterruptedException {
 
         // check if path exist and wait if needed
@@ -444,7 +456,8 @@ public class SlingClient extends AbstractSlingClient {
      * @return               the response
      * @throws ClientException if something fails during the request/response cycle
      */
-    public SlingHttpResponse upload(File file, String mimeType, String toPath, boolean createFolders, int... expectedStatus)
+    public SlingHttpResponse upload(
+            File file, String mimeType, String toPath, boolean createFolders, int... expectedStatus)
             throws ClientException {
         // Determine filename and parent folder, depending on whether toPath is a folder or a file
         String toFileName;
@@ -483,15 +496,15 @@ public class SlingClient extends AbstractSlingClient {
      * @return the response
      * @throws ClientException if something fails during the request/response cycle
      */
-    public SlingHttpResponse createFolder(String folderName, String folderTitle, String parentPath, int... expectedStatus)
-            throws ClientException {
+    public SlingHttpResponse createFolder(
+            String folderName, String folderTitle, String parentPath, int... expectedStatus) throws ClientException {
         // we assume the parentPath is a folder, even though it doesn't end with a slash
         parentPath = StringUtils.appendIfMissing(parentPath, "/");
         String folderPath = parentPath + folderName;
         HttpEntity feb = FormEntityBuilder.create()
-                .addParameter("./jcr:primaryType", "sling:OrderedFolder")  // set primary type for folder node
-                .addParameter("./jcr:content/jcr:primaryType", "nt:unstructured")  // add jcr:content as sub node
-                .addParameter("./jcr:content/jcr:title", folderTitle)  //set the title
+                .addParameter("./jcr:primaryType", "sling:OrderedFolder") // set primary type for folder node
+                .addParameter("./jcr:content/jcr:primaryType", "nt:unstructured") // add jcr:content as sub node
+                .addParameter("./jcr:content/jcr:title", folderTitle) // set the title
                 .build();
 
         // execute request and return the sling response
@@ -537,8 +550,8 @@ public class SlingClient extends AbstractSlingClient {
      * @return the response
      * @throws ClientException if something fails during the request/response cycle
      */
-    public SlingHttpResponse importContent(String parentPath, String contentType, File contentFile, int... expectedStatus)
-            throws ClientException {
+    public SlingHttpResponse importContent(
+            String parentPath, String contentType, File contentFile, int... expectedStatus) throws ClientException {
         HttpEntity entity = MultipartEntityBuilder.create()
                 .addTextBody(":operation", "import")
                 .addTextBody(":contentType", contentType)
@@ -599,16 +612,19 @@ public class SlingClient extends AbstractSlingClient {
             return null;
         }
 
-        //TODO write test to ensure uuidNode.asText() == uuidNode.getValueAsText(), to avoid regression
-        //return uuidNode.getValueAsText();
+        // TODO write test to ensure uuidNode.asText() == uuidNode.getValueAsText(), to avoid regression
+        // return uuidNode.getValueAsText();
         return uuidNode.asText();
     }
 
     @Override
     public String getUser() {
         // get the username from the sudo cookie or default from client config
-        return getCookieStore().getCookies().stream().filter(c -> c.getName().equals(getSudoCookieName())).findFirst()
-                .map(c -> c.getValue().replace("\"", "")).orElse(super.getUser());
+        return getCookieStore().getCookies().stream()
+                .filter(c -> c.getName().equals(getSudoCookieName()))
+                .findFirst()
+                .map(c -> c.getValue().replace("\"", ""))
+                .orElse(super.getUser());
     }
 
     /**
@@ -622,7 +638,7 @@ public class SlingClient extends AbstractSlingClient {
      * @return the slingClient with the impersonation applied
      */
     public SlingClient impersonate(String userId) {
-        if(userId == null){
+        if (userId == null) {
             endImpersonation();
             return this;
         }
@@ -678,7 +694,7 @@ public class SlingClient extends AbstractSlingClient {
      *
      * @param <T> type extending SlingClient
      */
-    public static abstract class InternalBuilder<T extends SlingClient> {
+    public abstract static class InternalBuilder<T extends SlingClient> {
 
         private final SlingClientConfig.Builder configBuilder;
 
@@ -686,7 +702,8 @@ public class SlingClient extends AbstractSlingClient {
 
         protected InternalBuilder(URI url, String user, String password) {
             this.httpClientBuilder = HttpClientBuilder.create();
-            this.configBuilder = SlingClientConfig.Builder.create().setUrl(url).setUser(user).setPassword(password);
+            this.configBuilder =
+                    SlingClientConfig.Builder.create().setUrl(url).setUser(user).setPassword(password);
 
             setDefaults();
         }
@@ -757,11 +774,12 @@ public class SlingClient extends AbstractSlingClient {
             // connection timeouts
             int timeoutSeconds = TimeoutsProvider.getInstance().getTimeout(CLIENT_CONNECTION_TIMEOUT_PROP, -1);
             if (timeoutSeconds > 0) {
-                int timeoutMs = (int)TimeUnit.SECONDS.toMillis(timeoutSeconds);
+                int timeoutMs = (int) TimeUnit.SECONDS.toMillis(timeoutSeconds);
                 RequestConfig config = RequestConfig.custom()
                         .setConnectTimeout(timeoutMs)
                         .setConnectionRequestTimeout(timeoutMs)
-                        .setSocketTimeout(timeoutMs).build();
+                        .setSocketTimeout(timeoutMs)
+                        .build();
                 this.httpClientBuilder.setDefaultRequestConfig(config);
             }
 
@@ -875,10 +893,9 @@ public class SlingClient extends AbstractSlingClient {
             httpClientBuilder.disableRedirectHandling();
             return this;
         }
-
     }
 
-    public final static class Builder extends InternalBuilder<SlingClient> {
+    public static final class Builder extends InternalBuilder<SlingClient> {
 
         private Builder(URI url, String user, String password) {
             super(url, user, password);

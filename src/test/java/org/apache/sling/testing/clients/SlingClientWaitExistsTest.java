@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -31,6 +29,10 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class SlingClientWaitExistsTest {
     private static final String GET_WAIT_PATH = "/test/wait/resource";
@@ -46,7 +48,8 @@ public class SlingClientWaitExistsTest {
         protected void registerHandlers() throws IOException {
             serverBootstrap.registerHandler(GET_WAIT_PATH + ".json", new HttpRequestHandler() {
                 @Override
-                public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+                public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                        throws HttpException, IOException {
                     callCount++;
                     if (callCount == waitCount) {
                         response.setEntity(new StringEntity(OK_RESPONSE));
@@ -61,8 +64,8 @@ public class SlingClientWaitExistsTest {
 
     @Test
     public void testWaitExists() throws Exception {
-        callCount = 0;  // reset counter
-        waitCount = 3;  // less than timeout
+        callCount = 0; // reset counter
+        waitCount = 3; // less than timeout
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         c.waitExists(GET_WAIT_PATH, 500, 10);
         assertEquals(waitCount, callCount);
@@ -70,12 +73,12 @@ public class SlingClientWaitExistsTest {
 
     @Test
     public void testWaitExistsTimeout() throws Exception {
-        callCount = 0;  // reset counter
-        waitCount = 200;  // to be sure we reach timeout
+        callCount = 0; // reset counter
+        waitCount = 200; // to be sure we reach timeout
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         try {
             c.waitExists(GET_WAIT_PATH, 1000, 10);
-        } catch (TimeoutException e ) {
+        } catch (TimeoutException e) {
             assertTrue("call was executed only " + callCount + " times", callCount > 3);
             return;
         }
@@ -85,8 +88,8 @@ public class SlingClientWaitExistsTest {
 
     @Test
     public void testWaitExistsOnce() throws Exception {
-        callCount = 0;  // reset counter
-        waitCount = 1;  // less than timeout
+        callCount = 0; // reset counter
+        waitCount = 1; // less than timeout
         SlingClient c = new SlingClient(httpServer.getURI(), "user", "pass");
         c.waitExists(GET_WAIT_PATH, -1, 10);
         assertEquals(1, callCount);

@@ -1,22 +1,32 @@
-/*******************************************************************************
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
+ * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
+ * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
+ * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- ******************************************************************************/
+ */
 package org.apache.sling.testing.clients.indexing;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -29,16 +39,6 @@ import org.apache.sling.testing.clients.query.QueryClient;
 import org.apache.sling.testing.clients.util.poller.Polling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -102,51 +102,47 @@ public class IndexingClient extends SlingClient {
     private static final String TAG_PLACEHOLDER = "<<TAG>>";
 
     /** Template for index definitions to be installed */
-    private static final String INDEX_DEFINITION = "{" +
-            "  '" + INDEX_NAME_PLACEHOLDER + "': {\n" +
-            "    'jcr:primaryType': 'oak:QueryIndexDefinition',\n" +
-            "    'type': 'lucene',\n" +
-            "    'async': '" + LANE_PLACEHOLDER + "',\n" +
-            "    'tags': '" + TAG_PLACEHOLDER + "',\n" +
-            "    'indexRules': {\n" +
-            "      'jcr:primaryType': 'nt:unstructured',\n" +
-            "      'nt:base': {\n" +
-            "        'jcr:primaryType': 'nt:unstructured',\n" +
-            "        'properties': {\n" +
-            "          'jcr:primaryType': 'nt:unstructured',\n" +
-            "          '" + PROPERTY_PLACEHOLDER + "': {\n" +
-            "            'jcr:primaryType': 'nt:unstructured',\n" +
-            "            'name': '" + PROPERTY_PLACEHOLDER + "',\n" +
-            "            'analyzed': true\n" +
-            "            }\n" +
-            "          }\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }" +
-            "}";
+    private static final String INDEX_DEFINITION = "{" + "  '"
+            + INDEX_NAME_PLACEHOLDER + "': {\n" + "    'jcr:primaryType': 'oak:QueryIndexDefinition',\n"
+            + "    'type': 'lucene',\n"
+            + "    'async': '"
+            + LANE_PLACEHOLDER + "',\n" + "    'tags': '"
+            + TAG_PLACEHOLDER + "',\n" + "    'indexRules': {\n"
+            + "      'jcr:primaryType': 'nt:unstructured',\n"
+            + "      'nt:base': {\n"
+            + "        'jcr:primaryType': 'nt:unstructured',\n"
+            + "        'properties': {\n"
+            + "          'jcr:primaryType': 'nt:unstructured',\n"
+            + "          '"
+            + PROPERTY_PLACEHOLDER + "': {\n" + "            'jcr:primaryType': 'nt:unstructured',\n"
+            + "            'name': '"
+            + PROPERTY_PLACEHOLDER + "',\n" + "            'analyzed': true\n"
+            + "            }\n"
+            + "          }\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }"
+            + "}";
 
     /** Template for the content to be created and searched */
-    private static final String CONTENT_DEFINITION = "{" +
-            "'testContent-" + LANE_PLACEHOLDER + "-" + VALUE_PLACEHOLDER + "': {" +
-            "  'jcr:primaryType': 'nt:unstructured', " +
-            "  '" + PROPERTY_PLACEHOLDER +"': '" + VALUE_PLACEHOLDER + "'" +
-            "}}";
-
+    private static final String CONTENT_DEFINITION = "{" + "'testContent-"
+            + LANE_PLACEHOLDER + "-" + VALUE_PLACEHOLDER + "': {" + "  'jcr:primaryType': 'nt:unstructured', "
+            + "  '"
+            + PROPERTY_PLACEHOLDER + "': '" + VALUE_PLACEHOLDER + "'" + "}}";
 
     /** Templates for queries to be executed against each index, in order of priority */
     private static final List<String> QUERIES = Arrays.asList(
             // for Oak versions that support option(index tag testTag)
-            "/jcr:root" + WAIT_FOR_ASYNC_INDEXING_ROOT + "//*" +
-                    "[jcr:contains(@" + PROPERTY_PLACEHOLDER + ", '" + VALUE_PLACEHOLDER +"')] " +
-                    "option(traversal ok, index tag " + TAG_PLACEHOLDER + ")",
+            "/jcr:root" + WAIT_FOR_ASYNC_INDEXING_ROOT + "//*" + "[jcr:contains(@"
+                    + PROPERTY_PLACEHOLDER + ", '" + VALUE_PLACEHOLDER + "')] " + "option(traversal ok, index tag "
+                    + TAG_PLACEHOLDER + ")",
             // for older Oak versions
-            "/jcr:root" + WAIT_FOR_ASYNC_INDEXING_ROOT + "//*" +
-                    "[jcr:contains(@" + PROPERTY_PLACEHOLDER + ", '" + VALUE_PLACEHOLDER +"')] " +
-                    "option(traversal ok)"
-    );
+            "/jcr:root" + WAIT_FOR_ASYNC_INDEXING_ROOT + "//*" + "[jcr:contains(@" + PROPERTY_PLACEHOLDER + ", '"
+                    + VALUE_PLACEHOLDER + "')] " + "option(traversal ok)");
 
     /** Global counter for how much time was spent in total waiting for async indexing */
     private static final AtomicLong totalWaited = new AtomicLong();
+
     public static final String ASYNC_INDEXER_CONFIG = "org.apache.jackrabbit.oak.plugins.index.AsyncIndexerService";
 
     /**
@@ -182,7 +178,7 @@ public class IndexingClient extends SlingClient {
      * of lane names
      * @param laneNames lane names to work on
      */
-    public void setLaneNames(String ... laneNames) {
+    public void setLaneNames(String... laneNames) {
         getValues().put(INDEX_LANES_CSV_CONFIG_NAME, StringUtils.join(laneNames, ','));
     }
 
@@ -199,11 +195,14 @@ public class IndexingClient extends SlingClient {
             return configuredLanes;
         }
 
-        Object configs = adaptTo(OsgiConsoleClient.class).getConfiguration(ASYNC_INDEXER_CONFIG).get("asyncConfigs");
+        Object configs = adaptTo(OsgiConsoleClient.class)
+                .getConfiguration(ASYNC_INDEXER_CONFIG)
+                .get("asyncConfigs");
         if (configs instanceof String[]) {
             return Stream.of((String[]) configs).map(e -> e.split(":")[0]).collect(Collectors.toList());
         } else {
-            throw new TestingValidationException("Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
+            throw new TestingValidationException(
+                    "Cannot retrieve config from AsyncIndexerService, asyncConfigs is not a String[]");
         }
     }
 
@@ -212,8 +211,8 @@ public class IndexingClient extends SlingClient {
         if (configLanesCsv == null) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(Stream.of(configLanesCsv.split(","))
-                .map(e -> e.trim()).collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                Stream.of(configLanesCsv.split(",")).map(e -> e.trim()).collect(Collectors.toList()));
     }
 
     /**
@@ -240,10 +239,10 @@ public class IndexingClient extends SlingClient {
     public void waitForAsyncIndexing(final long timeout, final long delay)
             throws TimeoutException, InterruptedException, ClientException {
 
-        install();  // will install only if needed
+        install(); // will install only if needed
 
-        final String uniqueValue = randomUUID().toString();  // to be added in all the content nodes
-        final List<String> lanes = getLaneNames();  // dynamically detect which lanes to wait for
+        final String uniqueValue = randomUUID().toString(); // to be added in all the content nodes
+        final List<String> lanes = getLaneNames(); // dynamically detect which lanes to wait for
 
         Polling p = new Polling(() -> searchContent(lanes, uniqueValue));
 
@@ -329,9 +328,10 @@ public class IndexingClient extends SlingClient {
      */
     public void uninstallWithRetry() throws TimeoutException, InterruptedException {
         new Polling(() -> {
-            this.deletePath(WAIT_FOR_ASYNC_INDEXING_ROOT, SC_OK);
-            return this.exists(WAIT_FOR_ASYNC_INDEXING_ROOT);
-        }).poll(5000, 500);
+                    this.deletePath(WAIT_FOR_ASYNC_INDEXING_ROOT, SC_OK);
+                    return this.exists(WAIT_FOR_ASYNC_INDEXING_ROOT);
+                })
+                .poll(5000, 500);
     }
 
     /**

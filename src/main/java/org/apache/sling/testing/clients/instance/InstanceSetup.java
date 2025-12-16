@@ -1,29 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.testing.clients.instance;
-
-import org.apache.sling.testing.clients.SystemPropertiesConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.sling.testing.clients.SystemPropertiesConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for getting the current instance setup
@@ -35,15 +37,18 @@ public final class InstanceSetup {
     // TODO: JAVADOC
     public static final String INSTANCE_CONFIG_INSTANCES = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instances";
     public static final String INSTANCE_CONFIG_URL = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.url.";
-    public static final String INSTANCE_CONFIG_RUNMODE = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.runmode.";
-    public static final String INSTANCE_CONFIG_ADMINUSER = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminUser.";
-    public static final String INSTANCE_CONFIG_ADMINPASSWORD = SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminPassword.";
+    public static final String INSTANCE_CONFIG_RUNMODE =
+            SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.runmode.";
+    public static final String INSTANCE_CONFIG_ADMINUSER =
+            SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminUser.";
+    public static final String INSTANCE_CONFIG_ADMINPASSWORD =
+            SystemPropertiesConfig.CONFIG_PROP_PREFIX + "instance.adminPassword.";
 
     /**
      * @return  the current setup object.
      */
     public static InstanceSetup get() {
-        if ( SINGLETON == null ) {
+        if (SINGLETON == null) {
             SINGLETON = new InstanceSetup();
         }
         return SINGLETON;
@@ -53,7 +58,7 @@ public final class InstanceSetup {
 
     private InstanceSetup() {
         final int number = Integer.valueOf(System.getProperty(INSTANCE_CONFIG_INSTANCES, "0"));
-        for (int i=1; i<=number; i++ ) {
+        for (int i = 1; i <= number; i++) {
             URI url;
             try {
                 url = new URI(System.getProperty(INSTANCE_CONFIG_URL + String.valueOf(i)));
@@ -92,8 +97,8 @@ public final class InstanceSetup {
      */
     public List<InstanceConfiguration> getConfigurations(final String runmode) {
         final List<InstanceConfiguration> result = new ArrayList<InstanceConfiguration>();
-        for(final InstanceConfiguration qc : this.configs) {
-            if ( runmode == null || runmode.equals(qc.getRunmode()) ) {
+        for (final InstanceConfiguration qc : this.configs) {
+            if (runmode == null || runmode.equals(qc.getRunmode())) {
                 result.add(qc);
             }
         }
