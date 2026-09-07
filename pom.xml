@@ -28,20 +28,20 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.clients</artifactId>
-    <version>3.1.1-SNAPSHOT</version>
+    <version>3.1.2</version>
 
     <name>Apache Sling Testing Clients</name>
     <description>Sling testing http clients and utils</description>
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-clients.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>org.apache.sling.testing.clients-3.1.2</tag>
         <url>https://github.com/apache/sling-org-apache-sling-testing-clients.git</url>
     </scm>
 
     <properties>
         <sling.java.version>8</sling.java.version>
-        <project.build.outputTimestamp>1734423468</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1788782919</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
